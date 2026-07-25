@@ -1,0 +1,460 @@
+/* ============================================
+   APP.CSS — Neoconstrucciones Integrales
+   Paleta: Azul claro #1391c8 | Azul oscuro #0077b1
+           Blanco #ffffff | Negro #0e0e0e
+   ============================================ */
+
+/* ── Variables CSS globales ── */
+:root {
+  --azul-claro: #1391c8;
+  --azul-oscuro: #0077b1;
+  --blanco: #ffffff;
+  --negro: #0e0e0e;
+  --gris-100: #f1f5f9;
+  --gris-200: #e2e8f0;
+  --gris-300: #cbd5e1;
+  --gris-400: #94a3b8;
+  --gris-500: #64748b;
+  --gris-600: #475569;
+  --gris-700: #334155;
+  --gris-800: #1e293b;
+  --font-base: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+}
+
+/* Reset selectivo */
+html, body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, figcaption, blockquote, dl, dd {
+    margin: 0;
+    padding: 0;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--gris-100);
+  color: var(--negro);
+  font-family: var(--font-base);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* ── Contenedor principal unificado ── */
+.page-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px clamp(16px, 4vw, 48px);
+  box-sizing: border-box;
+}
+
+/* ── Tipografía unificada ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-base);
+  font-weight: 700;
+  color: var(--negro);
+  line-height: 1.2;
+}
+
+h1 { font-size: clamp(1.5rem, 3vw, 2rem); }
+h2 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); color: var(--azul-claro); }
+h3 { font-size: clamp(1.1rem, 2vw, 1.35rem); }
+h4 { font-size: clamp(1rem, 1.5vw, 1.15rem); }
+
+p, span, label, li, td, th {
+  font-family: var(--font-base);
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  color: var(--gris-700);
+}
+
+/* ── Simulador ── */
+.contenedor-simulador {
+  background-color: var(--blanco);
+  padding: clamp(20px, 4vw, 32px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(19, 145, 200, 0.12);
+  max-width: 550px;
+  width: 100%;
+  margin: 0 auto;
+  border: 1px solid var(--gris-200);
+}
+
+.contenedor-simulador h2 {
+  text-align: center;
+  color: var(--azul-claro);
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-size: 0.8125rem;
+  color: var(--gris-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+input, select, textarea {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--gris-300);
+  background-color: var(--blanco);
+  color: var(--negro);
+  font-size: 0.9375rem;
+  font-family: var(--font-base);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--azul-claro);
+  box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--gris-400);
+}
+
+.grupo-medidas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .grupo-medidas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Tarjeta informativa del Servicio ── */
+.tarjeta-info-servicio {
+  background-color: rgba(19, 145, 200, 0.08);
+  border-left: 4px solid var(--azul-claro);
+  padding: 16px;
+  border-radius: 0 12px 12px 0;
+}
+
+.tarjeta-info-servicio h4 {
+  margin: 0 0 10px 0;
+  color: var(--azul-oscuro);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.detalles-grilla {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+}
+
+.detalles-grilla p {
+  margin: 0;
+  color: var(--gris-600);
+}
+
+.lista-materiales-det {
+  margin-top: 10px;
+  border-top: 1px solid var(--gris-200);
+  padding-top: 8px;
+}
+
+.lista-materiales-det h5 {
+  margin: 0 0 5px 0;
+  color: var(--azul-oscuro);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lista-materiales-det ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.8125rem;
+  color: var(--gris-600);
+}
+
+/* ── Cuadro de resumen de precios ── */
+.cuadro-precio-avanzado {
+  background-color: var(--blanco);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--gris-200);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.cuadro-precio-avanzado h3 {
+  margin: 0 0 8px 0;
+  font-size: 0.875rem;
+  text-align: center;
+  color: var(--gris-500);
+  border-bottom: 1px solid var(--gris-200);
+  padding-bottom: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fila-costo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9375rem;
+  color: var(--gris-700);
+}
+
+.total-destacado {
+  border-top: 1px dashed var(--gris-300);
+  padding-top: 12px;
+  margin-top: 4px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--azul-claro);
+}
+
+/* ── Botones ── */
+.btn-enviar,
+.btn-primario {
+  background-color: var(--azul-claro);
+  color: var(--blanco);
+  border: none;
+  padding: 14px 24px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  font-family: var(--font-base);
+  width: 100%;
+  text-align: center;
+}
+
+.btn-enviar:hover,
+.btn-primario:hover {
+  background-color: var(--azul-oscuro);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(19, 145, 200, 0.3);
+}
+
+.btn-secundario {
+  background-color: var(--blanco);
+  color: var(--azul-claro);
+  border: 2px solid var(--azul-claro);
+  padding: 12px 22px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-base);
+}
+
+.btn-secundario:hover {
+  background-color: var(--azul-claro);
+  color: var(--blanco);
+}
+
+.btn-peligro {
+  background-color: #dc2626;
+  color: var(--blanco);
+  border: none;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: var(--font-base);
+}
+
+.btn-peligro:hover {
+  background-color: #b91c1c;
+}
+
+/* ── Mensajes ── */
+.mensaje-alerta {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--gris-700);
+}
+
+.mensaje-exito {
+  color: #16a34a;
+}
+
+.mensaje-error {
+  color: #dc2626;
+}
+
+/* ── Tablas unificadas ── */
+.tabla-base {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--blanco);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid var(--gris-200);
+}
+
+.tabla-base thead {
+  background-color: var(--azul-claro);
+  color: var(--blanco);
+}
+
+.tabla-base th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.tabla-base td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gris-200);
+  font-size: 0.875rem;
+  color: var(--gris-700);
+}
+
+.tabla-base tbody tr:hover {
+  background-color: rgba(19, 145, 200, 0.04);
+}
+
+.tabla-base tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Scroll horizontal en tablas en móvil */
+@media (max-width: 768px) {
+  .tabla-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    border: 1px solid var(--gris-200);
+  }
+  .tabla-responsive .tabla-base {
+    min-width: 600px;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+/* ── Tarjetas genéricas ── */
+.card-base {
+  background: var(--blanco);
+  border-radius: 16px;
+  padding: clamp(20px, 3vw, 28px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--gris-200);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-base:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Admin card (legacy compat) ── */
+.admin-card {
+  background: var(--blanco);
+  color: var(--negro);
+  padding: clamp(16px, 3vw, 24px);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--gris-200);
+}
+
+.admin-title {
+  color: var(--negro);
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.form-edit input {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--gris-300);
+  border-radius: 8px;
+  color: var(--negro);
+  background: var(--blanco);
+  font-family: var(--font-base);
+  font-size: 0.9375rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-edit input:focus {
+  outline: none;
+  border-color: var(--azul-claro);
+  box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
+}
+
+/* ── Utilidades responsive ── */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 16px 12px;
+  }
+
+  input, select, textarea {
+    padding: 10px 12px;
+    font-size: 0.875rem;
+  }
+}
+
+/* ── Scrollbar personalizado ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gris-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--gris-300);
+  border-radius: 10px;
+  border: 2px solid var(--gris-100);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--gris-400);
+}

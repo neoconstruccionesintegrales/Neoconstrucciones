@@ -1,0 +1,95 @@
+1. Header.js (NUEVO)
+
+    Ubicación sugerida: src/components/Header.js
+    Cambios principales:
+        Menú hamburguesa para móvil (≤768px)
+        Cierre automático al hacer click fuera o redimensionar
+        Layout horizontal en landscape móvil
+        Importa header.css en lugar de inline styles
+
+2. header.css (NUEVO)
+
+    Ubicación sugerida: src/style/header.css
+    Cambios principales:
+        Nav sticky en la parte superior
+        Menú desktop oculto en móvil
+        Overlay de menú móvil con blur
+        Layout horizontal del menú móvil en landscape
+        Logo responsive con tamaño máximo
+
+3. Inicio.js (MODIFICADO)
+
+    Ubicación sugerida: src/components/Inicio.js
+    Cambios principales:
+        Limita el translateY del hero a 100px máximo para evitar cortes
+        Elimina import de scroll-effects.css (ahora está incluido en inicio.css)
+
+4. inicio.css (MODIFICADO)
+
+    Ubicación sugerida: src/style/inicio.css
+    Cambios principales:
+        Títulos con clamp() para escalado fluido
+        Media query landscape móvil: @media (max-height: 500px) and (orientation: landscape)
+        Hero más compacto en landscape (padding reducido, fuentes más pequeñas)
+        Servicios en 3 columnas en landscape móvil
+        Modal con layout horizontal en landscape móvil
+        Reveal sections en fila en landscape móvil
+        Dark CTA más compacto en landscape
+        Fix para que el hero no se corte con overflow: visible
+
+5. footer.css (MODIFICADO)
+
+    Ubicación sugerida: src/style/footer.css
+    Cambios principales:
+        Logo con clamp() en lugar de font-size: 5px (bug crítico)
+        Media query landscape móvil: grid de 3 columnas restaurado
+        Bottom bar en fila en landscape móvil
+        Mejor manejo de white-space: nowrap para evitar saltos de línea
+
+6. scroll-effects.css (NUEVO)
+
+    Ubicación sugerida: src/style/scroll-effects.css
+    Contenido: Animaciones de fade-in, stagger, parallax y soporte para prefers-reduced-motion
+
+🚀 Instrucciones de implementación
+Paso 1: Copiar archivos
+Copia cada archivo en su ubicación correspondiente dentro de tu proyecto React.
+Paso 2: Actualizar importaciones
+En Header.js, asegúrate de que la importación del CSS sea correcta:
+JavaScript
+
+import '../style/header.css';
+
+En Inicio.js, el import de scroll-effects.css se puede eliminar si ya está incluido en inicio.css, o mantenerlo si prefieres separarlo:
+JavaScript
+
+// Opcional: eliminar esta línea si el contenido está en inicio.css
+// import '../style/scroll-effects.css';
+
+Paso 3: Verificar rutas
+Asegúrate de que la ruta al logo sea correcta:
+JavaScript
+
+import logoEmpresa from '../imagenes/logo.png';
+
+Paso 4: Probar en diferentes dispositivos
+
+    iPhone SE (375×667): Portrait y Landscape
+    iPhone XR/11 (414×896): Portrait y Landscape
+    iPad (768×1024): Portrait y Landscape
+    Desktop: 1920×1080, 1366×768
+
+📱 Breakpoints utilizados
+Table
+Breakpoint	Descripción
+max-width: 1200px	Tablet grande
+max-width: 1024px	Tablet
+max-width: 768px	Tablet pequeña / Móvil grande
+max-width: 480px	Móvil
+max-height: 500px and orientation: landscape	Móvil en horizontal
+⚠️ Notas importantes
+
+    El bug del footer: El archivo original tenía font-size: 5px para el logo en móvil, lo cual hacía el texto invisible. Se corrigió usando clamp(24px, 7vw, 36px).
+    Header sticky: El header ahora es position: sticky para que siempre sea visible al hacer scroll.
+    Menú hamburguesa: En móvil (≤768px), el menú de navegación se reemplaza por un botón hamburguesa que abre un overlay a pantalla completa.
+    Landscape móvil: Las tarjetas de servicios vuelven a 3 columnas en landscape para aprovechar el ancho disponible.

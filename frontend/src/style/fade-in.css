@@ -1,0 +1,80 @@
+/* ============================================
+   FADE IN - Animaciones de entrada con
+   Intersection Observer (sin librerías externas)
+   ============================================ */
+
+.fade-wrapper {
+  opacity: 0;
+  transition-property: opacity, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+/* Dirección: Up (desde abajo) */
+.fade-up {
+  transform: translateY(40px);
+}
+
+/* Dirección: Down (desde arriba) */
+.fade-down {
+  transform: translateY(-40px);
+}
+
+/* Dirección: Left (desde derecha) */
+.fade-left {
+  transform: translateX(40px);
+}
+
+/* Dirección: Right (desde izquierda) */
+.fade-right {
+  transform: translateX(-40px);
+}
+
+/* Dirección: Fade (solo opacidad) */
+.fade-fade {
+  transform: none;
+}
+
+/* Dirección: Scale (zoom suave) */
+.fade-scale {
+  transform: scale(0.92);
+}
+
+/* Estado visible */
+.fade-visible {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+}
+
+/* Variantes de distancia */
+.fade-wrapper.fade-up.fade-visible,
+.fade-wrapper.fade-down.fade-visible {
+  transform: translateY(0);
+}
+
+.fade-wrapper.fade-left.fade-visible,
+.fade-wrapper.fade-right.fade-visible {
+  transform: translateX(0);
+}
+
+.fade-wrapper.fade-scale.fade-visible {
+  transform: scale(1);
+}
+
+/* src/style/fade-in.css */
+.fade-wrapper {
+  opacity: 0;
+  transition-property: opacity, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+.fade-up { transform: translateY(40px); }
+.fade-down { transform: translateY(-40px); }
+.fade-left { transform: translateX(40px); }
+.fade-right { transform: translateX(-40px); }
+.fade-fade { transform: none; }
+.fade-scale { transform: scale(0.92); }
+.fade-visible {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+}

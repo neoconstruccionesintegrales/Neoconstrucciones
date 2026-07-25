@@ -1,0 +1,180 @@
+* ==========================================================================
+   TOKENS.CSS — Sistema de diseño Neoconstrucciones S.A.S
+   --------------------------------------------------------------------------
+   ÚNICA fuente de verdad para color, espaciado, radios, sombras, tipografía
+   y z-index. Ningún otro archivo debe declarar valores "quemados".
+   Paleta base tomada del manual de marca (ver image.png):
+   azul claro #1391c8 · azul oscuro #0077b1 · blanco #ffffff · negro #0e0e0e
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------
+     1. MARCA (logo)
+     ------------------------------------------------------------------ */
+  --neo-azul-claro:  #1391c8;
+  --neo-azul-oscuro: #0077b1;
+  --neo-blanco:      #ffffff;
+  --neo-negro:       #0e0e0e;
+
+  /* Escala azul (derivada de los dos azules de marca) */
+  --azul-50:  #eef7fc;
+  --azul-100: #d7edf8;
+  --azul-200: #aedbf1;
+  --azul-300: #7cc4e6;
+  --azul-400: #45a9d8;
+  --azul-500: #1391c8;   /* = azul claro logo  */
+  --azul-600: #0e7fae;
+  --azul-700: #0077b1;   /* = azul oscuro logo */
+  --azul-800: #065d86;
+  --azul-900: #0a4a68;
+
+  /* ------------------------------------------------------------------
+     2. NEUTROS (gris neutro; ya usados en admin/header, ahora unificados)
+     ------------------------------------------------------------------ */
+  --neutro-0:   #ffffff;
+  --neutro-50:  #f8fafc;
+  --neutro-100: #f1f5f9;
+  --neutro-200: #e2e8f0;
+  --neutro-300: #cbd5e1;
+  --neutro-400: #94a3b8;
+  --neutro-500: #64748b;
+  --neutro-600: #475569;
+  --neutro-700: #334155;
+  --neutro-800: #1e293b;
+  --neutro-900: #0e0e0e;   /* texto fuerte = negro de marca */
+
+  /* ------------------------------------------------------------------
+     3. SEMÁNTICOS DE ACCIÓN (uno solo por acción, sin duplicados)
+     ------------------------------------------------------------------ */
+  /* Guardar / acción primaria → azul oscuro de marca */
+  --guardar:        #0077b1;
+  --guardar-hover:  #065d86;
+  --guardar-suave:  #eef7fc;
+
+  /* Editar → ámbar */
+  --editar:         #d97706;
+  --editar-hover:   #b45309;
+  --editar-suave:   #fff8eb;
+
+  /* Eliminar → rojo ÚNICO (antes había 4 rojos distintos) */
+  --eliminar:       #dc2626;
+  --eliminar-hover: #b91c1c;
+  --eliminar-suave: #fef2f2;
+
+  /* Cancelar → gris neutro */
+  --cancelar:       #64748b;
+  --cancelar-hover: #475569;
+  --cancelar-suave: #f1f5f9;
+
+  /* Estados de notificación */
+  --exito:          #15803d;
+  --exito-suave:    #f0fdf4;
+  --exito-borde:    #bbf7d0;
+  --info:           #1391c8;
+  --info-suave:     #eef7fc;
+  --advertencia:    #d97706;
+  --advertencia-suave: #fff8eb;
+  --advertencia-borde: #fde68a;
+  --error:          #dc2626;
+  --error-suave:    #fef2f2;
+  --error-borde:    #fecaca;
+
+  /* ------------------------------------------------------------------
+     4. APLICACIÓN (fondos, textos, bordes)
+     ------------------------------------------------------------------ */
+  --fondo-app:      var(--neutro-50);
+  --fondo-tarjeta:  var(--neutro-0);
+  --fondo-overlay:  rgba(14, 14, 14, 0.45);
+  --texto-base:     var(--neutro-800);
+  --texto-suave:    var(--neutro-500);
+  --texto-invertido: var(--neutro-0);
+  --borde-base:     var(--neutro-200);
+  --borde-fuerte:   var(--neutro-300);
+
+  /* Acentos de módulos del panel (SIN morados ni teals fuera de marca) */
+  --modulo-usuarios:     var(--azul-700);
+  --modulo-clientes:     var(--azul-500);
+  --modulo-nomina:       var(--azul-800);
+  --modulo-cotizaciones: var(--neutro-700);
+  --modulo-servicios:    var(--azul-400);
+  --modulo-proyectos:    var(--editar);      /* ámbar: antes naranja #f39c12 */
+  --modulo-facturas:     var(--azul-900);    /* antes morado #6b58af */
+  --modulo-mensajeria:   var(--neutro-500);  /* antes teal #096e66 */
+
+  /* ------------------------------------------------------------------
+     5. ESPACIADO (escala de 4px; prohíbe valores arbitrarios como 11px/13px)
+     ------------------------------------------------------------------ */
+  --esp-0:  0;
+  --esp-1:  4px;
+  --esp-2:  8px;
+  --esp-3:  12px;
+  --esp-4:  16px;
+  --esp-5:  20px;
+  --esp-6:  24px;
+  --esp-8:  32px;
+  --esp-10: 40px;
+  --esp-12: 48px;
+  --esp-16: 64px;
+
+  /* ------------------------------------------------------------------
+     6. RADIOS
+     ------------------------------------------------------------------ */
+  --radio-sm:   6px;
+  --radio-md:   8px;
+  --radio-lg:   12px;
+  --radio-xl:   16px;
+  --radio-pill: 999px;
+
+  /* ------------------------------------------------------------------
+     7. SOMBRAS (todas derivadas del negro de marca)
+     ------------------------------------------------------------------ */
+  --sombra-sm: 0 1px 3px rgba(14, 14, 14, 0.08);
+  --sombra-md: 0 4px 15px rgba(14, 14, 14, 0.06);
+  --sombra-lg: 0 12px 30px rgba(14, 14, 14, 0.10);
+  --sombra-xl: 0 10px 40px rgba(14, 14, 14, 0.12);
+  --sombra-foco: 0 0 0 3px rgba(0, 119, 177, 0.25);
+  --sombra-foco-error: 0 0 0 3px rgba(220, 38, 38, 0.22);
+
+  /* ------------------------------------------------------------------
+     8. TIPOGRAFÍA
+     ------------------------------------------------------------------ */
+  --fuente-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --texto-xs:   0.75rem;    /* 12px */
+  --texto-sm:   0.8125rem;  /* 13px */
+  --texto-md:   0.875rem;   /* 14px */
+  --texto-base: 1rem;       /* 16px */
+  --texto-lg:   1.125rem;
+  --texto-xl:   1.25rem;
+  --texto-2xl:  1.5rem;
+  --texto-3xl:  2rem;
+  --peso-normal: 400;
+  --peso-medio:  500;
+  --peso-fuerte: 600;
+  --peso-bold:   700;
+  --peso-black:  800;
+
+  /* ------------------------------------------------------------------
+     9. LAYOUT Y BREAKPOINTS (referencia; CSS no permite var() en @media)
+        --bp-movil: 480px  --bp-tablet: 768px  --bp-laptop: 1100px  --bp-wide: 1300px
+     ------------------------------------------------------------------ */
+  --ancho-contenedor: 1300px;
+  --ancho-header:     1400px;
+  --alto-header:      64px;
+  --alto-header-movil: 56px;
+
+  /* ------------------------------------------------------------------
+     10. Z-INDEX (jerarquía única, adiós 999/1000/1001/1100/1200 sueltos)
+     ------------------------------------------------------------------ */
+  --z-dropdown: 100;
+  --z-overlay:  900;
+  --z-header:   1000;
+  --z-nav:      1010;
+  --z-modal:    1100;
+  --z-toast:    1200;
+
+  /* ------------------------------------------------------------------
+     11. TRANSICIONES
+     ------------------------------------------------------------------ */
+  --trans-rapida: all 0.15s ease;
+  --trans-base:   all 0.25s ease;
+}

@@ -1,0 +1,562 @@
+/* ============================================
+   CITAS PAGE — Neoconstrucciones Integrales
+   V3: Homogéneo con fade-on-scroll + mejoras responsive
+   ============================================ */
+
+/* ===== PÁGINA ===== */
+.citas-page {
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+/* ===== HERO FADE CONTAINER ===== */
+.hero-fade-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== HERO ===== */
+.citas-hero {
+  background: linear-gradient(135deg, #1391c8 0%, #00adb5 50%, #005a87 100%);
+  padding: 120px 24px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.citas-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.3;
+}
+
+.citas-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  will-change: opacity, transform;
+}
+
+.citas-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.citas-hero-title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.citas-hero-sub {
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+
+/* ===== SECCIÓN PRINCIPAL ===== */
+.citas-main-section {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.citas-main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ===== CARD FORMULARIO ===== */
+.citas-card {
+  background: #ffffff;
+  padding: 48px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  border-top: 4px solid #1391c8;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.citas-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.citas-card-header {
+  margin-bottom: 28px;
+}
+
+.citas-section-label {
+  display: block;
+  color: #1391c8;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.citas-card-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.citas-card-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ===== COTIZACIÓN BOX ===== */
+.citas-cotizacion-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+}
+
+.citas-cotizacion-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.citas-cotizacion-content {
+  flex: 1;
+}
+
+.citas-cotizacion-titulo {
+  color: #0369a1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0 0 6px 0;
+}
+
+.citas-cotizacion-nota {
+  color: #475569;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.citas-cotizacion-nota strong {
+  color: #1391c8;
+}
+
+/* ===== FORMULARIO ===== */
+.citas-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.citas-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.citas-label {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.citas-input,
+.citas-select,
+.citas-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background-color: #fff;
+  color: #1e293b;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.citas-input:focus,
+.citas-select:focus,
+.citas-textarea:focus {
+  outline: none;
+  border-color: #1391c8;
+  box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
+}
+
+.citas-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+.citas-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.citas-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Iconos de calendario/reloj */
+.citas-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  filter: invert(0);
+  transition: opacity 0.2s;
+}
+
+.citas-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ===== BOTÓN ===== */
+.citas-btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, #1391c8, #00adb5);
+  color: #fff;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 8px;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  box-shadow: 0 4px 15px rgba(19, 145, 200, 0.35);
+}
+
+.citas-btn-submit:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(19, 145, 200, 0.45);
+}
+
+/* ===== INFO LATERAL ===== */
+.citas-info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.citas-info-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.citas-info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border-color: #1391c8;
+}
+
+.citas-info-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.citas-info-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.citas-info-card p {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.citas-info-card strong {
+  color: #1391c8;
+}
+
+/* ===== CTA ===== */
+.citas-cta-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.citas-cta-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.citas-cta-inner h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.citas-cta-inner p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.citas-cta-btns {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.citas-cta-btn {
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  border: 2px solid transparent;
+}
+
+.citas-cta-btn.primary {
+  background: linear-gradient(135deg, #1391c8, #00adb5);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(19, 145, 200, 0.35);
+}
+
+.citas-cta-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(19, 145, 200, 0.45);
+}
+
+.citas-cta-btn.secondary {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.citas-cta-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1199px) {
+  .citas-hero {
+    padding: 100px 24px 64px;
+  }
+
+  .citas-main-section {
+    padding: 64px 24px;
+  }
+
+  .citas-main-grid {
+    gap: 32px;
+  }
+
+  .citas-card {
+    padding: 36px;
+  }
+
+  .citas-info-card {
+    padding: 24px;
+  }
+
+  .citas-cta-section {
+    padding: 64px 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .citas-hero {
+    padding: 80px 20px 48px;
+  }
+
+  .citas-main-section {
+    padding: 48px 20px;
+  }
+
+  .citas-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .citas-card {
+    padding: 28px;
+  }
+
+  .citas-info-panel {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .citas-info-card {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .citas-cta-section {
+    padding: 48px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .citas-hero {
+    padding: 60px 16px 40px;
+  }
+
+  .citas-hero-badge {
+    font-size: 0.8rem;
+    padding: 6px 16px;
+  }
+
+  .citas-hero-title {
+    font-size: 2rem;
+  }
+
+  .citas-main-section {
+    padding: 40px 16px;
+  }
+
+  .citas-card {
+    padding: 24px;
+    border-radius: 12px;
+  }
+
+  .citas-card-title {
+    font-size: 1.4rem;
+  }
+
+  .citas-cotizacion-box {
+    padding: 12px 16px;
+  }
+
+  .citas-input,
+  .citas-select,
+  .citas-textarea {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .citas-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .citas-btn-submit {
+    padding: 14px;
+    font-size: 0.9rem;
+  }
+
+  .citas-info-panel {
+    flex-direction: column;
+  }
+
+  .citas-info-card {
+    padding: 20px;
+  }
+
+  .citas-cta-section {
+    padding: 40px 16px;
+  }
+
+  .citas-cta-btns {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .citas-cta-btn {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .citas-hero {
+    padding: 30px 24px 24px;
+  }
+
+  .citas-hero-badge {
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    margin-bottom: 12px;
+  }
+
+  .citas-hero-title {
+    font-size: clamp(22px, 6vh, 32px);
+    margin-bottom: 10px;
+  }
+
+  .citas-hero-sub {
+    font-size: 13px;
+  }
+
+  .citas-main-section {
+    padding: 24px 24px;
+  }
+
+  .citas-card {
+    padding: 24px;
+  }
+
+  .citas-info-card {
+    padding: 20px;
+  }
+
+  .citas-cta-section {
+    padding: 32px 24px;
+  }
+
+  .citas-cta-inner h2 {
+    font-size: 22px;
+  }
+
+  .citas-cta-inner p {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .citas-cta-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}

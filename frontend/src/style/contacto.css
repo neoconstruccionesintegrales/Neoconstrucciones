@@ -1,0 +1,659 @@
+/* ============================================
+   CONTACTO PAGE — Neoconstrucciones Integrales
+   V3: Homogéneo con fade-on-scroll + mejoras responsive
+   ============================================ */
+
+/* ===== VARIABLES (compartidas) ===== */
+:root {
+  --con-primary: #1391c8;
+  --con-secondary: #00adb5;
+  --con-dark: #005a87;
+  --con-bg: #f8fafc;
+  --con-card-bg: #ffffff;
+  --con-text: #1e293b;
+  --con-text-light: #64748b;
+  --con-border: #e2e8f0;
+  --con-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --con-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --con-radius: 16px;
+}
+
+/* ===== PÁGINA ===== */
+.contacto-page {
+  background-color: var(--con-bg);
+  min-height: 100vh;
+}
+
+/* ===== HERO FADE CONTAINER ===== */
+.hero-fade-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== HERO ===== */
+.contacto-hero {
+  background: linear-gradient(135deg, var(--con-primary) 0%, var(--con-secondary) 50%, var(--con-dark) 100%);
+  padding: 120px 24px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.contacto-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.3;
+}
+
+.contacto-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  will-change: opacity, transform;
+}
+
+.contacto-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.contacto-hero-title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.contacto-hero-sub {
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.7;
+  margin-bottom: 40px;
+}
+
+.contacto-hero-info {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.contacto-info-item {
+  text-align: center;
+}
+
+.contacto-info-icon {
+  display: block;
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.contacto-info-text {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+}
+
+/* ===== SECCIÓN PRINCIPAL: FORM + INFO ===== */
+.contacto-main-section {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contacto-main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ===== CARD FORMULARIO ===== */
+.contacto-card {
+  background: var(--con-card-bg);
+  padding: 48px;
+  border-radius: var(--con-radius);
+  box-shadow: var(--con-shadow);
+  border: 1px solid var(--con-border);
+  border-top: 4px solid var(--con-primary);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.contacto-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--con-shadow-lg);
+}
+
+.contacto-card-header {
+  margin-bottom: 32px;
+}
+
+.contacto-section-label {
+  display: block;
+  color: var(--con-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.contacto-card-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color: var(--con-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ===== FORMULARIO ===== */
+.contacto-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contacto-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contacto-label {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--con-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contacto-input,
+.contacto-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--con-border);
+  background-color: #fff;
+  color: var(--con-text);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.contacto-input:focus,
+.contacto-textarea:focus {
+  outline: none;
+  border-color: var(--con-primary);
+  box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
+}
+
+.contacto-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ===== BOTÓN ===== */
+.contacto-btn-enviar {
+  width: 100%;
+  background: linear-gradient(135deg, var(--con-primary), var(--con-secondary));
+  color: #fff;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 8px;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  box-shadow: 0 4px 15px rgba(19, 145, 200, 0.35);
+}
+
+.contacto-btn-enviar:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(19, 145, 200, 0.45);
+}
+
+/* ===== INFO LATERAL ===== */
+.contacto-info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contacto-info-card {
+  background: var(--con-card-bg);
+  border-radius: var(--con-radius);
+  padding: 28px;
+  box-shadow: var(--con-shadow);
+  border: 1px solid var(--con-border);
+  transition: all 0.3s ease;
+}
+
+.contacto-info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--con-shadow-lg);
+  border-color: var(--con-primary);
+}
+
+.contacto-info-card-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.contacto-info-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--con-text);
+  margin: 0 0 8px 0;
+}
+
+.contacto-info-card p {
+  font-size: 0.9rem;
+  color: var(--con-text-light);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.contacto-info-card a {
+  color: var(--con-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.contacto-info-card a:hover {
+  color: var(--con-dark);
+}
+
+/* ===== TESTIMONIOS ===== */
+.contacto-testimonios-section {
+  padding: 80px 24px;
+  background: #fff;
+}
+
+.contacto-testimonios-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contacto-testimonios-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.contacto-testimonios-header h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 800;
+  color: var(--con-text);
+  margin: 0 0 8px 0;
+}
+
+.contacto-testimonios-header p {
+  color: var(--con-text-light);
+  font-size: 1.05rem;
+}
+
+.contacto-testimonios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.contacto-testimonio-card {
+  background: var(--con-bg);
+  border-radius: var(--con-radius);
+  padding: 32px;
+  border: 1px solid var(--con-border);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.contacto-testimonio-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--con-shadow-lg);
+  border-color: var(--con-primary);
+}
+
+.contacto-testimonio-quote {
+  font-size: 3rem;
+  color: var(--con-primary);
+  line-height: 1;
+  opacity: 0.3;
+  position: absolute;
+  top: 16px;
+  left: 20px;
+}
+
+.contacto-testimonio-text {
+  color: var(--con-text);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 20px 0 24px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.contacto-testimonio-author {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.contacto-testimonio-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--con-primary), var(--con-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.contacto-testimonio-name {
+  font-weight: 700;
+  color: var(--con-text);
+  font-size: 0.95rem;
+  display: block;
+}
+
+.contacto-testimonio-role {
+  font-size: 0.85rem;
+  color: var(--con-text-light);
+}
+
+.contacto-testimonio-stars {
+  color: #f59e0b;
+  font-size: 0.9rem;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ===== CTA ===== */
+.contacto-cta-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.contacto-cta-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.contacto-cta-inner h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.contacto-cta-inner p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.contacto-cta-btns {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.contacto-cta-btn {
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  border: 2px solid transparent;
+}
+
+.contacto-cta-btn.primary {
+  background: linear-gradient(135deg, var(--con-primary), var(--con-secondary));
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(19, 145, 200, 0.35);
+}
+
+.contacto-cta-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(19, 145, 200, 0.45);
+}
+
+.contacto-cta-btn.secondary {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.contacto-cta-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1199px) {
+  .contacto-hero {
+    padding: 100px 24px 64px;
+  }
+
+  .contacto-main-section {
+    padding: 64px 24px;
+  }
+
+  .contacto-main-grid {
+    gap: 32px;
+  }
+
+  .contacto-card {
+    padding: 36px;
+  }
+
+  .contacto-testimonios-section {
+    padding: 64px 24px;
+  }
+
+  .contacto-cta-section {
+    padding: 64px 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .contacto-hero {
+    padding: 80px 20px 48px;
+  }
+
+  .contacto-hero-info {
+    gap: 32px;
+  }
+
+  .contacto-main-section {
+    padding: 48px 20px;
+  }
+
+  .contacto-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contacto-card {
+    padding: 28px;
+  }
+
+  .contacto-info-panel {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .contacto-info-card {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .contacto-testimonios-section {
+    padding: 48px 20px;
+  }
+
+  .contacto-testimonios-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contacto-cta-section {
+    padding: 48px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contacto-hero {
+    padding: 60px 16px 40px;
+  }
+
+  .contacto-hero-badge {
+    font-size: 0.8rem;
+    padding: 6px 16px;
+  }
+
+  .contacto-hero-title {
+    font-size: 2rem;
+  }
+
+  .contacto-hero-info {
+    gap: 24px;
+  }
+
+  .contacto-main-section {
+    padding: 40px 16px;
+  }
+
+  .contacto-card {
+    padding: 24px;
+    border-radius: 12px;
+  }
+
+  .contacto-card-title {
+    font-size: 1.4rem;
+  }
+
+  .contacto-input,
+  .contacto-textarea {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .contacto-btn-enviar {
+    padding: 14px;
+    font-size: 0.9rem;
+  }
+
+  .contacto-info-panel {
+    flex-direction: column;
+  }
+
+  .contacto-info-card {
+    padding: 20px;
+  }
+
+  .contacto-testimonios-section {
+    padding: 40px 16px;
+  }
+
+  .contacto-testimonio-card {
+    padding: 24px;
+  }
+
+  .contacto-cta-section {
+    padding: 40px 16px;
+  }
+
+  .contacto-cta-btns {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contacto-cta-btn {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .contacto-hero {
+    padding: 30px 24px 24px;
+  }
+
+  .contacto-hero-badge {
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    margin-bottom: 12px;
+  }
+
+  .contacto-hero-title {
+    font-size: clamp(22px, 6vh, 32px);
+    margin-bottom: 10px;
+  }
+
+  .contacto-hero-sub {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .contacto-hero-info {
+    gap: 32px;
+  }
+
+  .contacto-main-section {
+    padding: 24px 24px;
+  }
+
+  .contacto-card {
+    padding: 24px;
+  }
+
+  .contacto-testimonios-section {
+    padding: 32px 24px;
+  }
+
+  .contacto-cta-section {
+    padding: 32px 24px;
+  }
+
+  .contacto-cta-inner h2 {
+    font-size: 22px;
+  }
+
+  .contacto-cta-inner p {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .contacto-cta-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}

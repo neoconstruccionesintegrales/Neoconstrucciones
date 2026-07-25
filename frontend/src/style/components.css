@@ -1,0 +1,590 @@
+* ==========================================================================
+   COMPONENTES.CSS — Componentes compartidos de la intranet
+   Requiere tokens.css cargado antes. Sin colores ni medidas quemadas:
+   todo sale de los tokens. Prefijos: .btn .card .tabla .modal .form
+   .alerta .toast .badge + utilidades .contenedor/.pila/.fila
+   ========================================================================== */
+
+/* ==========================================================================
+   BOTONES — una sola base, variantes semánticas
+   Uso: <button class="btn btn--guardar">, .btn--editar, .btn--eliminar,
+        .btn--cancelar, .btn--primario, .btn--contorno
+   Tamaños: .btn--sm | (base) | .btn--lg · Ancho: .btn--bloque
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--esp-2);
+  padding: 10px var(--esp-5);
+  border: 1px solid transparent;
+  border-radius: var(--radio-md);
+  font-family: var(--fuente-base);
+  font-size: var(--texto-md);
+  font-weight: var(--peso-fuerte);
+  line-height: 1.4;
+  color: var(--texto-invertido);
+  background: var(--neutro-600);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: var(--trans-rapida);
+}
+
+.btn:hover { transform: translateY(-1px); box-shadow: var(--sombra-sm); }
+.btn:active { transform: translateY(0); box-shadow: none; }
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--sombra-foco);
+}
+
+.btn:disabled,
+.btn--deshabilitado {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Guardar / primario → azul #0077b1 */
+.btn--guardar,
+.btn--primario { background: var(--guardar); }
+.btn--guardar:hover,
+.btn--primario:hover { background: var(--guardar-hover); }
+
+/* Editar → ámbar #d97706 */
+.btn--editar { background: var(--editar); }
+.btn--editar:hover { background: var(--editar-hover); }
+
+/* Eliminar → rojo único */
+.btn--eliminar { background: var(--eliminar); }
+.btn--eliminar:hover { background: var(--eliminar-hover); }
+
+/* Cancelar → gris neutro */
+.btn--cancelar { background: var(--cancelar); }
+.btn--cancelar:hover { background: var(--cancelar-hover); }
+
+/* Contorno (acciones secundarias sin relleno) */
+.btn--contorno {
+  background: var(--neutro-0);
+  color: var(--azul-700);
+  border-color: var(--azul-700);
+}
+.btn--contorno:hover { background: var(--azul-50); }
+
+.btn--contorno-peligro {
+  background: var(--neutro-0);
+  color: var(--eliminar);
+  border-color: var(--eliminar);
+}
+.btn--contorno-peligro:hover { background: var(--eliminar-suave); }
+
+/* Tamaños */
+.btn--sm { padding: var(--esp-1) var(--esp-3); font-size: var(--texto-sm); border-radius: var(--radio-sm); }
+.btn--lg { padding: var(--esp-3) var(--esp-8); font-size: var(--texto-base); }
+
+/* Ancho completo (móvil / formularios) */
+.btn--bloque { width: 100%; }
+
+/* Botón sólo-icono (acciones de tabla) */
+.btn--icono {
+  padding: var(--esp-2);
+  width: 34px;
+  height: 34px;
+  font-size: var(--texto-md);
+}
+
+/* Grupo de acciones (fila de botones, colapsa en móvil) */
+.btn-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+  justify-content: flex-end;
+}
+
+/* ==========================================================================
+   CARD
+   Uso: <section class="card"> · variantes: .card--clic, .card--compacta
+   ========================================================================== */
+.card {
+  background: var(--fondo-tarjeta);
+  border: 1px solid var(--borde-base);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-md);
+  padding: var(--esp-6);
+}
+
+.card--clic {
+  cursor: pointer;
+  transition: var(--trans-base);
+}
+.card--clic:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sombra-lg);
+}
+
+.card--compacta { padding: var(--esp-4); }
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  margin-bottom: var(--esp-4);
+  padding-bottom: var(--esp-3);
+  border-bottom: 1px solid var(--borde-base);
+}
+
+.card__titulo {
+  margin: 0;
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-bold);
+  color: var(--texto-base);
+}
+
+.card__cuerpo { display: flex; flex-direction: column; gap: var(--esp-3); }
+
+.card__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+  justify-content: flex-end;
+  margin-top: var(--esp-4);
+  padding-top: var(--esp-3);
+  border-top: 1px solid var(--borde-base);
+}
+
+/* Grilla fluida de cards (auto-colapsa: 4 → 2 → 1 columnas) */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--esp-6);
+}
+
+/* ==========================================================================
+   TABLA — comportamiento móvil CONTROLADO
+   Patrón por defecto: envolver en .tabla-scroll → scroll horizontal con
+   sombra indicadora, sin romper el layout ni desbordar la pantalla.
+   Patrón alternativo: .tabla--apilable convierte filas en tarjetas
+   (requiere data-label en cada <td>).
+   ========================================================================== */
+.tabla-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--borde-base);
+  border-radius: var(--radio-lg);
+  background:
+    /* sombra derecha que indica "hay más columnas" */
+    linear-gradient(to right, var(--fondo-tarjeta) 30%, transparent) local,
+    linear-gradient(to right, transparent 70%, rgba(14, 14, 14, 0.12)) no-repeat,
+    var(--fondo-tarjeta);
+  background-size: 40px 100%, 24px 100%, 100% 100%;
+  background-position: right center;
+}
+
+.tabla {
+  width: 100%;
+  min-width: 640px;          /* fuerza el scroll controlado en móvil */
+  border-collapse: collapse;
+  font-size: var(--texto-md);
+  color: var(--texto-base);
+}
+
+.tabla th {
+  background: var(--neutro-50);
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: left;
+  padding: var(--esp-3) var(--esp-4);
+  border-bottom: 2px solid var(--borde-base);
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: var(--esp-3) var(--esp-4);
+  border-bottom: 1px solid var(--borde-base);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:hover { background: var(--azul-50); }
+.tabla tbody tr:last-child td { border-bottom: none; }
+
+.tabla--zebra tbody tr:nth-child(even) { background: var(--neutro-50); }
+.tabla--compacta th, .tabla--compacta td { padding: var(--esp-2) var(--esp-3); }
+
+.tabla__acciones {
+  display: flex;
+  gap: var(--esp-2);
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.tabla__vacia {
+  text-align: center;
+  color: var(--texto-suave);
+  padding: var(--esp-8) var(--esp-4);
+}
+
+/* Variante apilable: filas → tarjetas verticales en pantallas ≤640px */
+@media (max-width: 640px) {
+  .tabla--apilable { min-width: 0; }
+  .tabla--apilable thead { display: none; }
+  .tabla--apilable,
+  .tabla--apilable tbody,
+  .tabla--apilable tr,
+  .tabla--apilable td { display: block; width: 100%; }
+  .tabla--apilable tr {
+    border: 1px solid var(--borde-base);
+    border-radius: var(--radio-md);
+    margin-bottom: var(--esp-3);
+    padding: var(--esp-2);
+  }
+  .tabla--apilable td {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--esp-3);
+    border-bottom: none;
+    padding: var(--esp-2) var(--esp-3);
+  }
+  .tabla--apilable td::before {
+    content: attr(data-label);
+    font-weight: var(--peso-bold);
+    color: var(--texto-suave);
+    font-size: var(--texto-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .tabla--apilable .tabla__acciones { justify-content: flex-start; }
+}
+
+/* ==========================================================================
+   MODAL — lo usa también confirmar() de utils/feedback.js
+   Estructura: .modal-fondo > .modal > (__header __cuerpo __acciones)
+   ========================================================================== */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: var(--fondo-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--esp-4);
+  z-index: var(--z-modal);
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--trans-base);
+}
+
+.modal-fondo--abierto { opacity: 1; visibility: visible; }
+
+.modal {
+  background: var(--fondo-tarjeta);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-xl);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(12px) scale(0.98);
+  transition: var(--trans-base);
+}
+
+.modal-fondo--abierto .modal { transform: translateY(0) scale(1); }
+
+.modal--lg { max-width: 760px; }
+.modal--sm { max-width: 400px; }
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  padding: var(--esp-5) var(--esp-6);
+  border-bottom: 1px solid var(--borde-base);
+  position: sticky;
+  top: 0;
+  background: var(--fondo-tarjeta);
+  z-index: 1;
+}
+
+.modal__titulo {
+  margin: 0;
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-bold);
+  color: var(--texto-base);
+}
+
+.modal__cerrar {
+  background: transparent;
+  border: none;
+  font-size: var(--texto-xl);
+  line-height: 1;
+  color: var(--texto-suave);
+  cursor: pointer;
+  padding: var(--esp-1);
+  border-radius: var(--radio-sm);
+  transition: var(--trans-rapida);
+}
+.modal__cerrar:hover { color: var(--eliminar); background: var(--eliminar-suave); }
+
+.modal__cuerpo {
+  padding: var(--esp-5) var(--esp-6);
+  color: var(--texto-base);
+  font-size: var(--texto-md);
+  line-height: 1.55;
+}
+
+.modal__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--esp-3);
+  padding: var(--esp-4) var(--esp-6);
+  border-top: 1px solid var(--borde-base);
+}
+
+/* Modal en móvil: hoja inferior a pantalla casi completa */
+@media (max-width: 640px) {
+  .modal-fondo { padding: var(--esp-2); align-items: flex-end; }
+  .modal {
+    max-width: 100%;
+    max-height: 92dvh;
+    border-radius: var(--radio-xl) var(--radio-xl) 0 0;
+  }
+  .modal__acciones {
+    flex-direction: column-reverse;
+  }
+  .modal__acciones .btn { width: 100%; }
+}
+
+/* ==========================================================================
+   FORMULARIO — colapsa en vertical y horizontal
+   .form-grid usa auto-fit + minmax: pasa de 2/3 columnas a 1 sola sin
+   media queries manuales, y .form__acciones apila los botones en móvil.
+   Uso: <form class="form"><div class="form-grid">
+          <div class="campo"><label class="etiqueta">…<input class="control">
+        </div></div>
+   ========================================================================== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-4);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--esp-4);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+  min-width: 0;               /* evita desbordes de inputs en grid */
+}
+
+.campo--completo { grid-column: 1 / -1; }
+
+.etiqueta {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  color: var(--neutro-600);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.etiqueta--requerido::after {
+  content: ' *';
+  color: var(--eliminar);
+}
+
+.control {
+  width: 100%;
+  padding: 10px var(--esp-3);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-md);
+  background: var(--neutro-0);
+  color: var(--texto-base);
+  font-family: var(--fuente-base);
+  font-size: var(--texto-md);
+  transition: var(--trans-rapida);
+}
+
+.control::placeholder { color: var(--neutro-400); }
+
+.control:focus {
+  outline: none;
+  border-color: var(--azul-700);
+  box-shadow: var(--sombra-foco);
+}
+
+.control:disabled {
+  background: var(--neutro-100);
+  color: var(--neutro-400);
+  cursor: not-allowed;
+}
+
+textarea.control { min-height: 96px; resize: vertical; }
+select.control { appearance: auto; }
+
+/* Estado de error */
+.control--error,
+.campo--error .control {
+  border-color: var(--eliminar);
+}
+.control--error:focus,
+.campo--error .control:focus {
+  box-shadow: var(--sombra-foco-error);
+}
+
+.campo__error {
+  font-size: var(--texto-xs);
+  color: var(--eliminar);
+  font-weight: var(--peso-medio);
+}
+
+.campo__ayuda {
+  font-size: var(--texto-xs);
+  color: var(--texto-suave);
+}
+
+/* Acciones del formulario: en fila en escritorio, apiladas en móvil */
+.form__acciones {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+  margin-top: var(--esp-2);
+}
+
+@media (max-width: 640px) {
+  .form__acciones {
+    flex-direction: column-reverse; /* acción principal abajo, al alcance del pulgar */
+  }
+  .form__acciones .btn { width: 100%; }
+}
+
+/* ==========================================================================
+   ALERTAS EN LÍNEA (mensajes dentro de la página)
+   ========================================================================== */
+.alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--esp-3);
+  padding: var(--esp-3) var(--esp-4);
+  border-radius: var(--radio-md);
+  border: 1px solid;
+  border-left-width: 4px;
+  font-size: var(--texto-md);
+  font-weight: var(--peso-medio);
+}
+
+.alerta--exito       { background: var(--exito-suave);       border-color: var(--exito);       color: var(--exito); }
+.alerta--error       { background: var(--error-suave);       border-color: var(--error);       color: var(--error); }
+.alerta--advertencia { background: var(--advertencia-suave); border-color: var(--advertencia); color: var(--editar-hover); }
+.alerta--info        { background: var(--info-suave);        border-color: var(--info);        color: var(--azul-800); }
+
+/* ==========================================================================
+   TOASTS — los crea notificar() de utils/feedback.js
+   ========================================================================== */
+.toast-contenedor {
+  position: fixed;
+  top: var(--esp-4);
+  right: var(--esp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+  z-index: var(--z-toast);
+  max-width: min(380px, calc(100vw - var(--esp-8)));
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+  padding: var(--esp-3) var(--esp-4);
+  border-radius: var(--radio-md);
+  border-left: 4px solid;
+  background: var(--fondo-tarjeta);
+  box-shadow: var(--sombra-lg);
+  font-size: var(--texto-md);
+  font-weight: var(--peso-medio);
+  color: var(--texto-base);
+  cursor: pointer;
+  animation: toast-entrar 0.25s ease;
+}
+
+.toast--saliendo { opacity: 0; transform: translateX(20px); transition: var(--trans-base); }
+.toast--exito       { border-color: var(--exito); }
+.toast--error       { border-color: var(--error); }
+.toast--advertencia { border-color: var(--advertencia); }
+.toast--info        { border-color: var(--info); }
+
+@keyframes toast-entrar {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+  .toast-contenedor {
+    left: var(--esp-3);
+    right: var(--esp-3);
+    top: auto;
+    bottom: var(--esp-3);
+    max-width: none;
+  }
+}
+
+/* ==========================================================================
+   BADGE / ETIQUETA DE ESTADO
+   ========================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-1);
+  padding: var(--esp-1) var(--esp-3);
+  border-radius: var(--radio-pill);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.badge--azul   { background: var(--azul-50);        color: var(--azul-700);    border-color: var(--azul-200); }
+.badge--verde  { background: var(--exito-suave);    color: var(--exito);       border-color: var(--exito-borde); }
+.badge--ambar  { background: var(--editar-suave);   color: var(--editar-hover); border-color: var(--advertencia-borde); }
+.badge--rojo   { background: var(--eliminar-suave); color: var(--eliminar);    border-color: var(--error-borde); }
+.badge--gris   { background: var(--cancelar-suave); color: var(--neutro-600);  border-color: var(--borde-base); }
+
+/* ==========================================================================
+   UTILIDADES DE LAYOUT
+   ========================================================================== */
+.contenedor {
+  width: min(92%, var(--ancho-contenedor));
+  margin-inline: auto;
+}
+
+.pila { display: flex; flex-direction: column; gap: var(--esp-4); }
+
+.fila {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+}
+
+.fila--entre { justify-content: space-between; }
+.fila--fin   { justify-content: flex-end; }
+
+@media (max-width: 640px) {
+  .fila--apilable { flex-direction: column; align-items: stretch; }
+}

@@ -1,0 +1,689 @@
+/* ============================================
+   REGISTROLABORAL.CSS — Registro Personal
+   Alineado EXACTO con clientes.css
+   ============================================ */
+
+:root {
+  --azul-claro: #1391c8;
+  --azul-oscuro: #0077b1;
+  --blanco: #ffffff;
+  --negro: #0e0e0e;
+  --gris-50: #f8fafc;
+  --gris-100: #f1f5f9;
+  --gris-200: #e2e8f0;
+  --gris-300: #cbd5e1;
+  --gris-400: #94a3b8;
+  --gris-500: #64748b;
+  --gris-600: #475569;
+  --gris-700: #334155;
+  --gris-800: #1e293b;
+  --font-base: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+}
+
+/* ============================================
+   CONTENEDOR PRINCIPAL — EXACTO como clientes.css
+   ============================================ */
+.registro-container {
+  min-height: 100vh;
+  width: 100%;
+  display: block;
+  background-color: var(--gris-100);
+  padding: clamp(24px, 4vw, 48px) 0;
+  box-sizing: border-box;
+}
+
+.registro-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 48px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== HEADER — EXACTO como clientes.css ===== */
+.registro-header-text {
+  text-align: left;
+  margin-bottom: clamp(20px, 3vw, 32px);
+}
+
+.registro-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color: #1277B2;
+  margin: 0;
+  font-family: var(--font-base);
+  line-height: 1.2;
+}
+
+.registro-subtitle {
+  color: var(--gris-500);
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  margin-top: 8px;
+  font-family: var(--font-base);
+}
+
+.registro-subtitle strong {
+  color: var(--azul-claro);
+  font-weight: 700;
+}
+
+/* ============================================
+   TARJETA PRINCIPAL BLANCA — Igual a .dba-card
+   Envuelve TODAS las secciones
+   ============================================ */
+.registro-card {
+  background: var(--blanco);
+  border-radius: 16px;
+  padding: clamp(20px, 3vw, 28px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--gris-200);
+  margin-bottom: clamp(16px, 2vw, 24px);
+  overflow: hidden;
+}
+
+/* ============================================
+   SECCIONES ACORDEÓN — Dentro de .registro-card
+   ============================================ */
+.seccion-card {
+  margin-bottom: clamp(16px, 2vw, 24px);
+  border: 1px solid var(--gris-200);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--blanco);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.seccion-card:last-child {
+  margin-bottom: 0;
+}
+
+.seccion-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.seccion-header {
+  padding: clamp(14px, 2vw, 18px) clamp(16px, 2.5vw, 22px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--gris-700);
+  user-select: none;
+  font-family: var(--font-base);
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  transition: background 0.15s ease;
+  background: var(--blanco);
+}
+
+.seccion-header:hover {
+  background: var(--gris-100);
+}
+
+.seccion-header span:first-child {
+  font-size: 0.75rem;
+  color: var(--gris-500);
+  transition: transform 0.2s ease;
+  width: 20px;
+  text-align: center;
+}
+
+.seccion-content {
+  padding: clamp(16px, 2.5vw, 24px) clamp(20px, 3vw, 28px);
+  background: var(--blanco);
+  border-top: 1px solid var(--gris-200);
+}
+
+/* ============================================
+   GRID PARA ORGANIZAR LOS CAMPOS
+   ============================================ */
+.grid-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: clamp(10px, 1.5vw, 16px);
+}
+
+/* ============================================
+   INPUTS Y SELECTS — EXACTO como clientes.css
+   ============================================ */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+
+.input-group label {
+  display: block;
+  font-size: clamp(0.75rem, 1vw, 0.8125rem);
+  font-weight: 600;
+  color: var(--gris-600);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-family: var(--font-base);
+  margin-bottom: 0;
+}
+
+.form-select,
+.form-input,
+.grid-form input,
+.grid-form select {
+  width: 100%;
+  padding: 11px 14px;
+  background-color: var(--blanco);
+  color: var(--negro) !important;
+  border: 1.5px solid var(--gris-300);
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 0.9375rem;
+  font-family: var(--font-base);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-height: 42px;
+}
+
+.form-select:focus,
+.form-input:focus,
+.grid-form input:focus,
+.grid-form select:focus {
+  outline: none;
+  border-color: var(--azul-claro);
+  box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
+}
+
+.form-select:disabled,
+.form-input:disabled,
+.grid-form input:disabled,
+.grid-form select:disabled,
+.form-select[readonly],
+.form-input[readonly],
+.grid-form input[readonly],
+.grid-form select[readonly] {
+  background-color: var(--gris-100) !important;
+  color: var(--gris-500) !important;
+  cursor: not-allowed;
+  border-color: var(--gris-200);
+}
+
+.form-select::placeholder,
+.form-input::placeholder,
+.grid-form input::placeholder {
+  color: var(--gris-400);
+}
+
+/* ============================================
+   BOTONES — EXACTO como clientes.css
+   ============================================ */
+button {
+  cursor: pointer;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: clamp(0.8rem, 1.1vw, 0.875rem);
+  font-family: var(--font-base);
+}
+
+.btn-agregar {
+  background-color: #22c55e;
+  color: var(--blanco);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  min-height: 44px;
+  align-self: flex-end;
+}
+
+.btn-agregar:hover {
+  background-color: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-actualizar {
+  background: var(--azul-claro);
+  color: var(--blanco);
+  padding: 14px 32px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  font-weight: 700;
+  margin-top: clamp(16px, 2vw, 24px);
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.btn-actualizar:hover {
+  background: var(--azul-oscuro);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(19, 145, 200, 0.3);
+}
+
+.btn-eliminar {
+  color: #dc2626;
+  border: none;
+  background: #fef2f2;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+  transition: all 0.2s ease;
+}
+
+.btn-eliminar:hover {
+  background: #fee2e2;
+}
+
+/* ============================================
+   LISTA DE DOCUMENTOS
+   ============================================ */
+.docs-list {
+  margin-top: 15px;
+  list-style: none;
+  padding: 0;
+}
+
+.doc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background-color: var(--gris-50);
+  border: 1px solid var(--gris-200);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: background 0.15s ease;
+}
+
+.doc-item:hover {
+  background-color: rgba(19, 145, 200, 0.04);
+}
+
+.doc-link {
+  color: var(--azul-claro);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-base);
+  transition: color 0.15s;
+}
+
+.doc-link:hover {
+  color: var(--azul-oscuro);
+  text-decoration: underline;
+}
+
+/* ============================================
+   UTILIDADES
+   ============================================ */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+.text-mono { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; }
+
+.text-green { color: #16a34a; }
+.text-red { color: #dc2626; }
+.text-blue { color: var(--azul-claro); }
+.text-gray { color: var(--gris-500); }
+.text-dark { color: var(--negro); }
+
+.font-bold { font-weight: 700; }
+.font-size-10 { font-size: 0.625rem; }
+.font-size-11 { font-size: 0.6875rem; }
+.font-size-12 { font-size: 0.75rem; }
+.font-size-13 { font-size: 0.8125rem; }
+.font-size-14 { font-size: 0.875rem; }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+.justify-center { justify-content: center; }
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+.mt-5 { margin-top: 20px; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 4px; }
+.mb-2 { margin-bottom: 8px; }
+
+.ml-2 { margin-left: 8px; }
+
+.block { display: block; }
+.inline-block { display: inline-block; }
+
+.w-full { width: 100%; }
+
+/* ============================================
+   RESPONSIVE HORIZONTAL
+   ============================================ */
+@media (max-width: 1024px) {
+  .registro-wrapper {
+    padding: 0 clamp(16px, 3vw, 32px);
+  }
+}
+
+@media (max-width: 768px) {
+  .registro-container {
+    padding: 16px 0;
+  }
+
+  .registro-wrapper {
+    padding: 0 16px;
+  }
+
+  .registro-title {
+    font-size: 1.35rem;
+  }
+
+  .registro-card {
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .seccion-card {
+    margin-bottom: 12px;
+    border-radius: 10px;
+  }
+
+  .seccion-header {
+    padding: 12px 14px;
+    font-size: 0.875rem;
+  }
+
+  .seccion-content {
+    padding: 12px 14px;
+  }
+
+  .grid-form {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .input-group {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .btn-actualizar {
+    padding: 14px;
+    font-size: 0.9375rem;
+  }
+
+  .btn-agregar {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .doc-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .registro-container {
+    padding: 12px 0;
+  }
+
+  .registro-wrapper {
+    padding: 0 12px;
+  }
+
+  .registro-title {
+    font-size: 1.2rem;
+  }
+
+  .registro-card {
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .seccion-card {
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  .seccion-header {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .seccion-content {
+    padding: 10px 12px;
+  }
+
+  .form-select,
+  .form-input,
+  .grid-form input,
+  .grid-form select {
+    padding: 10px 12px;
+    font-size: 0.875rem;
+    min-height: 40px;
+  }
+
+  .btn-actualizar {
+    padding: 12px;
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE VERTICAL (ALTURA DE PANTALLA)
+   ============================================ */
+@media (max-height: 700px) {
+  .registro-container {
+    padding: 16px 0;
+  }
+
+  .registro-wrapper {
+    padding: 0 16px;
+  }
+
+  .registro-card {
+    padding: 16px;
+  }
+
+  .seccion-card {
+    margin-bottom: 10px;
+    border-radius: 10px;
+  }
+
+  .seccion-header {
+    padding: 10px 12px;
+  }
+
+  .seccion-content {
+    padding: 10px 12px;
+  }
+
+  .grid-form {
+    gap: 10px;
+  }
+
+  .input-group {
+    gap: 4px;
+  }
+
+  .form-select,
+  .form-input,
+  .grid-form input,
+  .grid-form select {
+    padding: 8px 10px;
+    min-height: 38px;
+  }
+}
+
+@media (max-height: 600px) {
+  .registro-container {
+    padding: 12px 0;
+  }
+
+  .registro-wrapper {
+    padding: 0 12px;
+  }
+
+  .registro-header-text {
+    margin-bottom: 12px;
+  }
+
+  .registro-title {
+    font-size: 1.25rem;
+  }
+
+  .registro-card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .seccion-card {
+    margin-bottom: 8px;
+    border-radius: 8px;
+  }
+
+  .seccion-header {
+    padding: 8px 10px;
+    font-size: 0.8125rem;
+  }
+
+  .seccion-content {
+    padding: 8px 10px;
+  }
+
+  .grid-form {
+    gap: 8px;
+  }
+
+  .input-group label {
+    font-size: 0.6875rem;
+  }
+
+  .form-select,
+  .form-input,
+  .grid-form input,
+  .grid-form select {
+    padding: 8px 10px;
+    font-size: 0.8125rem;
+    min-height: 36px;
+  }
+
+  .btn-actualizar {
+    padding: 10px 20px;
+    font-size: 0.8125rem;
+    margin-top: 12px;
+  }
+
+  .btn-agregar {
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+  }
+
+  .doc-item {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-height: 500px) {
+  .registro-container {
+    padding: 8px 0;
+  }
+
+  .registro-wrapper {
+    padding: 0 10px;
+  }
+
+  .registro-title {
+    font-size: 1.15rem;
+  }
+
+  .registro-subtitle {
+    font-size: 0.75rem;
+  }
+
+  .registro-card {
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+  }
+
+  .seccion-card {
+    margin-bottom: 6px;
+    border-radius: 6px;
+  }
+
+  .seccion-header {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+
+  .seccion-content {
+    padding: 6px 8px;
+  }
+
+  .grid-form {
+    gap: 6px;
+  }
+
+  .input-group {
+    gap: 3px;
+  }
+
+  .input-group label {
+    font-size: 0.625rem;
+  }
+
+  .form-select,
+  .form-input,
+  .grid-form input,
+  .grid-form select {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    min-height: 32px;
+  }
+
+  .btn-actualizar {
+    padding: 8px 16px;
+    font-size: 0.75rem;
+    margin-top: 8px;
+  }
+
+  .btn-agregar {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  .doc-item {
+    padding: 6px 8px;
+    margin-bottom: 4px;
+  }
+}
+
+/* Landscape móvil */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 900px) {
+  .grid-form {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .registro-wrapper {
+    max-width: 95vw;
+  }
+}

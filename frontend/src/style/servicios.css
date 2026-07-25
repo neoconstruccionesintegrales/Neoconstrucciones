@@ -1,0 +1,1017 @@
+/* ============================================
+   SERVICIOS.CSS — Administración de Servicios
+   Alineado con usuario.css / admin.css
+   Paleta: Azul claro #1391c8 | Azul oscuro #0077b1
+           Blanco #ffffff | Negro #0e0e0e
+   ============================================ */
+
+:root {
+  --azul-claro: #1391c8;
+  --azul-oscuro: #0077b1;
+  --blanco: #ffffff;
+  --negro: #0e0e0e;
+  --gris-50: #f8fafc;
+  --gris-100: #f1f5f9;
+  --gris-200: #e2e8f0;
+  --gris-300: #cbd5e1;
+  --gris-400: #94a3b8;
+  --gris-500: #64748b;
+  --gris-600: #475569;
+  --gris-700: #334155;
+  --gris-800: #1e293b;
+  --font-base: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+}
+
+/* ============================================
+   CONTENEDOR PRINCIPAL
+   ============================================ */
+.dba-container {
+  min-height: 100vh;
+  width: 100%;
+  display: block;
+  background-color: var(--gris-100);
+  padding: clamp(24px, 4vw, 48px) 0;
+  box-sizing: border-box;
+}
+
+.dba-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 48px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== HEADER ===== */
+.dba-header-text {
+  text-align: left;
+  margin-bottom: clamp(20px, 3vw, 32px);
+}
+
+.dba-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color: #0FA69D;
+  margin: 0;
+  font-family: var(--font-base);
+  line-height: 1.2;
+}
+
+.dba-subtitle {
+  color: var(--gris-500);
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  margin-top: 8px;
+  font-family: var(--font-base);
+}
+
+.dba-subtitle strong {
+  color: var(--azul-claro);
+  font-weight: 700;
+}
+
+/* ============================================
+   BOTÓN CREAR SERVICIO
+   ============================================ */
+.header-acciones {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: clamp(24px, 3vw, 32px);
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-crear {
+  background-color: #1DBD8E;
+  color: var(--blanco);
+  padding: 10px 20px;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  border-radius: 10px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-base);
+}
+
+.btn-crear:hover {
+  background-color: #00D4C6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* ============================================
+   TARJETA DEL FORMULARIO
+   ============================================ */
+.dba-card {
+  background: var(--blanco);
+  border-radius: 16px;
+  padding: clamp(20px, 3vw, 28px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--gris-200);
+  margin-bottom: clamp(16px, 2vw, 24px);
+  overflow: hidden;
+}
+
+/* Header del formulario */
+.srv-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: clamp(14px, 2vw, 20px);
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--azul-claro);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.srv-form-header .srv-section-title {
+  margin: 0;
+  color: var(--azul-oscuro);
+}
+
+.srv-btn-close {
+  background: var(--gris-100);
+  color: var(--gris-500);
+  border: 1px solid var(--gris-300);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: var(--font-base);
+  flex-shrink: 0;
+}
+
+.srv-btn-close:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+/* ============================================
+   FORMULARIO — GRID DE 4 COLUMNAS
+   ============================================ */
+
+.srv-form-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(12px, 1.5vw, 20px);
+  margin-bottom: clamp(14px, 2vw, 20px);
+}
+
+.srv-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.srv-label {
+  display: block;
+  font-size: clamp(0.7rem, 0.9vw, 0.8125rem);
+  font-weight: 600;
+  color: var(--gris-600);
+  margin-bottom: 4px;
+  font-family: var(--font-base);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.srv-label-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.srv-input,
+.srv-select {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: var(--blanco);
+  color: var(--negro);
+  border: 1.5px solid var(--gris-300);
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 0.9375rem;
+  font-family: var(--font-base);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-height: 40px;
+}
+
+.srv-input:focus,
+.srv-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
+  border-color: var(--azul-claro);
+}
+
+.srv-input:disabled {
+  background-color: var(--gris-100);
+  color: var(--gris-600);
+  font-weight: 700;
+  border-color: var(--gris-200);
+  cursor: not-allowed;
+}
+
+.srv-input-id {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-weight: 600;
+  color: var(--gris-600);
+}
+
+.srv-input-total {
+  font-size: 1rem;
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.srv-input-error {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+
+.srv-error {
+  color: #dc2626;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 2px;
+  font-family: var(--font-base);
+}
+
+.srv-error-block {
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* ============================================
+   MATERIALES / INSUMOS
+   ============================================ */
+.srv-materiales-section {
+  margin-bottom: clamp(14px, 2vw, 20px);
+}
+
+.srv-section-title {
+  color: var(--azul-claro);
+  font-family: var(--font-base);
+  font-weight: 700;
+  margin-top: 0;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  margin-bottom: 12px;
+}
+
+.srv-insumo-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+
+.srv-insumo-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.srv-insumo-col-nombre {
+  flex: 1;
+  min-width: 150px;
+}
+
+.srv-insumo-col-costo {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.srv-btn-del-insumo {
+  background: #dc2626;
+  color: var(--blanco);
+  border: none;
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-base);
+}
+
+.srv-btn-del-insumo:hover {
+  background: #b91c1c;
+  transform: scale(1.05);
+}
+
+.srv-btn-del-insumo:active {
+  transform: scale(0.95);
+}
+
+.srv-btn-add-insumo {
+  background: #1DBD8E;
+  color: var(--blanco);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  font-family: var(--font-base);
+}
+
+.srv-btn-add-insumo:hover {
+  background: #00D4C6;
+}
+
+/* ============================================
+   BOTONES DE ACCIÓN DEL FORMULARIO
+   ============================================ */
+.srv-form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.srv-btn-primary {
+  flex: 1;
+  min-width: 200px;
+  background: var(--azul-claro);
+  color: var(--blanco);
+  justify-content: center;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-base);
+}
+
+.srv-btn-primary:hover {
+  background: var(--azul-oscuro);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(19, 145, 200, 0.3);
+}
+
+.srv-btn-secondary {
+  flex: 1;
+  min-width: 200px;
+  background: var(--gris-500);
+  justify-content: center;
+  color: var(--blanco);
+  border: none;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: var(--font-base);
+}
+
+.srv-btn-secondary:hover {
+  background: var(--gris-600);
+}
+
+/* ============================================
+   BARRA DE FILTROS
+   ============================================ */
+.filtro-container {
+  background: var(--blanco);
+  padding: clamp(12px, 2vw, 16px);
+  border-radius: 12px;
+  border: 1px solid var(--gris-200);
+  margin-bottom: clamp(16px, 2vw, 24px);
+  display: flex;
+  gap: clamp(10px, 1.5vw, 16px);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.filtro-container .srv-input,
+.filtro-container .srv-select {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* ============================================
+   TABLA — ALINEADA CON USUARIO.CSS
+   ============================================ */
+.table-container {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 65vh;
+  border-radius: 12px;
+  border: 1px solid var(--gris-200);
+  position: relative;
+  background: var(--blanco);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+  min-width: 700px;
+  background: var(--blanco);
+  font-family: var(--font-base);
+}
+
+.admin-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.admin-table thead tr {
+  background-color: var(--azul-claro);
+}
+
+.admin-table th {
+  background-color: var(--azul-claro);
+  color: var(--blanco);
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 700;
+  font-size: clamp(0.75rem, 1vw, 0.85rem);
+  white-space: nowrap;
+  border-bottom: 2px solid var(--azul-oscuro);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: var(--font-base);
+}
+
+.admin-table td {
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--gris-200);
+  color: var(--gris-700);
+  vertical-align: middle;
+  background: var(--blanco);
+}
+
+.admin-table tbody tr:hover td {
+  background-color: rgba(19, 145, 200, 0.04);
+}
+
+.table-row-even td {
+  background: var(--blanco);
+}
+
+.table-row-odd td {
+  background: var(--gris-50);
+}
+
+/* ============================================
+   BADGES Y CELDAS ESPECÍFICAS DE SERVICIOS
+   ============================================ */
+.srv-id-badge {
+  display: inline-block;
+  background: #eff6ff;
+  color: var(--azul-claro);
+  font-weight: 700;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+}
+
+.srv-actions-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Botones de acciones — MISMO ESTILO QUE USUARIO.CSS */
+.srv-btn-edit {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  font-family: var(--font-base);
+}
+
+.srv-btn-edit:hover {
+  background-color: #fef3c7;
+}
+
+.srv-btn-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border:  1px solid #fecaca;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  font-family: var(--font-base);
+}
+
+.srv-btn-delete:hover {
+  background-color: #fecaca;
+}
+
+.no-results {
+  padding: clamp(24px, 4vw, 40px);
+  text-align: center;
+  color: var(--gris-400);
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  font-family: var(--font-base);
+}
+
+/* ============================================
+   UTILIDADES
+   ============================================ */
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-success {
+  color: #16a34a !important;
+  font-weight: 700;
+}
+
+.text-mono {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.9rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-size-12 {
+  font-size: 0.75rem;
+}
+
+.font-size-13 {
+  font-size: 0.8125rem;
+}
+
+.text-gray {
+  color: var(--gris-500);
+}
+
+.text-dark {
+  color: var(--negro);
+}
+
+/* ============================================
+   BARRA DE NAVEGACIÓN INFERIOR
+   ============================================ */
+.db-actions-group {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: clamp(16px, 2vw, 24px);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-nav-db {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-base);
+  border: none;
+}
+
+.btn-dark-db {
+  background: var(--gris-700);
+  color: var(--blanco);
+}
+
+.btn-dark-db:hover {
+  background: var(--gris-800);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   RESPONSIVE HORIZONTAL
+   ============================================ */
+@media (max-width: 1200px) {
+  .srv-form-grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .dba-card {
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .header-acciones {
+    justify-content: center;
+  }
+
+  .btn-crear {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 900px) {
+  .srv-form-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dba-container {
+    padding: 16px 0;
+  }
+
+  .dba-wrapper {
+    padding: 0 16px;
+  }
+
+  .dba-card {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .dba-title {
+    font-size: 1.35rem;
+  }
+
+  .srv-form-grid-4 {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .srv-form-header {
+    padding-bottom: 10px;
+  }
+
+  .filtro-container {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .filtro-container .srv-input,
+  .filtro-container .srv-select {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .table-container {
+    max-height: 55vh;
+    border-radius: 8px;
+  }
+
+  .admin-table {
+    min-width: 650px;
+  }
+
+  .srv-btn-primary,
+  .srv-btn-secondary {
+    min-width: 100%;
+    font-size: 0.9375rem;
+  }
+
+  .srv-form-actions {
+    flex-direction: column;
+  }
+
+  .srv-insumo-row {
+    gap: 8px;
+  }
+
+  .srv-insumo-col-costo {
+    width: 130px;
+  }
+
+  .srv-btn-del-insumo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .srv-actions-cell {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .dba-wrapper {
+    padding: 0 12px;
+  }
+
+  .dba-card {
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .dba-title {
+    font-size: 1.2rem;
+  }
+
+  .table-container {
+    overflow-x: hidden;
+    max-height: unset;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .admin-table {
+    display: block;
+    min-width: unset;
+    background: transparent;
+  }
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table tr {
+    margin-bottom: 12px;
+    border: 1px solid var(--gris-200);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--blanco);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  .admin-table td {
+    text-align: right;
+    padding: 12px 16px;
+    padding-left: 45%;
+    position: relative;
+    border-bottom: 1px solid var(--gris-100);
+    font-size: 0.875rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .admin-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 16px;
+    width: 40%;
+    text-align: left;
+    font-weight: 700;
+    color: var(--azul-claro);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-family: var(--font-base);
+  }
+
+  .admin-table td:last-child {
+    border-bottom: none;
+  }
+
+  .admin-table td.text-center,
+  .admin-table td.text-right {
+    text-align: right !important;
+  }
+
+  .srv-actions-cell {
+    justify-content: flex-end;
+  }
+
+  .srv-btn-edit,
+  .srv-btn-delete {
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+  }
+
+  .srv-insumo-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-end;
+    margin-bottom: 12px;
+  }
+
+  .srv-insumo-col-nombre {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .srv-insumo-col-costo {
+    flex: 1;
+    width: auto;
+    min-width: 100px;
+  }
+
+  .srv-btn-del-insumo {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    font-size: 1rem;
+    align-self: flex-end;
+  }
+
+  .srv-input,
+  .srv-select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .srv-form-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .db-actions-group {
+    justify-content: center;
+  }
+
+  .btn-nav-db {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .dba-wrapper {
+    padding: 0 12px;
+  }
+
+  .dba-title {
+    font-size: 1.2rem;
+  }
+
+  .dba-card {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    padding: 12px;
+  }
+
+  .admin-table td {
+    padding-left: 40%;
+  }
+
+  .admin-table td::before {
+    width: 35%;
+    font-size: 0.7rem;
+  }
+
+  .srv-btn-primary,
+  .srv-btn-secondary {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+  }
+
+  .srv-btn-del-insumo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .btn-crear {
+    padding: 12px 16px;
+    font-size: 0.9375rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE VERTICAL (ALTURA)
+   ============================================ */
+@media (max-height: 700px) {
+  .table-container {
+    max-height: 50vh;
+  }
+
+  .dba-card {
+    padding: 16px;
+  }
+}
+
+@media (max-height: 600px) {
+  .dba-container {
+    padding: 12px 0;
+  }
+
+  .dba-wrapper {
+    padding: 0 12px;
+  }
+
+  .dba-card {
+    padding: 12px;
+  }
+
+  .table-container {
+    max-height: 45vh;
+  }
+
+  .srv-input,
+  .srv-select {
+    padding: 8px 10px;
+    min-height: 36px;
+  }
+
+  .srv-btn-primary,
+  .srv-btn-secondary {
+    padding: 10px 16px;
+  }
+}
+
+@media (max-height: 500px) {
+  .table-container {
+    max-height: 40vh;
+  }
+
+  .dba-title {
+    font-size: 1.15rem;
+  }
+
+  .dba-card {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+  }
+
+  .srv-form-grid-4 {
+    gap: 8px;
+  }
+
+  .srv-input,
+  .srv-select {
+    padding: 8px 10px;
+    min-height: 34px;
+  }
+}
+
+/* Landscape móvil */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 900px) {
+  .srv-form-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: var(--gris-100);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: var(--gris-300);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: var(--gris-400);
+}
