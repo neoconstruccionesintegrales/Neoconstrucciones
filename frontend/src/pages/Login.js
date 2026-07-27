@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../style/login.css';
 
-function Login() {
+function Login({ setIsAuth }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,10 +24,10 @@ function Login() {
       if (data.success) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('auth', 'true');
-        localStorage.setItem('rol', data.user.rol.toLowerCase());
-        localStorage.setItem('email', data.user.email);
+        localStorage.setItem('rol', data.rol.toLowerCase());
+        localStorage.setItem('email', data.email);
 
-        window.location.href = '/admin';
+        setIsAuth(true);
       } else {
         setError(data.error || 'Credenciales incorrectas.');
       }

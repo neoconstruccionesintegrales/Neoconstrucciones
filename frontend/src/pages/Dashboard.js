@@ -313,7 +313,7 @@ function Dashboard() {
 
         {/* Barra de Operaciones Inferior */}
         <div className="db-actions-group">
-          <button onClick={() => navigate('/admin')} className="btn-nav-db btn-dark-db">⚙️ Inicio</button>
+          <button onClick={() => navigate('/admin')} className="btn-primary">⚙️ Inicio</button>
         </div>
       </div>
     </div>

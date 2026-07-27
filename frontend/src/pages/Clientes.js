@@ -1,4 +1,5 @@
-import React, { useState, useEffect,navigate } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../style/clientes.css';
 
@@ -11,6 +12,7 @@ axios.interceptors.request.use(function (config) {
 });
 
 function Clientes() {
+    const navigate = useNavigate(); // ← AQUÍ se define navigate
     const [clientes, setClientes] = useState([]);
     const [busqueda, setBusqueda] = useState('');
     const [nuevoCliente, setNuevoCliente] = useState({
@@ -192,7 +194,7 @@ function Clientes() {
     return (
         <div className="dba-container">
             <div className="dba-wrapper">
-                {/* HEADER — Alineado con Admin, Usuarios y Servicios */}
+                {/* HEADER */}
                 <div className="dba-header-text">
                     <h1 className="dba-title">📋 Gestión de Clientes</h1>
                     <p className="dba-subtitle">
@@ -200,7 +202,7 @@ function Clientes() {
                     </p>
                 </div>
 
-                {/* BÚSQUEDA — Alineada con filtro-container */}
+                {/* BÚSQUEDA */}
                 <div className="filtro-container">
                     <input
                         className="cli-input"
@@ -448,7 +450,7 @@ function Clientes() {
                 </div>
                 {/* Barra de Operaciones Inferior */}
                 <div className="db-actions-group">
-                    <button onClick={() => navigate('/admin')} className="btn-nav-db btn-dark-db">⚙️ Inicio </button>
+                    <button onClick={() => navigate('/admin')} className="btn-primary">⚙️ Inicio </button>
                 </div>
             </div>
         </div>

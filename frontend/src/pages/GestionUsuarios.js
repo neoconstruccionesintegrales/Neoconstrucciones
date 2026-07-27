@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback, navigate, memo, useRef, createContext, useContext } from 'react';
+import React, { useEffect, useState, useCallback, memo, useRef, createContext, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../style/usuario.css';
 import { esAdmin } from '../utils/utils.js';
 import { getNivelARLByRol, calcularValorHora, debeRecibirAuxilio, calcularAuxilioTransporte } from '../utils/nominaHelpers.js';
@@ -303,6 +304,7 @@ const CampoModal = memo(({ label, initialValue, editKey, type = 'text', options 
 // MODAL DETALLE - ESTADO PROPIO Y REF COMPARTIDO
 // ============================================================
 const ModalDetalle = memo(({ usuario, onClose, onGuardar, calcularNomina, modoEdicionInicial = false }) => {
+    const navigate = useNavigate();
     const [modoEdicion, setModoEdicion] = useState(modoEdicionInicial);
     const [passwordReseteado, setPasswordReseteado] = useState(null);
     const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -399,7 +401,7 @@ const guardar = useCallback(async (e) => {
 
         if (response.status === 401) {
             alert('Sesión expirada.');
-            window.location.href = '/login';
+            navigate('/login');
             return;
         }
 
@@ -652,6 +654,7 @@ const guardar = useCallback(async (e) => {
 // GESTION USUARIOS — ESTRUCTURA ALINEADA CON ADMIN.JS
 // ============================================================
 function GestionUsuarios() {
+    const navigate = useNavigate();
     const [usuarios, setUsuarios] = useState([]);
     const [vistaActiva, setVistaActiva] = useState('activos');
     const [nuevoUsuario, setNuevoUsuario] = useState({
@@ -677,7 +680,7 @@ function GestionUsuarios() {
             .then(res => {
                 if (res.status === 401) {
                     alert('Sesion expirada. Inicie sesion nuevamente.');
-                    window.location.href = '/login';
+                    navigate('/login');
                     throw new Error('No autorizado');
                 }
                 return res.json();
@@ -691,7 +694,7 @@ function GestionUsuarios() {
     useEffect(() => {
         if (!esAdmin()) {
             alert('Acceso denegado.');
-            window.location.href = '/admin';
+            navigate('/admin');
         } else {
             cargarUsuarios();
         }
@@ -804,7 +807,7 @@ function GestionUsuarios() {
 
     
 // Detectar rol del usuario desde localStorage o default
-    const userRol = localStorage.getItem('rol') || 'ADMIN';
+const userRol = localStorage.getItem('rol') || 'ADMIN';
     
     return (
       <div className="dba-container">
@@ -1167,7 +1170,7 @@ function GestionUsuarios() {
             )}
             {/* Barra de Operaciones Inferior */}
             <div className="db-actions-group">
-                <button onClick={() => navigate('/admin')} className="btn-nav-db btn-dark-db">⚙️ Inicio </button>
+                <button onClick={() => navigate('/admin')} className="btn-primary">⚙️ Inicio </button>
             </div>
         </div>
     </div>

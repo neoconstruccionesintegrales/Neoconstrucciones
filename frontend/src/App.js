@@ -50,11 +50,11 @@ function App() {
   }, []);
 
   const PrivateRoute = ({ children }) => {
-    return isAuth ? children : <Navigate to="/login" />;
+    return isAuth ? <>{children}</> : <Navigate to="/login" />;
   };
 
   const ProtectedAdminRoute = ({ children }) => {
-    return esAdmin() ? children : <Navigate to="/admin" />;
+    return esAdmin() ? <>{children}</> : <Navigate to="/admin" />;
   };
 
   // Helper para proteger por rol
@@ -62,7 +62,7 @@ function App() {
     const rol = localStorage.getItem('rol');
     if (!isAuth) return <Navigate to="/login" />;
     if (!allowedRoles.includes(rol)) return <Navigate to="/admin" />;
-    return children;
+    return <>{children}</>;
   };
 
   return (
@@ -90,7 +90,7 @@ function App() {
               🔐 PANTALLA DE ACCESO (LOGIN)
               ========================================== */}
           <Route path="/login" element={
-            isAuth ? <Navigate to="/admin" /> : <Login />
+            isAuth ? <Navigate to="/admin" /> : <Login setIsAuth={setIsAuth} />
           } />
 
           {/* ==========================================
