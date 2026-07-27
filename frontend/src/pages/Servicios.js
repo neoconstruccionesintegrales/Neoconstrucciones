@@ -37,7 +37,7 @@ function Servicios() {
     // 1. CARGA DESDE ATLAS
     const obtenerServicios = useCallback(async () => {
         try {
-            const res = await fetchConAuth('http://localhost:5000/api/servicios');
+            const res = await fetchConAuth('${API_URL}/api/servicios');
             if (res.status === 401) {
                 alert('Sesion expirada. Inicie sesion nuevamente.');
                 window.location.href = '/login';
@@ -97,7 +97,7 @@ function Servicios() {
         const confirmar = window.confirm('¿Está seguro de eliminar el servicio ' + idServicio + '? Esta acción no se puede deshacer.');
         if (!confirmar) return;
         try {
-            const res = await fetchConAuth('http://localhost:5000/api/servicios/' + idServicio, { method: 'DELETE' });
+            const res = await fetchConAuth('${API_URL}/api/servicios/' + idServicio, { method: 'DELETE' });
             if (res.status === 401) {
                 alert('No autorizado. Inicie sesion nuevamente.');
                 window.location.href = '/login';
@@ -172,8 +172,8 @@ function Servicios() {
         if (!validarFormulario()) return;
         const method = modoEdicion ? 'PUT' : 'POST';
         const url = modoEdicion
-            ? 'http://localhost:5000/api/servicios/' + nuevoServicio.idServicio
-            : 'http://localhost:5000/api/servicios';
+            ? '${API_URL}/api/servicios/' + nuevoServicio.idServicio
+            : '${API_URL}/api/servicios';
         try {
             const res = await fetchConAuth(url, { method, body: JSON.stringify(nuevoServicio) });
             if (res.status === 401) {

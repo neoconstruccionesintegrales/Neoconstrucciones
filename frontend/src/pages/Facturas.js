@@ -4,7 +4,7 @@ import axios from 'axios';
 import { generarPDFFactura } from '../utils/generarPDFFacturas';
 import '../style/facturacion.css';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '${API_URL}/api';
 
 // Configurar AXIOS para enviar token
 axios.interceptors.request.use(function (config) {

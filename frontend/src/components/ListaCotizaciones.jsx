@@ -7,7 +7,7 @@ function ListaCotizaciones() {
   useEffect(() => {
     const cargarCotizaciones = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/cotizaciones');
+        const res = await axios.get('${API_URL}/api/cotizaciones');
         setCotizaciones(res.data.data);
       } catch (e) {
         console.error("Error al cargar listado", e);

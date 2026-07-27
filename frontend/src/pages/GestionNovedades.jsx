@@ -49,7 +49,7 @@ function GestionNovedades() {
 
   const cargarEmpleados = async () => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/usuarios');
+      const res = await fetchConAuth('${API_URL}/api/usuarios');
       const data = await res.json();
       if (data.success) setEmpleados(data.data.filter(u => u.estadoLaboral === 'activo'));
     } catch (err) { console.error(err); }
@@ -57,7 +57,7 @@ function GestionNovedades() {
 
   const cargarNovedades = async () => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/novedades');
+      const res = await fetchConAuth('${API_URL}/api/novedades');
       const data = await res.json();
       if (data.success) setNovedades(data.data);
     } catch (err) { console.error(err); }
@@ -77,7 +77,7 @@ function GestionNovedades() {
     }
 
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/novedades', {
+      const res = await fetchConAuth('${API_URL}/api/novedades', {
         method: 'POST',
         body: JSON.stringify(form)
       });
@@ -97,7 +97,7 @@ function GestionNovedades() {
 
   const aprobarNovedad = async (id) => {
     try {
-      const res = await fetchConAuth(`http://localhost:5000/api/novedades/${id}/aprobar`, { method: 'PUT' });
+      const res = await fetchConAuth(`${API_URL}/api/novedades/${id}/aprobar`, { method: 'PUT' });
       const data = await res.json();
       if (data.success) {
         setMensaje('✅ Novedad aprobada');

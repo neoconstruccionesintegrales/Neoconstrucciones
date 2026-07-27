@@ -394,7 +394,7 @@ const guardar = useCallback(async (e) => {
     };
 
     try {
-        const response = await fetchConAuth('http://localhost:5000/api/usuario/' + datos.email, {
+        const response = await fetchConAuth('${API_URL}/api/usuario/' + datos.email, {
             method: 'PUT',
             body: JSON.stringify(datosAEnviar)
         });
@@ -674,8 +674,8 @@ function GestionUsuarios() {
 
     const cargarUsuarios = useCallback(() => {
         const endpoint = vistaActiva === 'activos'
-            ? 'http://localhost:5000/api/usuarios/activos'
-            : 'http://localhost:5000/api/usuarios/retirados';
+            ? '${API_URL}/api/usuarios/activos'
+            : '${API_URL}/api/usuarios/retirados';
         fetchConAuth(endpoint)
             .then(res => {
                 if (res.status === 401) {
@@ -755,7 +755,7 @@ function GestionUsuarios() {
             recibeAuxilioTransporte: nomina.recibeAuxilio
         };
         try {
-            const response = await fetchConAuth('http://localhost:5000/api/usuarios', {
+            const response = await fetchConAuth('${API_URL}/api/usuarios', {
                 method: 'POST', body: JSON.stringify(dataEnviar)
             });
             const data = await response.json();
@@ -790,7 +790,7 @@ function GestionUsuarios() {
     const eliminarUsuario = useCallback(async (id) => {
         if (window.confirm('¿Eliminar usuario permanentemente?')) {
             try {
-                await fetchConAuth('http://localhost:5000/api/usuarios/' + id, { method: 'DELETE' });
+                await fetchConAuth('${API_URL}/api/usuarios/' + id, { method: 'DELETE' });
                 cargarUsuarios();
             }
             catch (err) { alert('❌ Error al eliminar'); }

@@ -5,7 +5,7 @@ import CotizacionAdicionalModal from '../components/CotizacionAdicionalModal';
 import FacturaProyectoModal from '../components/FacturaProyectoModal';
 import '../style/proyectos.css';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '${API_URL}/api';
 
 function Proyectos() {
   const navigate = useNavigate();

@@ -12,7 +12,7 @@ axios.interceptors.request.use(function (config) {
     return config;
 });
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '${API_URL}/api';
 
 const EditarCotizacion = () => {
     const { id } = useParams();

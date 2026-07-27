@@ -37,7 +37,7 @@ function RegistroAsistencia() {
 
   const cargarProyectos = async () => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/proyectos');
+      const res = await fetchConAuth('${API_URL}/api/proyectos');
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) setProyectos(data.data);
     } catch (err) { console.error(err); setProyectos([]); }
@@ -45,7 +45,7 @@ function RegistroAsistencia() {
 
   const cargarEmpleados = async () => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/usuarios');
+      const res = await fetchConAuth('${API_URL}/api/usuarios');
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setEmpleados(data.data.filter(u => u.estadoLaboral === 'activo'));
@@ -57,8 +57,8 @@ function RegistroAsistencia() {
     if (!proyectoSeleccionado && !form.email) return;
     try {
       const url = proyectoSeleccionado
-        ? `http://localhost:5000/api/asistencia/proyecto/${proyectoSeleccionado}?fecha=${fecha}`
-        : `http://localhost:5000/api/asistencia?fecha=${fecha}&email=${form.email}`;
+        ? `${API_URL}/api/asistencia/proyecto/${proyectoSeleccionado}?fecha=${fecha}`
+        : `${API_URL}/api/asistencia?fecha=${fecha}&email=${form.email}`;
       const res = await fetchConAuth(url);
       const data = await res.json();
       if (data.success) setRegistros(data.data);
@@ -150,7 +150,7 @@ function RegistroAsistencia() {
     };
 
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/asistencia', {
+      const res = await fetchConAuth('${API_URL}/api/asistencia', {
         method: 'POST', body: JSON.stringify(body)
       });
       const data = await res.json();

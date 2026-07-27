@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { generarPDFFactura } from '../utils/generarPDFFacturas';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '${API_URL}/api';
 
 const METODOS_PAGO = [
   'Transferencia Bancaria',

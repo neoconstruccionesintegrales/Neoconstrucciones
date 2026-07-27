@@ -53,7 +53,7 @@ function RegistroLaboral({ emailUsuario }) {
         const cargarDatos = async () => {
             if (!emailAUsar) return;
             try {
-                const res = await fetchConAuth('http://localhost:5000/api/usuario/' + emailAUsar);
+                const res = await fetchConAuth('${API_URL}/api/usuario/' + emailAUsar);
                 if (res.status === 401) {
                     alert('Sesion expirada. Inicie sesion nuevamente.');
                     window.location.href = '/login';
@@ -74,7 +74,7 @@ function RegistroLaboral({ emailUsuario }) {
         const datosAEnviar = { ...registro, rol: localStorage.getItem('rol') };
         const email = registro.email || emailUsuario || localStorage.getItem('email');
         try {
-            const res = await fetchConAuth('http://localhost:5000/api/usuario/' + email, {
+            const res = await fetchConAuth('${API_URL}/api/usuario/' + email, {
                 method: 'PUT',
                 body: JSON.stringify(datosAEnviar)
             });

@@ -50,7 +50,7 @@ function ComprobantePago() {
 
   const cargarEmpleados = useCallback(async () => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/usuarios');
+      const res = await fetchConAuth('${API_URL}/api/usuarios');
       const data = await res.json();
       if (data.success) setEmpleados(data.data);
     } catch (err) { console.error(err); }
@@ -60,7 +60,7 @@ function ComprobantePago() {
     setCargando(true);
     setMensaje('');
     try {
-      const res = await fetchConAuth(`http://localhost:5000/api/nomina?anio=${anio}`);
+      const res = await fetchConAuth(`${API_URL}/api/nomina?anio=${anio}`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -114,7 +114,7 @@ function ComprobantePago() {
     setCargando(true);
     setMensaje('');
     try {
-      const res = await fetchConAuth(`http://localhost:5000/api/nomina/${nominaSeleccionada}`);
+      const res = await fetchConAuth(`${API_URL}/api/nomina/${nominaSeleccionada}`);
       const data = await res.json();
       if (data.success) {
         if (!esAdmin) {

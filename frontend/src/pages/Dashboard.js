@@ -26,7 +26,7 @@ function Dashboard() {
   // 1. CARGAR DATOS DESDE MONGO DB ATLAS
   const cargarMensajes = useCallback(async () => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/mensajes');
+      const res = await fetchConAuth('${API_URL}/api/mensajes');
       if (res.status === 401) {
         alert('Sesion expirada. Inicie sesion nuevamente.');
         window.location.href = '/login';
@@ -41,7 +41,7 @@ function Dashboard() {
 
   const cargarCitas = useCallback(async () => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/citas');
+      const res = await fetchConAuth('${API_URL}/api/citas');
       if (res.status === 401) {
         alert('Sesion expirada. Inicie sesion nuevamente.');
         window.location.href = '/login';
@@ -62,7 +62,7 @@ function Dashboard() {
   // 2. ACTUALIZAR ESTADO O NOTAS EN ATLAS
   const actualizarMensaje = async (id, camposNuevos) => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/mensajes/' + id, {
+      const res = await fetchConAuth('${API_URL}/api/mensajes/' + id, {
         method: 'PUT',
         body: JSON.stringify(camposNuevos)
       });
@@ -86,7 +86,7 @@ function Dashboard() {
 
   const actualizarCita = async (id, camposNuevos) => {
     try {
-      const res = await fetchConAuth('http://localhost:5000/api/citas/' + id, {
+      const res = await fetchConAuth('${API_URL}/api/citas/' + id, {
         method: 'PUT',
         body: JSON.stringify(camposNuevos)
       });
@@ -114,8 +114,8 @@ function Dashboard() {
     if (!confirmation) return;
 
     const url = tipo === 'msg'
-      ? 'http://localhost:5000/api/mensajes/' + id
-      : 'http://localhost:5000/api/citas/' + id;
+      ? '${API_URL}/api/mensajes/' + id
+      : '${API_URL}/api/citas/' + id;
     try {
       const res = await fetchConAuth(url, { method: 'DELETE' });
       if (res.status === 401) {
@@ -142,7 +142,7 @@ function Dashboard() {
   // 4. INYECTOR AUTOMATICO DE DATOS DE PRUEBA
   const inicializarDatosPrueba = async () => {
     try {
-      await fetchConAuth('http://localhost:5000/api/mensajes', {
+      await fetchConAuth('${API_URL}/api/mensajes', {
         method: 'POST',
         body: JSON.stringify({
           idMensaje: 'MSG-' + Date.now(),
@@ -155,7 +155,7 @@ function Dashboard() {
         })
       });
 
-      await fetchConAuth('http://localhost:5000/api/citas', {
+      await fetchConAuth('${API_URL}/api/citas', {
         method: 'POST',
         body: JSON.stringify({
           idCita: 'CIT-' + Date.now(),

@@ -32,7 +32,7 @@ function Clientes() {
     useEffect(() => {
         const fetchClientes = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/clientes');
+                const res = await axios.get('${API_URL}/api/clientes');
                 setClientes(res.data.data);
             } catch (err) {
                 console.error("Error al traer clientes:", err);
@@ -49,12 +49,12 @@ function Clientes() {
         e.preventDefault();
         try {
             if (editandoID) {
-                await axios.put('http://localhost:5000/api/clientes/' + editandoID, nuevoCliente);
+                await axios.put('${API_URL}/api/clientes/' + editandoID, nuevoCliente);
                 setClientes(clientes.map(c => c.idCliente === editandoID ? { ...nuevoCliente, idCliente: editandoID } : c));
                 setEditandoID(null);
             } else {
                 const cliente = { ...nuevoCliente, idCliente: generarIDCliente() };
-                await axios.post('http://localhost:5000/api/clientes', cliente);
+                await axios.post('${API_URL}/api/clientes', cliente);
                 setClientes([...clientes, cliente]);
             }
             setNuevoCliente({
@@ -77,7 +77,7 @@ function Clientes() {
 
     const eliminarCliente = async (id) => {
         try {
-            const resProyectos = await axios.get('http://localhost:5000/api/proyectos');
+            const resProyectos = await axios.get('${API_URL}/api/proyectos');
             const proyectos = resProyectos.data.data;
             const tieneProyectos = proyectos.some(p => p.idCliente === id);
             if (tieneProyectos) {
@@ -85,7 +85,7 @@ function Clientes() {
                 return;
             }
             if (window.confirm("¿Esta seguro de eliminar este cliente y todas sus sedes?")) {
-                await axios.delete('http://localhost:5000/api/clientes/' + id);
+                await axios.delete('${API_URL}/api/clientes/' + id);
                 setClientes(clientes.filter(c => c.idCliente !== id));
             }
         } catch (error) {
@@ -107,7 +107,7 @@ function Clientes() {
                 ...cliente,
                 sedes: [...cliente.sedes, { ...sedeTemporal, id: idSede }]
             };
-            await axios.put('http://localhost:5000/api/clientes/' + cID, clienteActualizado);
+            await axios.put('${API_URL}/api/clientes/' + cID, clienteActualizado);
             setClientes(clientes.map(c => c.idCliente === cID ? clienteActualizado : c));
             setSedeTemporal({
                 nombreSede: '', nombreEncargado: '', nitEncargado: '',
@@ -126,7 +126,7 @@ function Clientes() {
                 s.id === editandoSedeID ? { ...sedeTemporal, id: s.id } : s
             );
             const clienteActualizado = { ...cliente, sedes: sedesActualizadas };
-            await axios.put('http://localhost:5000/api/clientes/' + clienteID, clienteActualizado);
+            await axios.put('${API_URL}/api/clientes/' + clienteID, clienteActualizado);
             setClientes(clientes.map(c => c.idCliente === clienteID ? clienteActualizado : c));
             setEditandoSedeID(null);
             setSedeTemporal({
@@ -152,7 +152,7 @@ function Clientes() {
                 ...cliente,
                 sedes: cliente.sedes.filter(s => s.id !== sID)
             };
-            await axios.put('http://localhost:5000/api/clientes/' + cID, clienteActualizado);
+            await axios.put('${API_URL}/api/clientes/' + cID, clienteActualizado);
             setClientes(clientes.map(c => c.idCliente === cID ? clienteActualizado : c));
         } catch (err) {
             console.error("Error al eliminar sede:", err);

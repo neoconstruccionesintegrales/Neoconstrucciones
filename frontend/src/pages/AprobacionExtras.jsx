@@ -47,10 +47,10 @@ function AprobacionExtras() {
     setErroresEndpoint([]);
     const errores = [];
 
-    let resultadoPendientes = await fetchSeguro('http://localhost:5000/api/asistencia/extras/pendientes');
+    let resultadoPendientes = await fetchSeguro('${API_URL}/api/asistencia/extras/pendientes');
     if (!resultadoPendientes.ok) {
       errores.push(`extras/pendientes: ${resultadoPendientes.error}`);
-      resultadoPendientes = await fetchSeguro('http://localhost:5000/api/asistencia/proyecto/all');
+      resultadoPendientes = await fetchSeguro('${API_URL}/api/asistencia/proyecto/all');
       if (resultadoPendientes.ok) {
         resultadoPendientes.data = {
           success: true,
@@ -61,8 +61,8 @@ function AprobacionExtras() {
       }
     }
 
-    const resultadoEmpleados = await fetchSeguro('http://localhost:5000/api/usuarios');
-    const resultadoProyectos = await fetchSeguro('http://localhost:5000/api/proyectos');
+    const resultadoEmpleados = await fetchSeguro('${API_URL}/api/usuarios');
+    const resultadoProyectos = await fetchSeguro('${API_URL}/api/proyectos');
 
     if (!resultadoEmpleados.ok) errores.push(`usuarios: ${resultadoEmpleados.error}`);
     if (!resultadoProyectos.ok) errores.push(`proyectos: ${resultadoProyectos.error}`);
@@ -205,7 +205,7 @@ function AprobacionExtras() {
   const aprobar = async (id) => {
     if (!window.confirm('¿Aprobar estas horas extras?')) return;
     try {
-      const res = await fetchConAuth(`http://localhost:5000/api/asistencia/${id}/aprobar-extras`, { method: 'PUT' });
+      const res = await fetchConAuth(`${API_URL}/api/asistencia/${id}/aprobar-extras`, { method: 'PUT' });
       const data = await res.json();
       if (data.success) {
         setMensaje('✅ Extras aprobadas correctamente');
@@ -229,7 +229,7 @@ function AprobacionExtras() {
       return;
     }
     try {
-      const res = await fetchConAuth(`http://localhost:5000/api/asistencia/${id}/rechazar-extras`, {
+      const res = await fetchConAuth(`${API_URL}/api/asistencia/${id}/rechazar-extras`, {
         method: 'PUT',
         body: JSON.stringify({ motivoRechazo: motivo })
       });
@@ -252,7 +252,7 @@ function AprobacionExtras() {
     let exitos = 0, fallos = 0;
     for (const reg of registrosFiltrados) {
       try {
-        const res = await fetchConAuth(`http://localhost:5000/api/asistencia/${reg._id}/aprobar-extras`, { method: 'PUT' });
+        const res = await fetchConAuth(`${API_URL}/api/asistencia/${reg._id}/aprobar-extras`, { method: 'PUT' });
         if (res.ok) exitos++; else fallos++;
       } catch { fallos++; }
     }

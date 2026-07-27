@@ -51,7 +51,7 @@ function Contacto() {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/mensajes', {
+      const response = await fetch('${API_URL}/api/mensajes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nuevoMensaje)

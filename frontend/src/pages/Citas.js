@@ -105,7 +105,7 @@ function Citas() {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/citas', {
+      const response = await fetch('${API_URL}/api/citas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nuevaCita)
