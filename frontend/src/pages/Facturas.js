@@ -97,9 +97,9 @@ const Facturas = () => {
         setCargando(true);
         try {
             const [resFacturas, resProyectos, resClientes] = await Promise.all([
-                axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/facturas`).catch(() => ({ data: { data: [] } })),
-                axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos`).catch(() => ({ data: { data: [] } })),
-                axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/clientes`).catch(() => ({ data: { data: [] } }))
+                axios.get(`${API_URL}/facturas`).catch(() => ({ data: { data: [] } })),
+                axios.get(`${API_URL}/proyectos`).catch(() => ({ data: { data: [] } })),
+                axios.get(`${API_URL}/clientes`).catch(() => ({ data: { data: [] } }))
             ]);
             setFacturas(resFacturas.data?.data || []);
             setProyectos(resProyectos.data?.data || []);
@@ -202,7 +202,7 @@ const Facturas = () => {
                 notas: nuevaFactura.notas
             };
 
-        await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyectoSeleccionado.idProyecto}/facturas`, payload);
+        await axios.post(`${API_URL}/proyectos/${proyectoSeleccionado.idProyecto}/facturas`, payload);
             alert("Factura creada exitosamente");
             setShowModal(false);
             cargarDatos();
@@ -332,7 +332,7 @@ const Facturas = () => {
                 fechaVencimiento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
             };
 
-        await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/facturas/independiente`, payload);
+        await axios.post(`${API_URL}/facturas/independiente`, payload);
             alert("Factura independiente creada exitosamente");
             setShowModalIndependiente(false);
             cargarDatos();
@@ -371,7 +371,7 @@ const Facturas = () => {
         }
 
         try {
-            await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/facturas/${idFactura}/estado`, { estado: nuevoEstado });
+            await axios.put(`${API_URL}/facturas/${idFactura}/estado`, { estado: nuevoEstado });
             alert(`Factura actualizada a: ${nuevoEstado}`);
             cargarDatos();
             if (showDetalle) verDetalle(idFactura);
@@ -382,7 +382,7 @@ const Facturas = () => {
 
     const verDetalle = async (idFactura) => {
         try {
-            const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/facturas/${idFactura}`);
+            const res = await axios.get(`${API_URL}/facturas/${idFactura}`);
             const data = res.data?.data || res.data;
             if (!data.datosEmisor) {
                 data.datosEmisor = {
@@ -417,7 +417,7 @@ const Facturas = () => {
     const eliminarFactura = async (idFactura) => {
         if (!window.confirm("Eliminar esta factura?")) return;
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/facturas/${idFactura}`);
+            await axios.delete(`${API_URL}/facturas/${idFactura}`);
             alert("Factura eliminada");
             cargarDatos();
         } catch (error) {

@@ -12,7 +12,7 @@ axios.interceptors.request.use(function (config) {
     return config;
 });
 
-const API_URL = '${API_URL}/api';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api`;
 
 const EditarCotizacion = () => {
     const { id } = useParams();
@@ -457,7 +457,7 @@ const EditarCotizacion = () => {
         return (
             <div className="dba-container">
                 <div className="dba-wrapper">
-                    <div className="text-center" className="p-60">
+                    <div className="text-center p-60">
                         <h3>No se encontro la cotizacion</h3>
                         <button className="btn-volver mt-3" onClick={function () { navigate('/gestion-cotizaciones'); }}>
                             Volver a Gestion
