@@ -5,7 +5,7 @@ import CotizacionAdicionalModal from '../components/CotizacionAdicionalModal';
 import FacturaProyectoModal from '../components/FacturaProyectoModal';
 import '../style/proyectos.css';
 
-const `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ = '${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api`;
 
 function Proyectos() {
   const navigate = useNavigate();
@@ -73,9 +73,9 @@ function Proyectos() {
     setLoading(true);
     try {
       const [resProyectos, resCotizaciones, resClientes] = await Promise.all([
-        axios.get(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/cotizaciones-aprobadas`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/clientes`).catch(() => ({ data: { data: [] } }))
+        axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/cotizaciones-aprobadas`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/clientes`).catch(() => ({ data: { data: [] } }))
       ]);
       const proyectosData = resProyectos.data?.data || [];
       const clientesData = resClientes.data?.data || [];
@@ -114,12 +114,12 @@ function Proyectos() {
 
   const guardarCambios = async (idProyecto) => {
     try {
-      await axios.put(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${idProyecto}`, { 
-        porcentajeAvance: Number(camposEditar.porcentajeAvance), 
-        seguimiento: camposEditar.seguimiento, 
-        nombreProyecto: camposEditar.nombreProyecto.toUpperCase(), 
-        estado: camposEditar.estado 
-      });
+      await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${idProyecto}`, { 
+    porcentajeAvance: Number(camposEditar.porcentajeAvance), 
+    seguimiento: camposEditar.seguimiento, 
+    nombreProyecto: camposEditar.nombreProyecto.toUpperCase(), 
+    estado: camposEditar.estado 
+});
       alert('Proyecto actualizado'); 
       setEditandoID(null); 
       cargarDatos();
@@ -131,7 +131,7 @@ function Proyectos() {
   const eliminarProyecto = async (id) => {
     if (!window.confirm("¿Eliminar este proyecto? Se eliminarán también las facturas no pagadas asociadas.")) return;
     try {
-      await axios.delete(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${id}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${id}`);
       alert("Proyecto eliminado");
       cargarDatos();
     } catch (error) {
@@ -151,7 +151,7 @@ ${facturasPagadas.join('\n')}`);
 
   const verDetalle = async (proyecto) => {
     try {
-      const res = await axios.get(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyecto.idProyecto}`);
+      const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}`);
       setProyectoDetalle(res.data.data);
       setShowDetalle(true);
     } catch (error) {
@@ -215,7 +215,7 @@ ${facturasPagadas.join('\n')}`);
 
   const guardarSeguimiento = async () => {
     try {
-      await axios.post(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyectoDetalle.idProyecto}/seguimientos`, seguimientoData, { 
+      await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyectoDetalle.idProyecto}/seguimientos`, seguimientoData, { 
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } 
       });
       alert('Seguimiento agregado'); 
@@ -572,7 +572,7 @@ ${facturasPagadas.join('\n')}`);
                                       onClick={async () => {
                                         if (!window.confirm('¿Aprobar esta cotizacion adicional? Se generara la factura de anticipo.')) return;
                                         try {
-                                          await axios.post(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyectoDetalle.idProyecto}/cotizaciones-adicionales/${c.idCotizacion}/aprobar`, {}, {
+                                          await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyectoDetalle.idProyecto}/cotizaciones-adicionales/${c.idCotizacion}/aprobar`, {}, {
                                             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                                           });
                                           alert('Cotizacion adicional aprobada!');
@@ -679,10 +679,8 @@ ${facturasPagadas.join('\n')}`);
                                       onClick={async () => {
                                         if (!window.confirm(`¿Marcar el hito "${hito.nombre}" como completado?`)) return;
                                         try {
-                                          await axios.post(
-                                            `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyectoDetalle.idProyecto}/hitos/${hito.idHito}/completar`,
-                                            {},
-                                            { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                                          await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyectoDetalle.idProyecto}/hitos/${hito.idHito}/completar`,{},
+                                          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                                           );
                                           alert(`Hito ${hito.nombre} completado!`);
                                           cargarDatos();

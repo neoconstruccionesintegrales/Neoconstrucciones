@@ -26,7 +26,7 @@ function Dashboard() {
   // 1. CARGAR DATOS DESDE MONGO DB ATLAS
   const cargarMensajes = useCallback(async () => {
     try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/mensajes');
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/mensajes`);
       if (res.status === 401) {
         alert('Sesion expirada. Inicie sesion nuevamente.');
         window.location.href = '/login';
@@ -41,7 +41,7 @@ function Dashboard() {
 
   const cargarCitas = useCallback(async () => {
     try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/citas');
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/citas`);
       if (res.status === 401) {
         alert('Sesion expirada. Inicie sesion nuevamente.');
         window.location.href = '/login';
@@ -50,7 +50,7 @@ function Dashboard() {
       const resultado = await res.json();
       if (resultado.success) setCitas(resultado.data);
     } catch (error) {
-      console.error('Error cargando citas de Atlas:', error);
+      console.error('Error cargando citas:', error);
     }
   }, []);
 
@@ -62,7 +62,7 @@ function Dashboard() {
   // 2. ACTUALIZAR ESTADO O NOTAS EN ATLAS
   const actualizarMensaje = async (id, camposNuevos) => {
     try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/mensajes/' + id, {
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/mensajes/${id}`, {
         method: 'PUT',
         body: JSON.stringify(camposNuevos)
       });
@@ -86,10 +86,10 @@ function Dashboard() {
 
   const actualizarCita = async (id, camposNuevos) => {
     try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/citas/' + id, {
-        method: 'PUT',
-        body: JSON.stringify(camposNuevos)
-      });
+    const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/citas/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(camposNuevos)
+    });
       if (res.status === 401) {
         alert('No autorizado.');
         window.location.href = '/login';
@@ -114,8 +114,8 @@ function Dashboard() {
     if (!confirmation) return;
 
     const url = tipo === 'msg'
-      ? '${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/mensajes/' + id
-      : '${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/citas/' + id;
+      ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/mensajes/${id}`
+      : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/citas/${id}`;
     try {
       const res = await fetchConAuth(url, { method: 'DELETE' });
       if (res.status === 401) {
@@ -142,7 +142,7 @@ function Dashboard() {
   // 4. INYECTOR AUTOMATICO DE DATOS DE PRUEBA
   const inicializarDatosPrueba = async () => {
     try {
-      await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/mensajes', {
+      await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/mensajes`, {
         method: 'POST',
         body: JSON.stringify({
           idMensaje: 'MSG-' + Date.now(),
@@ -155,7 +155,7 @@ function Dashboard() {
         })
       });
 
-      await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/citas', {
+      await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/citas`, {
         method: 'POST',
         body: JSON.stringify({
           idCita: 'CIT-' + Date.now(),

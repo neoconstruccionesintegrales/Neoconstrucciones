@@ -59,7 +59,7 @@ function Simulador() {
   useEffect(() => {
     const obtenerServicios = async () => {
       try {
-        const respuesta = await fetch('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/servicios');
+        const respuesta = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/servicios`);
         const resultado = await respuesta.json();
         const datosServicios = resultado.data || (Array.isArray(resultado) ? resultado : []);
 

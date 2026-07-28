@@ -51,14 +51,14 @@ function RegistroLaboral({ emailUsuario }) {
     useEffect(() => {
         const emailAUsar = emailUsuario || localStorage.getItem('email');
         const cargarDatos = async () => {
-            if (!emailAUsar) return;
-            try {
-                const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/usuario/' + emailAUsar);
-                if (res.status === 401) {
-                    alert('Sesion expirada. Inicie sesion nuevamente.');
-                    window.location.href = '/login';
-                    return;
-                }
+    if (!emailAUsar) return;
+    try {
+        const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuario/${emailAUsar}`);
+        if (res.status === 401) {
+            alert('Sesion expirada. Inicie sesion nuevamente.');
+            window.location.href = '/login';
+            return;
+        }
                 const data = await res.json();
                 if (data.success) {
                     setRegistro(prev => ({ ...prev, ...data.data }));
@@ -74,15 +74,15 @@ function RegistroLaboral({ emailUsuario }) {
         const datosAEnviar = { ...registro, rol: localStorage.getItem('rol') };
         const email = registro.email || emailUsuario || localStorage.getItem('email');
         try {
-            const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/usuario/' + email, {
-                method: 'PUT',
-                body: JSON.stringify(datosAEnviar)
-            });
-            if (res.status === 401) {
-                alert('Sesion expirada. Inicie sesion nuevamente.');
-                window.location.href = '/login';
-                return;
-            }
+    const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuario/${email}`, {
+        method: 'PUT',
+        body: JSON.stringify(datosAEnviar)
+    });
+    if (res.status === 401) {
+        alert('Sesion expirada. Inicie sesion nuevamente.');
+        window.location.href = '/login';
+        return;
+    }
             const data = await res.json();
             if (data.success) {
                 alert('Registro laboral actualizado correctamente!');

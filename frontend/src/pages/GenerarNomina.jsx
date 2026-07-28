@@ -45,7 +45,7 @@ function GenerarNomina() {
 
   const cargarEmpleados = async () => {
     try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/usuarios');
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuarios`);
       const data = await res.json();
       if (data.success) setEmpleados(data.data);
     } catch (err) { console.error(err); }
@@ -53,7 +53,7 @@ function GenerarNomina() {
 
   const cargarNominasExistentes = async () => {
     try {
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina?anio=${form.anio}`);
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina?anio=${form.anio}`);
       const data = await res.json();
       if (data.success) setNominasExistentes(data.data);
     } catch (err) { console.error(err); }
@@ -115,8 +115,8 @@ function GenerarNomina() {
     }
     setCargando(true);
     setMensaje('');
-    try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/calcular', {
+   try {
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina/calcular`, {
         method: 'POST',
         body: JSON.stringify(form)
       });
@@ -138,7 +138,7 @@ function GenerarNomina() {
     if (!resultado) return;
     if (!window.confirm('¿Aprobar esta nómina? No podrá modificarse después.')) return;
     try {
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/${resultado.idNomina}/aprobar`, { method: 'PUT' });
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina/${resultado.idNomina}/aprobar`, { method: 'PUT' });
       const data = await res.json();
       if (data.success) {
         setMensaje('✅ Nómina aprobada');
@@ -155,7 +155,7 @@ function GenerarNomina() {
   const marcarPagada = async (idNomina) => {
     if (!window.confirm('¿Marcar esta nómina como pagada?')) return;
     try {
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/${idNomina}/pagar`, { method: 'PUT' });
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina/${idNomina}/pagar`, { method: 'PUT' });
       const data = await res.json();
       if (data.success) {
         setMensaje('✅ Nómina marcada como pagada');

@@ -40,7 +40,7 @@ function Nomina() {
       // Empleados activos
       let activos = 0;
       try {
-        const resEmp = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/usuarios');
+        const resEmp = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuarios`);
         const textEmp = await resEmp.text();
         let dataEmp;
         try {
@@ -61,7 +61,7 @@ function Nomina() {
       let totalPendienteDescuentos = 0;
       if (esGerente || esContador) {
         try {
-          const resDesc = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/descuentos?estado=activo');
+          const resDesc = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/descuentos?estado=activo`);
           const textDesc = await resDesc.text();
           let dataDesc;
           try {
@@ -82,7 +82,7 @@ function Nomina() {
       // Nóminas recientes
       let nominas = [];
       try {
-        const resNom = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina?anio=2026');
+        const resNom = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina?anio=2026`);
         const textNom = await resNom.text();
         let dataNom;
         try {
@@ -102,7 +102,7 @@ function Nomina() {
       let extrasPend = 0;
       if (esGerente) {
         try {
-          const resExt = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/asistencia/proyecto/all');
+          const resExt = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/asistencia/proyecto/all`);
           const textExt = await resExt.text();
           let dataExt;
           try {

@@ -35,31 +35,30 @@ const GestionCotizaciones = () => {
     }, []);
 
     const cargarDatos = useCallback(async function () {
-        setCargando(true);
-        try {
-            const resCotizaciones = await axios.get('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/cotizaciones');
-            const resClientes = await axios.get('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/clientes');
+    setCargando(true);
+    try {
+        const resCotizaciones = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cotizaciones`);
+        const resClientes = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/clientes`);
+        let cotizacionesData = Array.isArray(resCotizaciones.data)
+            ? resCotizaciones.data
+            : (resCotizaciones.data.data || []);
 
-            let cotizacionesData = Array.isArray(resCotizaciones.data)
-                ? resCotizaciones.data
-                : (resCotizaciones.data.data || []);
+        cotizacionesData = cotizacionesData.filter(function (c) {
+            return c.esCotizacionAdicional !== true && c.esAdicional !== true;
+        });
 
-            cotizacionesData = cotizacionesData.filter(function (c) {
-                return c.esCotizacionAdicional !== true && c.esAdicional !== true;
-            });
-
-            console.log('Cotizaciones cargadas:', cotizacionesData.length, 'Estados:', cotizacionesData.map(c => c.estado_general));
-            setCotizaciones(cotizacionesData);
-            setClientes(Array.isArray(resClientes.data) ? resClientes.data : (resClientes.data.data || []));
-        } catch (error) {
-            console.error('Error cargando datos:', error);
-            if (error.response && error.response.status === 401) {
-                window.location.href = '/login';
-            }
-        } finally {
-            setCargando(false);
+        console.log('Cotizaciones cargadas:', cotizacionesData.length, 'Estados:', cotizacionesData.map(c => c.estado_general));
+        setCotizaciones(cotizacionesData);
+        setClientes(Array.isArray(resClientes.data) ? resClientes.data : (resClientes.data.data || []));
+    } catch (error) {
+        console.error('Error cargando datos:', error);
+        if (error.response && error.response.status === 401) {
+            window.location.href = '/login';
         }
-    }, []);
+    } finally {
+        setCargando(false);
+    }
+}, []);
 
     // ============================================================
     // OBTENER INFO CLIENTE
@@ -135,11 +134,11 @@ const GestionCotizaciones = () => {
         }
 
         try {
-            const res = await axios.put('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/cotizaciones/' + cotizacion.idCotizacion + '/aprobar', {
-                estado_general: 'Aprobada',
-                metodoPago: metodoPago,
-                tipoPago: tipoPago
-            });
+            const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cotizaciones/${cotizacion.idCotizacion}/aprobar`, {
+            estado_general: 'Aprobada',
+            metodoPago: metodoPago,
+            tipoPago: tipoPago
+        });
 
             if (res.data.success) {
                 let mensaje = 'Cotizacion aprobada exitosamente.';
@@ -180,7 +179,7 @@ const GestionCotizaciones = () => {
             return;
         }
         try {
-            const res = await axios.put('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/cotizaciones/' + idCotizacion + '/rechazar');
+            const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cotizaciones/${idCotizacion}/rechazar`);
             if (res.data.success) {
                 alert('Cotizacion rechazada y archivada correctamente.');
                 cargarDatos();

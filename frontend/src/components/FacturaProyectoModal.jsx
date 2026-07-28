@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { generarPDFFactura } from '../utils/generarPDFFacturas';
 
-const `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ = process.env.REACT_APP_`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ || '${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api`;
 
 const METODOS_PAGO = [
   'Transferencia Bancaria',
@@ -89,8 +89,8 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
   // ========== FUNCIONES AUXILIARES  ==========
   const cargarServicios = async () => {
     try {
-      const res = await axios.get(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/servicios`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/servicios`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setServiciosDisponibles(res.data?.data || []);
     } catch (error) {
@@ -438,7 +438,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
     try {
       // MODO HITO - Generar factura desde hito
       if (modoHito && hitoSeleccionado) {
-        const url = `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyecto.idProyecto}/facturas/hito/${hitoSeleccionado.idHito}`;
+      const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}/facturas/hito/${hitoSeleccionado.idHito}`;
         const payload = {
           metodoPago,
           notas: notas || `Factura de ${hitoSeleccionado.nombre}`
@@ -458,7 +458,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
         setGuardando(false);
         return;
       }
-        const url = `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyecto.idProyecto}/facturas/saldo`;
+      const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}/facturas/saldo`;
         const payload = {
           metodoPago,
           items: items.map(({ id, ...rest }) => rest),
@@ -481,8 +481,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
       // COTIZACIÓN ADICIONAL
       else if (cotizacionAdicionalData && facturaExistente?.idCotizacionAdicional) {
         const idCotizacion = facturaExistente.idCotizacionAdicional;
-        const url = `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyecto.idProyecto}/cotizaciones-adicionales/${idCotizacion}/siguiente-factura`;
-
+        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}/cotizaciones-adicionales/${idCotizacion}/siguiente-factura`;
         const payload = {
           metodoPago: metodoPago || 'Transferencia Bancaria',
           porcentaje: porcentajeManual,
@@ -497,7 +496,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
       }
       // EDICIÓN
       else if (esEdicion && facturaExistente?.idFactura) {
-        const url = `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/facturas/${facturaExistente.idFactura}`;
+       const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/facturas/${facturaExistente.idFactura}`;
         const payload = {
           metodoPago,
           items: items.map(({ id, ...rest }) => rest),
@@ -514,7 +513,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
       }
       // NUEVA FACTURA NORMAL
       else {
-        const url = `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyecto.idProyecto}/facturas`;
+        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}/facturas`;
         const payload = {
           metodoPago,
           items: items.map(({ id, ...rest }) => rest),

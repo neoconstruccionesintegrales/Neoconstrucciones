@@ -50,7 +50,7 @@ function GestionDescuentos() {
       if (filtros.tipo) query.append('tipo', filtros.tipo);
       if (filtros.estado) query.append('estado', filtros.estado);
 
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/descuentos?${query}`);
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/descuentos?${query}`);
       const data = await res.json();
       if (data.success) setDescuentos(data.data?.descuentos || []);
     } catch (err) {
@@ -61,7 +61,7 @@ function GestionDescuentos() {
 
   const cargarEmpleados = async () => {
     try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/usuarios');
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuarios`);
       const data = await res.json();
       if (data.success) setEmpleados(data.data.filter(u => u.estadoLaboral === 'activo'));
     } catch (err) {
@@ -84,7 +84,7 @@ function GestionDescuentos() {
   const guardarDescuento = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/descuentos', {
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/descuentos`, {
         method: 'POST',
         body: JSON.stringify({
           ...form,
@@ -109,7 +109,7 @@ function GestionDescuentos() {
 
   const cambiarEstado = async (id, nuevoEstado) => {
     try {
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/descuentos/${id}/estado`, {
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/descuentos/${id}/estado`, {
         method: 'PATCH',
         body: JSON.stringify({ estado: nuevoEstado })
       });
@@ -126,7 +126,7 @@ function GestionDescuentos() {
   const cancelarDescuento = async (id) => {
     if (!window.confirm('¿Cancelar este descuento?')) return;
     try {
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/descuentos/${id}/cancelar`, { method: 'PATCH' });
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/descuentos/${id}/cancelar`, { method: 'PATCH' });
       const data = await res.json();
       if (data.success) {
         setMensaje('✅ Descuento cancelado');

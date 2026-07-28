@@ -12,7 +12,7 @@ axios.interceptors.request.use(function (config) {
     return config;
 });
 
-const `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ = '${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api';
+const API_URL = '${API_URL}/api';
 
 const EditarCotizacion = () => {
     const { id } = useParams();
@@ -48,7 +48,7 @@ const EditarCotizacion = () => {
     var cargarDatos = useCallback(async function () {
         setCargando(true);
         try {
-            var resCot = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ + '/cotizaciones/' + id);
+            var resCot = await axios.get(API_URL + '/cotizaciones/' + id);
             var dataCot = resCot.data;
             var cotData = dataCot.data || dataCot;
 
@@ -67,7 +67,7 @@ const EditarCotizacion = () => {
                 setSedeInfo(cotData.sedeDetalle);
             }
 
-            var resServ = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ + '/servicios');
+            var resServ = await axios.get(API_URL + '/servicios');
             setServicios(resServ.data.data || []);
 
         } catch (error) {
@@ -188,7 +188,7 @@ const EditarCotizacion = () => {
                 payload.tipoPago = cotizacion.tipoPago;
             }
 
-            var res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ + '/cotizaciones/' + id + endpoint, payload);
+            var res = await axios.put(API_URL + '/cotizaciones/' + id + endpoint, payload);
 
             if (res.data.success) {
                 var mensaje = estado === 'Aprobada' && res.data.proyecto
@@ -294,14 +294,14 @@ const EditarCotizacion = () => {
                     fechaVencimiento: cotizacionOriginal.fechaVencimiento
                 };
 
-                var res = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ + '/cotizaciones', payloadVersion);
+                var res = await axios.post(API_URL + '/cotizaciones', payloadVersion);
                 if (res.data.success || res.data.data) {
                     var nuevaVersion = res.data.data.idCotizacion;
                     alert('Nueva version creada: ' + nuevaVersion + '\nLa version anterior ha quedado como Superada.');
                     navigate('/gestion-cotizaciones');
                 }
             } else if (cambioEnEstado || cambioEnNotas) {
-                var resEstado = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ + '/cotizaciones/' + id + '/estado', {
+                var resEstado = await axios.put(API_URL + '/cotizaciones/' + id + '/estado', {
                     estado_general: estadoSeleccionado,
                     notasLegales: notasLegales
                 });

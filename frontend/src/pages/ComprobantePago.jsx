@@ -50,19 +50,17 @@ function ComprobantePago() {
 
   const cargarEmpleados = useCallback(async () => {
     try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/usuarios');
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuarios`);
       const data = await res.json();
       if (data.success) setEmpleados(data.data);
     } catch (err) { console.error(err); }
   }, []);
-
   const cargarNominas = useCallback(async () => {
     setCargando(true);
     setMensaje('');
     try {
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina?anio=${anio}`);
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina?anio=${anio}`);
       const data = await res.json();
-
       if (!res.ok) {
         setMensaje(`❌ Error del servidor: ${data.message || 'No se pudieron cargar las nóminas'}`);
         setNominas([]);
@@ -114,7 +112,7 @@ function ComprobantePago() {
     setCargando(true);
     setMensaje('');
     try {
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/${nominaSeleccionada}`);
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina/${nominaSeleccionada}`);
       const data = await res.json();
       if (data.success) {
         if (!esAdmin) {

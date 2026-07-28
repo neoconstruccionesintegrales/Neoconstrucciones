@@ -31,8 +31,8 @@ function ConsignacionCesantias() {
     e.preventDefault();
     setCargando(true);
     setMensaje('');
-    try {
-      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/cesantias-fondo', {
+   try {
+      const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina/cesantias-fondo`, {
         method: 'POST',
         body: JSON.stringify({ anio })
       });

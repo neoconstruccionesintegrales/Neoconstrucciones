@@ -39,7 +39,7 @@ function LiquidacionesHistorial() {
     setCargando(true);
     setErrorModal('');
     try {
-      let url = '${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/liquidaciones';
+      let url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina/liquidaciones`;
       if (filtroAnio) url += `?anio=${filtroAnio}`;
       const res = await fetchConAuth(url);
       const data = await res.json();
@@ -62,7 +62,7 @@ function LiquidacionesHistorial() {
   const verDetalle = async (id) => {
     setErrorModal('');
     try {
-      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/liquidaciones/${id}`);
+    const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nomina/liquidaciones/${id}`);
       const data = await res.json();
       if (data.success) {
         setLiquidacionSeleccionada(data.data);
