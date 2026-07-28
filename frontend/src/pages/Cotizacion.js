@@ -44,8 +44,8 @@ function Cotizaciones() {
                 fechaVencimiento.setDate(fechaVencimiento.getDate() + 15);
                 const fechaFormateada = fechaVencimiento.toISOString().split('T')[0];
 
-                const resClientes = await axios.get('${API_URL}/api/clientes');
-                const resServicios = await axios.get('${API_URL}/api/servicios');
+                const resClientes = await axios.get('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/clientes');
+                const resServicios = await axios.get('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/servicios');
 
                 const clientesUnicos = Array.from(new Map(resClientes.data.data.map(function (c) {
                     return [c.idCliente, c];
@@ -240,7 +240,7 @@ function Cotizaciones() {
         console.log("Enviando payload al servidor:", payload);
 
         try {
-            const res = await axios.post('${API_URL}/api/cotizaciones', payload);
+            const res = await axios.post('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/cotizaciones', payload);
             const idGenerado = res.data.data.idCotizacion;
             alert(`¡Cotización guardada exitosamente!\nID generado: ${idGenerado}`);
             window.location.reload();

@@ -7,7 +7,7 @@ function ListaCotizaciones() {
   useEffect(() => {
     const cargarCotizaciones = async () => {
       try {
-        const res = await axios.get('${API_URL}/api/cotizaciones');
+        const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/cotizaciones`);
         setCotizaciones(res.data.data);
       } catch (e) {
         console.error("Error al cargar listado", e);
@@ -58,16 +58,14 @@ function ListaCotizaciones() {
               </td>
               <td>
                 {/* Botón deshabilitado si el estado es Superada */}
-                <button onClick={() => 
-                /* tu funcion de edicion */}
+              <button onClick={() => { }}
                 disabled={c.estado_general === 'Superada'}
                 style={{
-                ...{ padding: '5px 10px' }, // tus estilos actuales
-                opacity: c.estado_general === 'Superada' ? 0.5 : 1, // Atenúa el color si está bloqueado
-                cursor: c.estado_general === 'Superada' ? 'not-allowed' : 'pointer' // Cambia el cursor
-                }}
-                >
-               {c.estado_general === 'Superada' ? 'Bloqueado' : 'Editar / Gestionar'}
+                padding: '5px 10px',
+                opacity: c.estado_general === 'Superada' ? 0.5 : 1,
+                cursor: c.estado_general === 'Superada' ? 'not-allowed' : 'pointer'
+                }}>
+                {c.estado_general === 'Superada' ? 'Bloqueado' : 'Editar / Gestionar'}
               </button>
               </td>
             </tr>

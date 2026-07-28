@@ -63,7 +63,7 @@ function Liquidacion() {
   }, [fechaFinal]);
 
   const cargarEmpleados = async () => {
-    const res = await fetchConAuth('${API_URL}/api/usuarios');
+    const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/usuarios');
     const data = await res.json();
     if (data.success) setEmpleados(data.data.filter(u => u.estadoLaboral === 'activo'));
   };
@@ -72,7 +72,7 @@ function Liquidacion() {
     if (!emailSel || !fechaSel) return;
     setVerificandoInasistencias(true);
     try {
-      const res = await fetchConAuth(`${API_URL}/api/nomina/verificar-inasistencias?email=${emailSel}&fechaFinal=${fechaSel}`);
+      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/verificar-inasistencias?email=${emailSel}&fechaFinal=${fechaSel}`);
       const data = await res.json();
       if (data.success) {
         setInasistenciasCalculado(data.inasistencias);
@@ -93,7 +93,7 @@ function Liquidacion() {
   const verificarVacaciones = async (emailSel, fechaSel) => {
     if (!emailSel || !fechaSel) return;
     try {
-      const res = await fetchConAuth(`${API_URL}/api/nomina/verificar-vacaciones?email=${emailSel}&fechaFinal=${fechaSel}`);
+      const res = await fetchConAuth(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/verificar-vacaciones?email=${emailSel}&fechaFinal=${fechaSel}`);
       const data = await res.json();
       if (data.success) {
         setVacacionesCalculado(data.vacacionesTomadas);
@@ -149,7 +149,7 @@ function Liquidacion() {
         vacacionesTomadas: diasVacacionesTomadas
       };
 
-      const res = await fetchConAuth('${API_URL}/api/nomina/liquidar', {
+      const res = await fetchConAuth('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/nomina/liquidar', {
         method: 'POST',
         body: JSON.stringify(payload)
       });

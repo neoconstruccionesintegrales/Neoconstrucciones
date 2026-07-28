@@ -41,8 +41,8 @@ function Inicio() {
 
   // Cargar servicios
   useEffect(() => {
-    const API_URL = process.env.REACT_APP_API_URL || '${API_URL}';
-    fetch(`${API_URL}/api/servicios`)
+    const `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ = process.env.REACT_APP_`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ || '${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}';
+    fetch(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/servicios`)
       .then(res => res.json())
       .then(data => {
         let lista = [];

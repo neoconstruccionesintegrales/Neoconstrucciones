@@ -37,8 +37,8 @@ const GestionCotizaciones = () => {
     const cargarDatos = useCallback(async function () {
         setCargando(true);
         try {
-            const resCotizaciones = await axios.get('${API_URL}/api/cotizaciones');
-            const resClientes = await axios.get('${API_URL}/api/clientes');
+            const resCotizaciones = await axios.get('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/cotizaciones');
+            const resClientes = await axios.get('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/clientes');
 
             let cotizacionesData = Array.isArray(resCotizaciones.data)
                 ? resCotizaciones.data
@@ -135,7 +135,7 @@ const GestionCotizaciones = () => {
         }
 
         try {
-            const res = await axios.put('${API_URL}/api/cotizaciones/' + cotizacion.idCotizacion + '/aprobar', {
+            const res = await axios.put('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/cotizaciones/' + cotizacion.idCotizacion + '/aprobar', {
                 estado_general: 'Aprobada',
                 metodoPago: metodoPago,
                 tipoPago: tipoPago
@@ -180,7 +180,7 @@ const GestionCotizaciones = () => {
             return;
         }
         try {
-            const res = await axios.put('${API_URL}/api/cotizaciones/' + idCotizacion + '/rechazar');
+            const res = await axios.put('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/cotizaciones/' + idCotizacion + '/rechazar');
             if (res.data.success) {
                 alert('Cotizacion rechazada y archivada correctamente.');
                 cargarDatos();

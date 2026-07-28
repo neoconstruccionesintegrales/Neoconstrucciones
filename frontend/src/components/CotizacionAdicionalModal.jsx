@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || '${API_URL}/api';
+const `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ = process.env.REACT_APP_`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/ || '${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api';
 
 export default function CotizacionAdicionalModal({ proyecto, clientes, cotizacionExistente, onClose, onSuccess }) {
   // ========== ESTADOS ==========
@@ -80,7 +80,7 @@ export default function CotizacionAdicionalModal({ proyecto, clientes, cotizacio
     const cargarServicios = async () => {
       setLoadingServicios(true);
         try {
-          const res = await axios.get(`${API_URL}/servicios`, {
+          const res = await axios.get(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/servicios`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
           setServiciosDisponibles(res.data?.data || []);
@@ -178,14 +178,14 @@ export default function CotizacionAdicionalModal({ proyecto, clientes, cotizacio
             };
 
             const res = await axios.put(
-              `${API_URL}/cotizaciones/${cotizacionExistente.idCotizacion}`,
+              `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/cotizaciones/${cotizacionExistente.idCotizacion}`,
                payloadUpdate
             );
 
             if (res.data.esVersion) {
               // Se creo nueva version, actualizar referencia en proyecto
               await axios.put(
-                `${API_URL}/proyectos/${proyecto.idProyecto}/cotizaciones-adicionales/${cotizacionExistente.idCotizacion}`,
+                `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyecto.idProyecto}/cotizaciones-adicionales/${cotizacionExistente.idCotizacion}`,
                 {
                   idCotizacionNueva: res.data.data.idCotizacion,
                   valor: total,
@@ -223,7 +223,7 @@ export default function CotizacionAdicionalModal({ proyecto, clientes, cotizacio
             esCotizacionAdicional: true
           };
 
-          const res = await axios.post(`${API_URL}/cotizaciones`, payloadCotizacion);
+          const res = await axios.post(`${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/cotizaciones`, payloadCotizacion);
           const idGenerado = res.data.data.idCotizacion;
 
           // Vincular al proyecto
@@ -238,7 +238,7 @@ export default function CotizacionAdicionalModal({ proyecto, clientes, cotizacio
           };
 
           await axios.post(
-            `${API_URL}/proyectos/${proyecto.idProyecto}/cotizaciones-adicionales`,
+            `${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/proyectos/${proyecto.idProyecto}/cotizaciones-adicionales`,
             payloadProyecto,
             { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
           );

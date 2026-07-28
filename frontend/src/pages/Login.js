@@ -11,7 +11,7 @@ function Login({ setIsAuth }) {
     setError('');
 
     try {
-      const response = await fetch('${API_URL}/api/login', {
+      const response = await fetch('${`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/}/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
