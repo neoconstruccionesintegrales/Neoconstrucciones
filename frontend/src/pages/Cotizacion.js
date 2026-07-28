@@ -1,19 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import '../style/cotizacion.css';
 
-// ============================================================
-// CONFIGURAR AXIOS PARA ENVIAR TOKEN
-// ============================================================
 const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api`;
-
-axios.interceptors.request.use(function (config) {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = 'Bearer ' + token;
-    }
-    return config;
-});
 
 // ============================================================
 // COMPONENTE PRINCIPAL — Cotizaciones

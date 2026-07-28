@@ -1,16 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import '../style/cotizacion.css';
-
-// Configurar AXIOS para enviar token
-axios.interceptors.request.use(function (config) {
-    var token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = 'Bearer ' + token;
-    }
-    return config;
-});
 
 const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api`;
 

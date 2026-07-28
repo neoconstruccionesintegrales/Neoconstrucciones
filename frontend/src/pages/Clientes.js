@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import '../style/clientes.css';
-
-axios.interceptors.request.use(function (config) {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = 'Bearer ' + token;
-    }
-    return config;
-});
 
 function Clientes() {
     const navigate = useNavigate(); // ← AQUÍ se define navigate

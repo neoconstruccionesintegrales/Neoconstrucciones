@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import { generarPDFFactura } from '../utils/generarPDFFacturas';
 import '../style/facturacion.css';
 
 const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api`;
-
-// Configurar AXIOS para enviar token
-axios.interceptors.request.use(function (config) {
-    var token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = 'Bearer ' + token;
-    }
-    return config;
-});
 
 const METODOS_PAGO = [
     'Transferencia Bancaria',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import CotizacionAdicionalModal from '../components/CotizacionAdicionalModal';
 import FacturaProyectoModal from '../components/FacturaProyectoModal';
 import '../style/proyectos.css';

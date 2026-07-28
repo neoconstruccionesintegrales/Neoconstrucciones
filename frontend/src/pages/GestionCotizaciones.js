@@ -1,18 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import '../style/GestionCotizaciones.css';
 
-// ============================================================
-// CONFIGURAR AXIOS PARA ENVIAR TOKEN
-// ============================================================
-axios.interceptors.request.use(function (config) {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = 'Bearer ' + token;
-    }
-    return config;
-});
 
 // ============================================================
 // COMPONENTE PRINCIPAL — GestionCotizaciones
