@@ -4,63 +4,59 @@ import autoTable from 'jspdf-autotable';
 /**
  * Genera un PDF de factura
  * @param {Object} factura - Datos completos de la factura
+ * @param {string} logoBase64 - Logo en base64 (opcional)
  */
-export async function generarPDFFactura(factura) {
+export async function generarPDFFactura(factura, logoBase64 = null) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
 
-  // Colores
-  const colorPrimario = [253, 126, 20]; // Naranja
-  const colorSecundario = [44, 62, 80]; // Gris oscuro
-  const colorExito = [22, 160, 133]; // Verde
+  // Colores Corporativos
+  const colorPrimario = [19, 145, 200];   // Azul claro (#1391c8)
+  const colorSecundario = [0, 119, 177];  // Azul oscuro (#0077b1)
+  const colorTextoGris = [71, 85, 105];   // Gris oscuro
 
-  // ========== ENCABEZADO ==========
+    // ========== ENCABEZADO AZUL ==========
   doc.setFillColor(...colorPrimario);
-  doc.rect(0, 0, pageWidth, 50, 'F');
+  doc.rect(0, 0, pageWidth, 48, 'F');
 
-  // Logo / Titulo
+  // Logo con fondo blanco redondeado (IZQUIERDA - centrado vertical)
+  if (logoBase64) {
+    try {
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(margin - 2, 14, 44, 20, 3, 3, 'F');
+      doc.addImage(logoBase64, 'PNG', margin, 16, 40, 16);
+    } catch (e) {
+      console.warn('No se pudo cargar el logo:', e);
+    }
+  }
+
+  // TÍTULO CENTRO (centrado vertical en la barra azul)
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
+  doc.setFontSize(26);
   doc.setFont('helvetica', 'bold');
-  doc.text('FACTURA', margin, 25);
+  doc.text('FACTURA', pageWidth / 2, 28, { align: 'center' });
 
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Neoconstrucciones Integrales SAS', margin, 35);
-  doc.text('NIT: 901.421.096-1', margin, 42);
-
-  // Info factura (derecha)
+  // INFO FACTURA DERECHA (alineada verticalmente con el logo)
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(`No. ${factura.idFactura || 'PREVIEW'}`, pageWidth - margin, 25, { align: 'right' });
+  doc.text(`No. ${factura.idFactura || 'PREVIEW'}`, pageWidth - margin, 20, { align: 'right' });
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.text(`Emision: ${factura.fechaEmision ? new Date(factura.fechaEmision).toLocaleDateString('es-CO') : new Date().toLocaleDateString('es-CO')}`, pageWidth - margin, 32, { align: 'right' });
-  doc.text(`Vencimiento: ${factura.fechaVencimiento ? new Date(factura.fechaVencimiento).toLocaleDateString('es-CO') : 'N/A'}`, pageWidth - margin, 38, { align: 'right' });
-
-  // Estado
-  const estadoColors = {
-    'Pagada': [39, 174, 96],
-    'Pendiente de Anticipo': [243, 156, 18],
-    'Anticipo ya Pagado': [23, 162, 184],
-    'Pendiente de Saldo': [243, 156, 18],
-    'Pendiente de 2da Etapa': [243, 156, 18],
-    'Anulada': [231, 76, 60],
-    'Vencido': [231, 76, 60]
-  };
-  const estadoColor = estadoColors[factura.estado] || [149, 165, 166];
-  doc.setFillColor(...estadoColor);
-  doc.roundedRect(pageWidth - margin - 60, 42, 60, 12, 3, 3, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.text(factura.estado || 'Pendiente de Anticipo', pageWidth - margin - 30, 50, { align: 'center' });
-
-  doc.setTextColor(...colorSecundario);
+  doc.text(
+    `Emision: ${factura.fechaEmision ? new Date(factura.fechaEmision).toLocaleDateString('es-CO') : new Date().toLocaleDateString('es-CO')}`,
+    pageWidth - margin, 30, { align: 'right' }
+  );
+  doc.text(
+    `Vencimiento: ${factura.fechaVencimiento ? new Date(factura.fechaVencimiento).toLocaleDateString('es-CO') : 'N/A'}`,
+    pageWidth - margin, 38, { align: 'right' }
+  );
+  
+  // ========== DATOS CLIENTE ==========
+  doc.setTextColor(...colorTextoGris);
   doc.setFontSize(10);
 
-  // ========== DATOS CLIENTE ==========
   const nombreEmpresaFinal = factura.nombreEmpresa || 'N/A';
   const nitClienteFinal = factura.nitCliente || 'N/A';
   const nombreSedeFinal = factura.nombreSede || 'N/A';
@@ -68,15 +64,18 @@ export async function generarPDFFactura(factura) {
   const contactoClienteFinal = factura.contactoCliente || 'N/A';
   const correoClienteFinal = factura.correoCliente || 'N/A';
 
+  doc.setTextColor(...colorSecundario);
   doc.setFont('helvetica', 'bold');
   doc.text('FACTURAR A', margin, 62);
+
+  doc.setTextColor(...colorTextoGris);
   doc.setFont('helvetica', 'normal');
   doc.text(nombreEmpresaFinal, margin, 68);
   doc.text(`NIT: ${nitClienteFinal}`, margin, 73);
   doc.text(`Sede: ${nombreSedeFinal}`, margin, 78);
   doc.text(`Direccion: ${direccionSedeFinal}`, margin, 83);
   doc.text(`Celular: ${contactoClienteFinal}`, margin, 88);
-  doc.text(`Correo Electrónico: ${correoClienteFinal}`, margin, 93);
+  doc.text(`Correo Electronico: ${correoClienteFinal}`, margin, 93);
 
   // Linea separadora
   doc.setDrawColor(...colorPrimario);
@@ -84,58 +83,54 @@ export async function generarPDFFactura(factura) {
   doc.line(margin, 98, pageWidth - margin, 98);
 
   // ========== PROYECTO ==========
+  doc.setTextColor(...colorSecundario);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.text('PROYECTO:', margin, 103);
+
+  doc.setTextColor(...colorTextoGris);
   doc.setFont('helvetica', 'normal');
   doc.text(`${factura.nombreProyecto || 'N/A'} (ID: ${factura.idProyecto || 'N/A'})`, margin + 35, 103);
   doc.text(`Metodo de Pago: ${factura.metodoPago || 'Transferencia Bancaria'}`, margin, 108);
 
-  // ========== NOTA ACLARATORIA (si es anticipo o saldo) ==========
+  // ========== NOTA ACLARATORIA ==========
   let notaY = 113;
   if (factura.anticipoPorcentaje > 0 && factura.anticipoPorcentaje < 100) {
-    doc.setFillColor(255, 243, 205);
-    doc.setDrawColor(255, 193, 7);
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(...colorPrimario);
+    doc.setLineWidth(0.8);
     doc.rect(margin, notaY, pageWidth - margin * 2, 12, 'FD');
-    doc.setTextColor(133, 100, 4);
+
+    doc.setTextColor(...colorTextoGris);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.text(`NOTA: Esta factura corresponde al anticipo del ${factura.anticipoPorcentaje}% del proyecto.`, margin + 3, notaY + 7);
-    doc.setTextColor(...colorSecundario);
     notaY += 16;
   } else if (factura.saldoPorcentaje > 0 && factura.saldoPorcentaje < 100) {
-    doc.setFillColor(255, 243, 205);
-    doc.setDrawColor(255, 193, 7);
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(...colorPrimario);
+    doc.setLineWidth(0.8);
     doc.rect(margin, notaY, pageWidth - margin * 2, 12, 'FD');
-    doc.setTextColor(133, 100, 4);
+
+    doc.setTextColor(...colorTextoGris);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.text(`NOTA: Esta factura corresponde al saldo del proyecto.`, margin + 3, notaY + 7);
-    doc.setTextColor(...colorSecundario);
     notaY += 16;
   }
-
-  // Detectar tipo de factura
-  const esAnticipo = factura.anticipoPorcentaje > 0 && factura.anticipoPorcentaje < 100;
-  const esFacturaHito = factura.anticipoPorcentaje === 0 && factura.saldoPorcentaje === 0 && factura.idHito;
-  const esSaldo = factura.saldoPorcentaje > 0 && factura.anticipoPorcentaje === 0;
 
   // ========== TABLA DE ITEMS ==========
   const itemsData = (factura.items || []).map(item => {
     const cantidadMostrar = item.cantidad || 1;
     const subtotalMostrar = item.subtotal || 0;
     const precioMostrar = item.precioUnitario || 0;
-    let descripcionMostrar = item.descripcion || item.nombreServicio || '-';
     const nombreMostrar = item.nombreServicio || 'Servicio';
+    let descripcionMostrar = item.descripcion || item.nombreServicio || '-';
 
-       if (esAnticipo) {
+    if (factura.anticipoPorcentaje > 0 && factura.anticipoPorcentaje < 100) {
       descripcionMostrar = `${item.descripcion || item.nombreServicio || 'Servicio'} (Anticipo ${factura.anticipoPorcentaje}%)`;
-    }
-    else if (esSaldo) {
-        descripcionMostrar = `${item.descripcion || item.nombreServicio || 'Servicio'} (Saldo ${factura.saldoPorcentaje}%)`;
-    } else if (esFacturaHito) {
-        // El backend debe guardar el nombre del hito en item.descripcion
-        descripcionMostrar = item.descripcion || item.nombreServicio || 'Servicio';
+    } else if (factura.saldoPorcentaje > 0 && factura.anticipoPorcentaje === 0) {
+      descripcionMostrar = `${item.descripcion || item.nombreServicio || 'Servicio'} (Saldo ${factura.saldoPorcentaje}%)`;
     }
 
     return [
@@ -148,7 +143,7 @@ export async function generarPDFFactura(factura) {
     ];
   });
 
-  if (esAnticipo && itemsData.length === 0) {
+  if (factura.anticipoPorcentaje > 0 && factura.anticipoPorcentaje < 100 && itemsData.length === 0) {
     itemsData.push([
       'Anticipo de proyecto',
       `Pago inicial del ${factura.anticipoPorcentaje}% del proyecto`,
@@ -170,7 +165,10 @@ export async function generarPDFFactura(factura) {
       fontSize: 9,
       fontStyle: 'bold'
     },
-    bodyStyles: { fontSize: 8 },
+    bodyStyles: {
+      fontSize: 8,
+      textColor: colorTextoGris
+    },
     columnStyles: {
       0: { cellWidth: 'auto' },
       1: { cellWidth: 'auto' },
@@ -185,7 +183,6 @@ export async function generarPDFFactura(factura) {
   // ========== TOTALES ==========
   const finalY = doc.lastAutoTable?.finalY + 10 || 160;
 
-  // Box de totales
   const totalesX = pageWidth - margin - 100;
   const boxAltura = 48;
   doc.setFillColor(248, 249, 250);
@@ -195,7 +192,7 @@ export async function generarPDFFactura(factura) {
   doc.rect(totalesX, finalY, 100, boxAltura);
 
   doc.setFontSize(9);
-  doc.setTextColor(...colorSecundario);
+  doc.setTextColor(...colorTextoGris);
 
   const totales = [
     ['Subtotal:', `$${Number(factura.subtotal || 0).toLocaleString('es-CO')}`],
@@ -212,11 +209,10 @@ export async function generarPDFFactura(factura) {
     yPos += 8;
   });
 
-  // TOTAL A PAGAR destacado (antes decia NETO A COBRAR)
-  // CORRECCION: Se usa totalConIva porque la retencion es informativa, no un descuento.
+  // TOTAL A PAGAR destacado
   const totalPagar = Number(factura.totalConIva || 0);
   const netoY = finalY + boxAltura - 14;
-  doc.setFillColor(...colorExito);
+  doc.setFillColor(...colorSecundario);
   doc.rect(totalesX, netoY, 100, 14, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(10);
@@ -226,26 +222,26 @@ export async function generarPDFFactura(factura) {
 
   // ========== NOTAS Y CONDICIONES ==========
   const notasY = finalY;
-  doc.setTextColor(...colorSecundario);
-  doc.setFontSize(8);
 
-  // Nota informativa de retencion
-  doc.setFillColor(255, 248, 220);
-  doc.setDrawColor(255, 193, 7);
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(...colorPrimario);
+  doc.setLineWidth(0.8);
   doc.rect(margin, notasY, totalesX - margin - 10, 20, 'FD');
-  doc.setTextColor(133, 100, 4);
+
+  doc.setTextColor(...colorTextoGris);
   doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
   doc.text('NOTA INFORMATIVA:', margin + 3, notasY + 6);
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   const retencionTexto = `Esta factura esta sujeta a retencion en la fuente del ${factura.retencionPorcentaje || 2}% ($${Number(factura.retencion || 0).toLocaleString('es-CO')}). La retencion es de caracter informativo; el valor a pagar es el Total con IVA.`;
   const retencionSplit = doc.splitTextToSize(retencionTexto, totalesX - margin - 16);
   doc.text(retencionSplit, margin + 3, notasY + 11);
 
-  // Notas adicionales del usuario
+  // Notas adicionales
   let notaExtraY = notasY + 25;
   if (factura.notas) {
-    doc.setTextColor(...colorSecundario);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.text('Notas:', margin, notaExtraY);
@@ -272,7 +268,7 @@ export async function generarPDFFactura(factura) {
     doc.text(notasAdSplit, margin, notaExtraY + 5);
   }
 
-  // ========== CONDICIONES DEL PROYECTO (si aplica) ==========
+  // ========== CONDICIONES DEL PROYECTO ==========
   if (factura.presupuestoTotalProyecto && factura.anticipoPorcentaje > 0 && factura.anticipoPorcentaje < 100) {
     const condY = notaExtraY + 20;
     doc.setDrawColor(...colorPrimario);
@@ -281,10 +277,10 @@ export async function generarPDFFactura(factura) {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
-    doc.setTextColor(...colorPrimario);
+    doc.setTextColor(...colorSecundario);
     doc.text('RESUMEN DEL PROYECTO', margin, condY);
 
-    doc.setTextColor(...colorSecundario);
+    doc.setTextColor(...colorTextoGris);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
 
@@ -309,7 +305,7 @@ export async function generarPDFFactura(factura) {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.text('Neoconstrucciones Integrales SAS - NIT: 901.421.096-1', pageWidth / 2, pageHeight - 12, { align: 'center' });
-  doc.text('Calle 11c No.80B-70 - Celular: 3017223223 - Correo electrónico: neoconstruccionesintegrales@gmail.com', pageWidth / 2, pageHeight - 6, { align: 'center' });
+  doc.text('Calle 11c No.80B-70 - Celular: 3017223223 - Correo electronico: neoconstruccionesintegrales@gmail.com', pageWidth / 2, pageHeight - 6, { align: 'center' });
 
   // Guardar
   doc.save(`Factura-${factura.idFactura || 'preview'}.pdf`);

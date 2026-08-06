@@ -25,7 +25,6 @@ import GestionNovedades from './pages/GestionNovedades';
 import GenerarNomina from './pages/GenerarNomina';
 import ComprobantePago from './pages/ComprobantePago';
 import Liquidacion from './pages/Liquidacion';
-import LiquidacionesHistorial from './pages/LiquidacionesHistorial';
 import Proyectos from './pages/Proyectos';
 import Facturas from './pages/Facturas';
 import RegistroLaboral from './components/RegistroLaboral.jsx';
@@ -181,15 +180,7 @@ function App() {
               <AdminHeader /><Liquidacion />
             </RoleRoute></PrivateRoute>
           } />
-
-          {/* Liquidación - Solo Admin/Gerente */}
-          <Route path="/liquidaciones-historial" element={
-            <PrivateRoute><RoleRoute allowedRoles={['admin', 'gerente']}>
-              <AdminHeader /><LiquidacionesHistorial/>
-            </RoleRoute></PrivateRoute>
-          } />
-          
-
+   
           {/* Rutas existentes */}
           <Route path="/admin-servicios" element={
             <PrivateRoute><AdminHeader /><Servicios /></PrivateRoute>

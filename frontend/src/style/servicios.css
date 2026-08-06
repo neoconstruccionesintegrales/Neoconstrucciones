@@ -439,26 +439,23 @@
   font-family: var(--font-base);
 }
 
-.admin-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
+/* SOLO en facturas.css y servicios.css — quitar sticky de thead */
+.admin-table thead,
 .admin-table thead tr {
   background-color: var(--azul-claro);
+  position: static;   /* ← thead y tr NUNCA deben ser sticky */
 }
 
 .admin-table th {
-  background-color: var(--azul-claro);
-  color: var(--blanco);
   padding: 14px 12px;
   text-align: left;
   font-weight: 700;
-  font-size: clamp(0.75rem, 1vw, 0.85rem);
+  font-size: clamp(0.7rem, 1vw, 0.8125rem);
   white-space: nowrap;
+  background-color: var(--azul-claro);
+  color: var(--blanco);
   border-bottom: 2px solid var(--azul-oscuro);
-  position: sticky;
+  position: sticky;   /* ← sticky SOLO en las celdas th */
   top: 0;
   z-index: 10;
   text-transform: uppercase;

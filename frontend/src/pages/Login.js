@@ -68,7 +68,7 @@ function Login({ setIsAuth }) {
         </form>
 
         <div className="login-help">
-          <p><strong>Acceso Seguro:</strong> Gestión de base de datos Atlas</p>
+          <p><strong>Acceso Seguro:</strong> Gestión de base de datos </p>
         </div>
       </div>
     </div>

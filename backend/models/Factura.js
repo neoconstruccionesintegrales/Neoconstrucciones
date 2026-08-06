@@ -129,10 +129,10 @@ const FacturaSchema = new mongoose.Schema({
   // FLAGS
   // ============================================================
   esFacturaAdicional: { type: Boolean, default: false },
+  esIndependiente: { type: Boolean, default: false }, // <-- NUEVO
   idCotizacionAdicional: { type: String, default: null },
   activaProyecto: { type: Boolean, default: true },
   hitosCubiertos: [{ type: String, default: null }],
-  // Metadata
   creadoPor: { type: String, default: 'Sistema' }
 }, { timestamps: true });
 

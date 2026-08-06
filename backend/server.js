@@ -15,6 +15,7 @@ const Cita = require('./models/cita');
 const Usuario = require('./models/usuario');
 const Clientes = require('./models/clientes');
 const Proyecto = require('./models/Proyecto');
+const Factura = require('./models/Factura'); // <-- IMPORTANTE: Importar Factura
 
 // Rutas modulares
 const authRoutes = require('./routes/authRoutes');
@@ -37,7 +38,7 @@ const app = express();
 
 // Middlewares base
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Middleware de auditoria
 app.use((req, res, next) => {
@@ -47,7 +48,7 @@ app.use((req, res, next) => {
 });
 
 // ==========================================================================
-// RUTAS MODULARES
+// RUTAS MODULARES (SOLO UNA VEZ CADA RUTA)
 // ==========================================================================
 app.use('/api/login', authRoutes);
 app.use('/api/servicios', servicioRoutes);
@@ -58,12 +59,11 @@ app.use('/api/usuario', usuarioRoutes);
 app.use('/api/clientes', clienteRoutes);
 app.use('/api/proyectos', authMiddleware, proyectoRoutes);
 app.use('/api/cotizaciones', authMiddleware, cotizacionRoutes);
-app.use('/api/facturas', authMiddleware, facturaRoutes);
-// RUTAS DE NÓMINA 
+app.use('/api/facturas', authMiddleware, facturaRoutes); // <-- SOLO UNA VEZ, CON AUTH
 app.use('/api/nomina', authMiddleware, nominaRoutes);
 app.use('/api/asistencia', authMiddleware, registroTiempoRoutes);
 app.use('/api/novedades', authMiddleware, novedadRoutes);
-app.use('/api/descuentos', descuentoRoutes);
+app.use('/api/descuentos', descuentoRoutes); // <-- Esta ruta no tiene auth, ¿está bien?
 
 // ==========================================================================
 // CONEXION A MONGODB ATLAS
@@ -74,16 +74,12 @@ mongoose.connect(process.env.MONGO_URI)
 
 // ==========================================================================
 // VIGILANTE DE COTIZACIONES (Cron Job - cada dia a medianoche)
-// Reglas:
-// - Cotizaciones Pendientes se vuelven Caducadas despues de 15 dias
-// - Por cada versionamiento previo, se suman 3 dias adicionales
 // ==========================================================================
 cron.schedule('0 0 * * *', async () => {
     console.log('--- Iniciando barrido diario de cotizaciones ---');
     try {
         const hoy = new Date();
 
-        // Buscar cotizaciones Pendientes que hayan vencido
         const cotizacionesVencidas = await Cotizacion.find({
             estado_general: 'Pendiente',
             fechaVencimiento: { $lt: hoy }
@@ -92,11 +88,8 @@ cron.schedule('0 0 * * *', async () => {
         let modificadas = 0;
 
         for (const cot of cotizacionesVencidas) {
-            // Calcular dias de validez segun version
             const vId = cot.version_id || 1;
             const diasValidez = 15 + ((vId - 1) * 3);
-
-            // Verificar si realmente ha pasado el tiempo
             const fechaCreacion = cot.fechaVersion || cot.createdAt || cot.fecha;
             const fechaLimite = new Date(fechaCreacion);
             fechaLimite.setDate(fechaLimite.getDate() + diasValidez);

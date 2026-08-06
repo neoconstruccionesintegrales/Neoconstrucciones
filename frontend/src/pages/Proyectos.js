@@ -286,7 +286,6 @@ ${facturasPagadas.join('\n')}`);
           />
           <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
             <option value="Todos">Todos los estados</option>
-            <option value="Creado">Creado</option>
             <option value="En Espera de Anticipo">En Espera de Anticipo</option>
             <option value="Iniciado">Iniciado</option>
             <option value="En Ejecucion">En Ejecucion</option>

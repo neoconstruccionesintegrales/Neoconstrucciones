@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { generarPDFCotizacion } from '../utils/generarPDFCotizacion'; 
+import { toBase64 } from '../utils/toBase64';
+import logo from '../imagenes/logo.png';
 import axios from '../utils/axiosConfig';
 import '../style/cotizacion.css';
 
@@ -26,6 +29,7 @@ const EditarCotizacion = () => {
     const [mostrarDialogoEstado, setMostrarDialogoEstado] = useState(false);
     const [mensajeDialogo, setMensajeDialogo] = useState('');
     const [estadoPendiente, setEstadoPendiente] = useState('');
+    const [generandoPDF, setGenerandoPDF] = useState(false);
 
     // Detectar cambios
     useEffect(function () {
@@ -327,110 +331,58 @@ const EditarCotizacion = () => {
         setEstadoSeleccionado(cotizacionOriginal.estado_general);
     };
 
-    // ============================================
-    // DESCARGAR PDF
-    // ============================================
-    var handleDescargarPDF = function () {
+    // ============================================================
+    // DESCARGAR PDF (jsPDF)
+    // ============================================================
+     const descargarPDFCotizacion = async () => {
         if (!cotizacion) return;
+        
+        setGenerandoPDF(true);
 
-        var datosCliente = cliente || {};
-        var datosSede = sedeInfo || {};
+        // Declaramos las variables afuera para que estén disponibles en el catch
+        let datosCotizacion = {};
+        let datosCliente = {};
 
-        var contenidoHTML = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <title>Cotizacion ${cotizacion.idCotizacion}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
-                    .header { border-bottom: 3px solid #2c3e50; padding-bottom: 20px; margin-bottom: 30px; }
-                    .header h1 { color: #2c3e50; margin: 0; }
-                    .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; }
-                    .info-box { width: 48%; padding: 15px; background: #f8f9fa; border-radius: 8px; }
-                    .info-box h3 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; }
-                    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #dee2e6; }
-                    .info-label { font-weight: bold; color: #495057; }
-                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                    th { background: #2c3e50; color: white; padding: 12px; text-align: left; }
-                    td { padding: 10px; border-bottom: 1px solid #dee2e6; }
-                    tr:nth-child(even) { background: #f8f9fa; }
-                    .totals { margin-top: 30px; text-align: right; }
-                    .totals div { padding: 8px 0; }
-                    .total-final { font-size: 1.5em; font-weight: bold; color: #2c3e50; margin-top: 10px; padding-top: 10px; border-top: 3px solid #2c3e50; }
-                    .notas { margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 0.9em; }
-                    .footer { margin-top: 40px; text-align: center; font-size: 0.8em; color: #6c757d; border-top: 1px solid #dee2e6; padding-top: 20px; }
-                    .estado-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1>COTIZACION</h1>
-                    <p><strong>ID:</strong> ${cotizacion.idCotizacion} | <strong>Version:</strong> ${cotizacion.version_id || 1} | <strong>Fecha:</strong> ${new Date(cotizacion.fecha || cotizacion.createdAt).toLocaleDateString()}</p>
-                    <p><strong>Estado:</strong> <span class="estado-badge" style="background: ${estadoSeleccionado === 'Pendiente' ? '#f39c12' : estadoSeleccionado === 'Aprobada' ? '#27ae60' : estadoSeleccionado === 'Rechazada' ? '#e74c3c' : '#95a5a6'};">${estadoSeleccionado}</span></p>
-                </div>
+        try {
+            // 1. Obtener el logo en Base64
+            const logoBase64 = await toBase64(logo);
 
-                <div class="info-section">
-                    <div class="info-box">
-                        <h3>DATOS DEL CLIENTE</h3>
-                        <div class="info-row"><span class="info-label">Empresa:</span><span>${datosCliente.nombreEmp || datosSede.empresa || cotizacion.nombreEmp || 'N/A'}</span></div>
-                        <div class="info-row"><span class="info-label">Sede:</span><span>${datosSede.sede || datosSede.nombreSede || 'Principal'}</span></div>
-                        <div class="info-row"><span class="info-label">NIT:</span><span>${datosSede.nit || datosCliente.nit || 'N/A'}</span></div>
-                        <div class="info-row"><span class="info-label">Direccion:</span><span>${datosSede.direccion || datosCliente.direccion || 'N/A'}</span></div>
-                        <div class="info-row"><span class="info-label">Contacto:</span><span>${datosSede.contacto || datosCliente.telefono || datosCliente.celular || 'N/A'}</span></div>
-                        <div class="info-row"><span class="info-label">Correo electrónico:</span><span>${datosSede.correo || datosCliente.correo || 'N/A'}</span></div>
-                    </div>
-                    <div class="info-box">
-                        <h3>INFORMACION DE LA COTIZACION</h3>
-                        <div class="info-row"><span class="info-label">ID Cotizacion:</span><span>${cotizacion.idCotizacion}</span></div>
-                        <div class="info-row"><span class="info-label">Version:</span><span>${cotizacion.version_id || 1}</span></div>
-                        <div class="info-row"><span class="info-label">Fecha Emision:</span><span>${new Date(cotizacion.fecha || cotizacion.createdAt).toLocaleDateString()}</span></div>
-                        <div class="info-row"><span class="info-label">Valido Hasta:</span><span>${cotizacion.fechaVencimiento ? new Date(cotizacion.fechaVencimiento).toLocaleDateString() : 'N/A'}</span></div>
-                        <div class="info-row"><span class="info-label">Estado:</span><span>${estadoSeleccionado}</span></div>
-                    </div>
-                </div>
+            // 2. Construir el objeto de datos para la cotización
+            datosCliente = {
+                nombreEmp: cliente?.nombreEmp || 'N/A',
+                nit: cliente?.nit || 'N/A',
+                nombreSede: sedeInfo?.sede || sedeInfo?.nombreSede || 'Principal',
+                direccion: sedeInfo?.direccion || cliente?.direccion || 'N/A',
+                contacto: sedeInfo?.contacto || cliente?.telefono || cliente?.celular || 'N/A',
+                correo: sedeInfo?.correo || cliente?.correo || 'N/A'
+            };
 
-                <h3>SERVICIOS COTIZADOS</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Servicio</th>
-                            <th>Precio Unit.</th>
-                            <th>Cantidad</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${items.map(function(item) {
-                            return '<tr><td>' + (item.nombreServicio || 'N/A') + '</td><td>$' + (Number(item.precioUnitario) || 0).toLocaleString() + '</td><td>' + (item.cantidad || 1) + '</td><td>$' + (Number(item.subtotal) || 0).toLocaleString() + '</td></tr>';
-                        }).join('')}
-                    </tbody>
-                </table>
+            // 3. Construir el objeto de cotizacion
+            datosCotizacion = {
+                idCotizacion: cotizacion.idCotizacion,
+                estado_general: estadoSeleccionado || cotizacion.estado_general,
+                fechaEmision: cotizacion.fecha || cotizacion.createdAt,
+                fechaVencimiento: cotizacion.fechaVencimiento,
+                metodoPago: cotizacion.metodoPago,
+                notasLegales: notasLegales
+            };
 
-                <div class="totals">
-                    <div><strong>Subtotal:</strong> $${subtotalGeneral.toLocaleString()}</div>
-                    <div><strong>IVA (19%):</strong> $${iva.toLocaleString()}</div>
-                    <div><strong>Anticipo Requerido (40%):</strong> $${anticipo.toLocaleString()}</div>
-                    <div class="total-final"><strong>TOTAL:</strong> $${totalGeneral.toLocaleString()}</div>
-                </div>
+            // 4. Generar el PDF pasándole todo
+            await generarPDFCotizacion(datosCotizacion, datosCliente, items, logoBase64);
 
-                ${notasLegales ? '<div class="notas"><h3>Notas Legales</h3><p>' + notasLegales.replace(/\n/g, '<br>') + '</p></div>' : ''}
-
-                <div class="footer">
-                    <p>Esta cotizacion tiene una validez de ${15 + ((cotizacion.version_id || 1) - 1) * 3} dias a partir de la fecha de emision.</p>
-                    <p>Documento generado el ${new Date().toLocaleDateString()}</p>
-                </div>
-            </body>
-            </html>
-        `;
-
-        var ventana = window.open('', '_blank');
-        ventana.document.write(contenidoHTML);
-        ventana.document.close();
-        ventana.focus();
-        setTimeout(function () { ventana.print(); }, 500);
+        } catch (e) {
+            alert('Error generando PDF: ' + e.message);
+            console.error(e);
+            // Fallback: Si falla el logo o algo más, intenta generar sin el logo
+            try {
+                await generarPDFCotizacion(datosCotizacion, datosCliente, items, null);
+            } catch (fallbackError) {
+                console.error("Error incluso en el fallback:", fallbackError);
+            }
+        } finally {
+            setGenerandoPDF(false);
+        }
     };
-
     // ============================================
     // RENDER
     // ============================================
@@ -480,7 +432,12 @@ const EditarCotizacion = () => {
         };
     }
 
-    var esSoloLectura = cotizacionOriginal.estado_general === 'Superada' || cotizacionOriginal.estado_general === 'Caducada';
+      // Esto es lo ÚNICO que cambias:
+    var esSoloLectura = cotizacionOriginal.estado_general === 'Superada' || 
+                         cotizacionOriginal.estado_general === 'Caducada' || 
+                         cotizacionOriginal.estado_general === 'Rechazada';
+
+    // Esto lo dejas exactamente igual que antes:
     var estadoClass = estadoSeleccionado === 'Pendiente' ? 'estado-pendiente' :
                       estadoSeleccionado === 'Aprobada' ? 'estado-aprobada' :
                       estadoSeleccionado === 'Rechazada' ? 'estado-rechazada' :
@@ -503,7 +460,7 @@ const EditarCotizacion = () => {
                     </h2>
                     <div className="editor-header-actions">
                         <button className="btn-volver" onClick={function () { navigate('/gestion-cotizaciones'); }}>
-                            Volver
+                            ← Volver
                         </button>
                     </div>
                 </div>
@@ -518,7 +475,7 @@ const EditarCotizacion = () => {
                                 {cotizacionOriginal.estado_general} (Solo lectura)
                             </span>
                         ) : (
-                            <div className="form-group" className="mb-0">
+                            <div className="form-group mb-0">
                                 <select
                                     value={estadoSeleccionado}
                                     onChange={function (e) { handleCambioEstado(e.target.value); }}
@@ -532,9 +489,13 @@ const EditarCotizacion = () => {
                         <span className="estado-vencimiento">
                             Vencimiento: {cotizacion.fechaVencimiento ? new Date(cotizacion.fechaVencimiento).toLocaleDateString() : 'N/A'}
                         </span>
-                        <button className="btn-pdf" onClick={handleDescargarPDF}>
-                            Descargar PDF
-                        </button>
+                     <button 
+    className="btn-pdf" 
+    onClick={descargarPDFCotizacion} 
+    disabled={generandoPDF} // Desactiva el botón mientras se genera
+>
+    {generandoPDF ? '⏳ Generando...' : '📄 Descargar PDF'}
+</button>
                     </div>
                 </div>
 

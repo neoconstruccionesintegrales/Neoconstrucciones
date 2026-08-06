@@ -114,7 +114,11 @@ exports.saveCotizacion = async (req, res) => {
       console.log(`Version anterior ${idAnterior} marcada como Superada.`);
     }
 
-    res.status(201).json({ message: "Guardado exitosamente", data: nuevaCotizacion });
+    // ✅ FIX: Convertir a objeto plano antes de enviar
+    res.status(201).json({ 
+      message: "Guardado exitosamente", 
+      data: nuevaCotizacion.toObject() 
+    });
 
   } catch (error) {
     console.error("--- ERROR EN SAVECOTIZACION ---", error);
@@ -134,9 +138,11 @@ exports.saveCotizacion = async (req, res) => {
 
 exports.getAllCotizaciones = async (req, res) => {
   try {
+    // ✅ FIX: Usar .lean() para evitar instancias de Mongoose
     const cotizaciones = await Cotizacion.find({
       esCotizacionAdicional: { $ne: true }
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 }).lean();
+
     res.json({ success: true, data: cotizaciones });
   } catch (error) {
     res.status(500).json({ success: false, error: "Error al obtener", details: error.message });
@@ -198,21 +204,23 @@ exports.getCotizacionById = async (req, res) => {
   }
 };
 
+/// ==============================================================
+// 4. ACTUALIZAR ESTADO DE COTIZACION (CORREGIDO Y SEGURO)
 // ==============================================================
-// 4. ACTUALIZAR ESTADO DE COTIZACION // Si es cotizacion adicional, NUNCA crear proyecto
-// ==============================================================
-
 exports.updateEstadoCotizacion = async (req, res) => {
   try {
     const { id } = req.params;
     const { estado_general } = req.body;
 
+    console.log(`--- ACTUALIZANDO ESTADO COTIZACION ---`);
+    console.log(`ID: ${id}`);
+    console.log(`Estado solicitado: ${estado_general}`);
+
     if (!estado_general) {
       return res.status(400).json({ error: "El campo estado_general es obligatorio" });
     }
 
-    const esObjectId = mongoose.Types.ObjectId.isValid(id);
-    const filtro = esObjectId
+    const filtro = mongoose.Types.ObjectId.isValid(id)
       ? { $or: [{ _id: id }, { idCotizacion: id }] }
       : { idCotizacion: id };
 
@@ -232,22 +240,13 @@ exports.updateEstadoCotizacion = async (req, res) => {
 
     let proyectoCreado = null;
     let facturaAnticipo = null;
-
-    //Si es cotizacion adicional -> NO crear proyecto
     const esCotizacionAdicional = cotizacion.esCotizacionAdicional === true;
 
     if (estado_general === 'Aprobada' && cotizacion.estado_general !== 'Aprobada' && !esCotizacionAdicional) {
-      // Validar que no exista proyecto previo
-      const proyectoExistente = await Proyecto.findOne({ idCotizacion: cotizacion.idCotizacion });
-      if (proyectoExistente) {
-        return res.status(400).json({
-          error: "Ya existe un proyecto para esta cotizacion",
-          proyectoId: proyectoExistente.idProyecto
-        });
-      }
 
-      const metodoPago = req.body.metodoPago || 'Transferencia Bancaria';
-      const tipoPago = req.body.tipoPago || 'anticipo_final';
+      // ✅ CORRECCION DE SEGURIDAD: Validación explícita de strings
+      const metodoPago = (typeof req.body.metodoPago === 'string') ? req.body.metodoPago : 'Transferencia Bancaria';
+      const tipoPago = (typeof req.body.tipoPago === 'string') ? req.body.tipoPago : 'anticipo_final';
 
       const metodosValidos = ['Transferencia Bancaria', 'Efectivo', 'Cheque Corporativo', 'Pasarela de pago Online', 'Tarjeta de credito/debito'];
       if (!metodosValidos.includes(metodoPago)) {
@@ -259,12 +258,13 @@ exports.updateEstadoCotizacion = async (req, res) => {
         return res.status(400).json({ error: "Tipo de pago no valido", tiposPermitidos: tiposValidos });
       }
 
-      // Buscar cliente y sede
+      // 3. Buscar cliente y datos de la sede
       const cliente = await Cliente.findOne({ idCliente: cotizacion.idCliente });
       let sedeData = null;
       if (cliente && cliente.sedes && cotizacion.idSede) {
         sedeData = cliente.sedes.find(s => s.id === cotizacion.idSede);
       }
+
       const esSedePrincipal = !cotizacion.idSede || String(cotizacion.idSede).includes('PRINCIPAL');
 
       let nombreSede = 'Principal';
@@ -283,18 +283,11 @@ exports.updateEstadoCotizacion = async (req, res) => {
         nombreSede = sedeData.nombreSede || 'Sede sin nombre';
         direccionSede = sedeData.direccion || '';
         nitCliente = cliente?.nit || ''; 
-        // nitCliente = sedeData.nitEncargado || cliente?.nit || '';
         contactoCliente = sedeData.celular || cliente?.telefono || cliente?.celular || '';
         correoCliente = sedeData.correoEnc || cliente?.correo || '';
-      } else {
-        nombreSede = 'Principal';
-        direccionSede = cliente ? cliente.direccion : '';
-        nitCliente = cliente ? cliente.nit : '';
-        contactoCliente = cliente ? (cliente.telefono || cliente.celular) : '';
-        correoCliente = cliente ? cliente.correo : '';
       }
 
-      // Generar IDs
+      // 4. Generar IDs
       const countProyectos = await Proyecto.countDocuments();
       const consecutivoProyecto = (countProyectos + 1).toString().padStart(3, '0');
       const idProyecto = `PRY-${consecutivoProyecto}`;
@@ -304,37 +297,27 @@ exports.updateEstadoCotizacion = async (req, res) => {
 
       const totalProyecto = cotizacion.total || 0;         
       const montoAnticipo = tipoPago === 'unico' 
-      ? totalProyecto
-      : (cotizacion.anticipo || (totalProyecto * 0.40) || 0);
+        ? totalProyecto
+        : (cotizacion.anticipo || (totalProyecto * 0.40) || 0);
 
-      // const subtotalProyecto = cotizacion.subtotal || 0;
-      // Calcular subtotal SIN IVA para la factura de anticipo
-      // Para que: subtotal * 1.19 = montoAnticipo
       const subtotalFactura = Math.round(montoAnticipo / 1.19);
       const ivaFactura = Math.round(subtotalFactura * 0.19);
-      const totalConIvaFactura = subtotalFactura + ivaFactura;  // Debe ser ≈ montoAnticipo
-      
 
-            // Items para factura - AJUSTADOS para que sumen exactamente = subtotalFactura
-      // El factor se calcula según cuánto representa esta factura del subtotal total
-            // Items para factura - AJUSTADOS para que sumen exactamente = subtotalFactura
       const pctAnticipo = tipoPago === 'unico' ? 100 : 40;
-      
-      // Calcular factor basado en el subtotal de los items originales (no en cotizacion.subtotal)
+
       const sumaSubtotalesOriginales = (cotizacion.items || []).reduce((acc, item) => {
         return acc + (item.subtotal || (item.cantidad * (item.precioUnitario || item.valorUnitario || 0)) || 0);
       }, 0);
-      const subtotalBase = sumaSubtotalesOriginales || subtotalFactura; // fallback
+      const subtotalBase = sumaSubtotalesOriginales || subtotalFactura;
       const factorAjuste = subtotalFactura / subtotalBase;
 
       let itemsFactura = (cotizacion.items || []).map(item => {
         const cantidadOriginal = item.cantidad || 1;
         const subtotalOriginal = item.subtotal || (cantidadOriginal * (item.precioUnitario || item.valorUnitario || 0)) || 0;
-        
-        // Ajustar proporcionalmente
+
         const subtotalAjustado = Math.round(subtotalOriginal * factorAjuste);
         const cantidadAjustada = Math.max(1, Math.round(cantidadOriginal * factorAjuste));
-        
+
         return {
           idServicio: item.idServicio || '',
           nombreServicio: item.nombreServicio || item.descripcion || 'Servicio',
@@ -345,7 +328,6 @@ exports.updateEstadoCotizacion = async (req, res) => {
         };
       });
 
-      // Ajustar el último ítem para que la suma EXACTA sea subtotalFactura
       const sumaItems = itemsFactura.reduce((acc, item) => acc + item.subtotal, 0);
       if (itemsFactura.length > 0 && sumaItems !== subtotalFactura) {
         const diferencia = subtotalFactura - sumaItems;
@@ -356,7 +338,6 @@ exports.updateEstadoCotizacion = async (req, res) => {
           : lastItem.subtotal;
       }
 
-      // Si no hay items, crear uno conceptual
       if (itemsFactura.length === 0) {
         itemsFactura.push({
           idServicio: tipoPago === 'unico' ? 'PAGO_UNICO' : 'ANTICIPO',
@@ -372,7 +353,7 @@ exports.updateEstadoCotizacion = async (req, res) => {
         });
       }
 
-      // Crear factura con datos completos del emisor
+      // 5. Crear factura
       const facturaData = {
         idFactura: idFactura,
         idProyecto: idProyecto,
@@ -398,7 +379,7 @@ exports.updateEstadoCotizacion = async (req, res) => {
         subtotal: subtotalFactura,  
         anticipoRequerido: montoAnticipo,  
         anticipoPorcentaje: tipoPago === 'unico' ? 100 : 40,
-        saldoRestante: totalProyecto - montoAnticipo,  // $951.405
+        saldoRestante: totalProyecto - montoAnticipo,
         saldoPorcentaje: tipoPago === 'unico' ? 0 : 60,
         ivaPorcentaje: 19,
         retencionPorcentaje: 2,
@@ -415,11 +396,11 @@ exports.updateEstadoCotizacion = async (req, res) => {
       await nuevaFactura.save();
       facturaAnticipo = nuevaFactura;
 
-      // Generar hitos según tipo de pago seleccionado
+      // 6. Generar hitos
       const { generarHitosPorTipo } = require('../utils/hitosHelper');
       const hitos = generarHitosPorTipo(tipoPago, totalProyecto, idFactura);
 
-      // Crear proyecto
+      // 7. Crear proyecto
       const nuevoProyecto = new Proyecto({
         idProyecto: idProyecto,
         idCotizacion: cotizacion.idCotizacion,
@@ -462,11 +443,10 @@ exports.updateEstadoCotizacion = async (req, res) => {
       console.log('Proyecto creado:', nuevoProyecto.idProyecto);
 
     } else if (estado_general === 'Aprobada' && esCotizacionAdicional) {
-      // Si es cotizacion adicional y se aprueba: NO crear proyecto, SOLO actualizar estado
       console.log(`Cotizacion adicional ${cotizacion.idCotizacion} aprobada. NO se crea proyecto.`);
     }
 
-    // Guardar referencias en la cotizacion
+    // 8. Guardar referencias y actualizar cotizacion
     cotizacion.estado_general = estado_general;
     if (proyectoCreado) {
       cotizacion.idProyecto = proyectoCreado.idProyecto;
@@ -477,24 +457,28 @@ exports.updateEstadoCotizacion = async (req, res) => {
     cotizacion.proyectoActivo = false;
     await cotizacion.save();
 
-    res.json({
+    // 9. ✅ FIX COMPLETO: Convertir todo a objetos planos con .toObject()
+    const respuestaSegura = {
       success: true,
       message: facturaAnticipo
         ? "Cotizacion aprobada, proyecto y factura de anticipo creados exitosamente"
         : (esCotizacionAdicional && estado_general === 'Aprobada'
           ? "Cotizacion adicional aprobada exitosamente (sin crear proyecto)"
           : `Cotizacion actualizada a estado: ${estado_general}`),
-      data: cotizacion,
+      data: cotizacion.toObject(),
       idProyecto: proyectoCreado ? proyectoCreado.idProyecto : null,
       idFactura: facturaAnticipo ? facturaAnticipo.idFactura : null,
-      proyecto: proyectoCreado,
-      factura: facturaAnticipo,
+      proyecto: proyectoCreado ? proyectoCreado.toObject() : null,
+      factura: facturaAnticipo ? facturaAnticipo.toObject() : null,
       esCotizacionAdicional: esCotizacionAdicional
-    });
+    };
+
+    console.log("✅ Respuesta enviada al Frontend sin errores circulares.");
+    return res.json(respuestaSegura);
 
   } catch (error) {
     console.error("--- ERROR EN UPDATEESTADOCOTIZACION ---", error);
-    res.status(500).json({ error: "Error al actualizar estado", details: error.message });
+    return res.status(500).json({ error: "Error al actualizar estado", details: error.message });
   }
 };
 
@@ -559,7 +543,7 @@ exports.updateCotizacion = async (req, res) => {
       const nuevaVersionId = count + 1;
       const nuevoIdCotizacion = `${idBase}-V${nuevaVersionId}`;
 
-    
+
       // Guardar snapshot de la version anterior en historial
       const snapshotVersionAnterior = {
         version_id: cotizacionOriginal.version_id,
@@ -612,10 +596,11 @@ exports.updateCotizacion = async (req, res) => {
       cotizacionOriginal.estado_general = 'Superada';
       await cotizacionOriginal.save();
 
+      // ✅ FIX: Convertir a objeto plano antes de enviar
       return res.json({
         success: true,
         message: `Nueva version creada: ${nuevoIdCotizacion}. Version anterior marcada como Superada.`,
-        data: nuevaCotizacion,
+        data: nuevaCotizacion.toObject(),
         esVersion: true,
         versionAnterior: cotizacionOriginal.idCotizacion
       });
@@ -642,10 +627,12 @@ exports.updateCotizacion = async (req, res) => {
     });
 
     await cotizacionOriginal.save();
+
+    // ✅ FIX: Convertir a objeto plano antes de enviar
     res.json({
       success: true,
       message: "Cotizacion actualizada correctamente",
-      data: cotizacionOriginal,
+      data: cotizacionOriginal.toObject(),
       esVersion: false
     });
 
@@ -677,10 +664,12 @@ exports.rechazarCotizacion = async (req, res) => {
     }
     cotizacion.estado_general = 'Rechazada';
     await cotizacion.save();
+
+    // ✅ FIX: Convertir a objeto plano antes de enviar
     res.json({
       success: true,
       message: "Cotizacion rechazada y archivada correctamente",
-      data: cotizacion
+      data: cotizacion.toObject()
     });
   } catch (error) {
     console.error("--- ERROR EN RECHAZARCOTIZACION ---", error);

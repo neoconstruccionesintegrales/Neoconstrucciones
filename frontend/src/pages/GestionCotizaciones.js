@@ -20,35 +20,35 @@ const GestionCotizaciones = () => {
     // ============================================================
     // CARGAR DATOS
     // ============================================================
-    useEffect(function () {
-        cargarDatos();
+    const cargarDatos = useCallback(async function () {
+        setCargando(true);
+        try {
+            const resCotizaciones = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cotizaciones`);
+            const resClientes = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/clientes`);
+            let cotizacionesData = Array.isArray(resCotizaciones.data)
+                ? resCotizaciones.data
+                : (resCotizaciones.data.data || []);
+
+            cotizacionesData = cotizacionesData.filter(function (c) {
+                return c.esCotizacionAdicional !== true && c.esAdicional !== true;
+            });
+
+            console.log('Cotizaciones cargadas:', cotizacionesData.length, 'Estados:', cotizacionesData.map(c => c.estado_general));
+            setCotizaciones(cotizacionesData);
+            setClientes(Array.isArray(resClientes.data) ? resClientes.data : (resClientes.data.data || []));
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+            if (error.response && error.response.status === 401) {
+                window.location.href = '/login';
+            }
+        } finally {
+            setCargando(false);
+        }
     }, []);
 
-    const cargarDatos = useCallback(async function () {
-    setCargando(true);
-    try {
-        const resCotizaciones = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cotizaciones`);
-        const resClientes = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/clientes`);
-        let cotizacionesData = Array.isArray(resCotizaciones.data)
-            ? resCotizaciones.data
-            : (resCotizaciones.data.data || []);
-
-        cotizacionesData = cotizacionesData.filter(function (c) {
-            return c.esCotizacionAdicional !== true && c.esAdicional !== true;
-        });
-
-        console.log('Cotizaciones cargadas:', cotizacionesData.length, 'Estados:', cotizacionesData.map(c => c.estado_general));
-        setCotizaciones(cotizacionesData);
-        setClientes(Array.isArray(resClientes.data) ? resClientes.data : (resClientes.data.data || []));
-    } catch (error) {
-        console.error('Error cargando datos:', error);
-        if (error.response && error.response.status === 401) {
-            window.location.href = '/login';
-        }
-    } finally {
-        setCargando(false);
-    }
-}, []);
+    useEffect(function () {
+        cargarDatos();
+    }, [cargarDatos]); // ✅ Ahora tiene la dependencia correcta
 
     // ============================================================
     // OBTENER INFO CLIENTE
@@ -125,18 +125,18 @@ const GestionCotizaciones = () => {
 
         try {
             const res = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cotizaciones/${cotizacion.idCotizacion}/aprobar`, {
-            estado_general: 'Aprobada',
-            metodoPago: metodoPago,
-            tipoPago: tipoPago
-        });
+                estado_general: 'Aprobada',
+                metodoPago: metodoPago,
+                tipoPago: tipoPago
+            });
 
             if (res.data.success) {
                 let mensaje = 'Cotizacion aprobada exitosamente.';
                 if (res.data.proyecto) {
-                    mensaje += 'Proyecto: ' + res.data.proyecto.idProyecto;
+                    mensaje += ' Proyecto: ' + res.data.proyecto.idProyecto;
                 }
                 if (res.data.factura) {
-                    mensaje += 'Factura: ' + res.data.factura.idFactura;
+                    mensaje += ' Factura: ' + res.data.factura.idFactura;
                 }
                 if (res.data.esCotizacionAdicional) {
                     mensaje += '(Nota: Cotizacion adicional - No se creo proyecto)';
@@ -225,6 +225,7 @@ const GestionCotizaciones = () => {
                     <p className="dba-subtitle">
                         Neoconstrucciones S.A.S — <strong>Rol: {userRol.toUpperCase()}</strong>
                     </p>
+                    <p>Total: <strong>{cotizaciones.length}</strong> | Mostrando: <strong>{cotizacionesFiltradas.length}</strong></p>
                 </div>
 
                 {/* HEADER ACCIONES */}
@@ -348,7 +349,7 @@ const GestionCotizaciones = () => {
                                                 <td data-label="Acciones" className="text-center">
                                                     <div className="acciones-flex">
                                                         {/* Editar */}
-                                                        {c.estado_general !== 'Superada' && c.estado_general !== 'Aprobada' && (
+                                                        {c.estado_general !== 'Superada' && c.estado_general !== 'Aprobada' && c.estado_general !== 'Rechazada' && (
                                                             <button
                                                                 onClick={function () { navigate('/editar-cotizacion/' + c.idCotizacion); }}
                                                                 className="btn-editar"
@@ -359,7 +360,7 @@ const GestionCotizaciones = () => {
                                                         )}
 
                                                         {/* Ver */}
-                                                        {c.estado_general === 'Superada' && (
+                                                        {(c.estado_general === 'Superada' || c.estado_general === 'Rechazada') && (
                                                             <button
                                                                 onClick={function () { navigate('/editar-cotizacion/' + c.idCotizacion); }}
                                                                 className="btn-ver"

@@ -3,18 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import '../style/usuario.css';
 import { esAdmin } from '../utils/utils.js';
 import { getNivelARLByRol, calcularValorHora, debeRecibirAuxilio, calcularAuxilioTransporte } from '../utils/nominaHelpers.js';
+import axios from '../utils/axiosConfig.js'; 
 
 const SMLV = 1750905;
 const AUXILIO_TRANSPORTE = 249095;
 const TOPE_AUXILIO = SMLV * 2;
 
-const fetchConAuth = (url, opciones = {}) => {
-    const token = localStorage.getItem('token');
-    const headers = { 'Content-Type': 'application/json', ...opciones.headers };
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-    return fetch(url, { ...opciones, headers });
-};
-
+// ============================================================
+// OPCIONES 
+// ============================================================
 const OpcionesRol = () => (
     <>
         <option value="">-- Seleccione --</option>
@@ -218,7 +215,7 @@ const CampoPasswordVer = ({ password }) => {
     return (
         <div className="flex items-center gap-2">
             <span className="font-size-13 text-gray">Contrasena:</span>
-            <span className="text-mono font-size-13" className={mostrar ? '' : 'password-dots'}>
+            <span className={`text-mono font-size-13 ${mostrar ? '' : 'password-dots'}`}>
                 {mostrar ? (password || 'N/A') : '••••••••'}
             </span>
             <button onClick={() => setMostrar(!mostrar)} className="btn-icon btn-xs" title={mostrar ? 'Ocultar' : 'Mostrar'}>
@@ -301,7 +298,7 @@ const CampoModal = memo(({ label, initialValue, editKey, type = 'text', options 
 });
 
 // ============================================================
-// MODAL DETALLE - ESTADO PROPIO Y REF COMPARTIDO
+// MODAL DETALLE - CON AXIOS
 // ============================================================
 const ModalDetalle = memo(({ usuario, onClose, onGuardar, calcularNomina, modoEdicionInicial = false }) => {
     const navigate = useNavigate();
@@ -322,100 +319,101 @@ const ModalDetalle = memo(({ usuario, onClose, onGuardar, calcularNomina, modoEd
         setPasswordReseteado(nueva);
         datosEditRef.current.password = nueva;
     }, []);
-const guardar = useCallback(async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
 
-    // 🔍 1. Agrega esto para depurar en la consola del navegador (F12)
-    console.log("DATOS EN REF AL GUARDAR:", datosEditRef.current);
+    const validarCamposModal = useCallback(() => {
+        const datos = datosEditRef.current || {};
+        const errores = [];
+        
+        if (!datos.tipoEmpleado || datos.tipoEmpleado === '') {
+            errores.push('Tipo de Empleado');
+        }
+        if (!datos.tipoContrato || datos.tipoContrato === '') {
+            errores.push('Tipo de Contrato');
+        }
+        if (!datos.tipoDocumento || datos.tipoDocumento === '') {
+            errores.push('Tipo de Documento');
+        }
+        if (datos.nombre && /\d/.test(datos.nombre)) {
+            errores.push('Nombre (no debe contener números)');
+        }
+        if (datos.documento && !/^\d+$/.test(datos.documento)) {
+            errores.push('Documento (solo números)');
+        }
+        if (!datos.datosBancarios?.banco || !datos.datosBancarios?.banco.trim()) {
+            errores.push('Banco');
+        }
+        if (!datos.datosBancarios?.numeroCuenta || !datos.datosBancarios?.numeroCuenta.trim()) {
+            errores.push('Número de Cuenta');
+        }
+        return errores;
+    }, []);
 
-    const datos = datosEditRef.current || {};
+    const guardar = useCallback(async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
 
-    // 2. Validación estricta que contempla undefined, null o cadena vacía:
-    const tipoEmpleado = datos.tipoEmpleado ? String(datos.tipoEmpleado).trim() : '';
-    const tipoContrato = datos.tipoContrato ? String(datos.tipoContrato).trim() : '';
-    const tipoDocumento = datos.tipoDocumento ? String(datos.tipoDocumento).trim() : '';
-
-    if (!tipoEmpleado || tipoEmpleado === '') {
-        alert('❌ Debe seleccionar un Tipo de Empleado.');
-        return; // DETIENE EL FLUJO AQUÍ
-    }
-
-    if (!tipoContrato || tipoContrato === '') {
-        alert('❌ Debe seleccionar un Tipo de Contrato.');
-        return;
-    }
-
-    if (!tipoDocumento || tipoDocumento === '') {
-        alert('❌ Debe seleccionar un Tipo de Documento.');
-        return;
-    }
-
-    // 2. VALIDACIÓN DE SELECTS CON VALOR VACÍO ("")
-    // Al dejar "-- Seleccione --", el valor es "" y causa el error de Mongoose
-    if (!datos.tipoEmpleado || datos.tipoEmpleado === '') {
-        alert('❌ Por favor seleccione un Tipo de Empleado.');
-        return;
-    }
-
-    if (!datos.tipoContrato || datos.tipoContrato === '') {
-        alert('❌ Por favor seleccione un Tipo de Contrato.');
-        return;
-    }
-
-    if (!datos.tipoDocumento || datos.tipoDocumento === '') {
-        alert('❌ Por favor seleccione un Tipo de Documento.');
-        return;
-    }
-
-    // 3. VALIDACIÓN DE DATOS BANCARIOS (Si aplica)
-    if (!datos.datosBancarios?.banco || !datos.datosBancarios?.numeroCuenta?.trim()) {
-        alert('❌ Por favor complete la información bancaria.');
-        return;
-    }
-
-    // 4. VALIDACIONES DE FORMATO
-    if (/\d/.test(datos.nombre)) {
-        alert('❌ El nombre no debe contener números.');
-        return;
-    }
-    if (!/^\d+$/.test(datos.documento)) {
-        alert('❌ El documento solo debe contener números.');
-        return;
-    }
-
-    // -------------------------------------------------------------
-    // SOLO SI PASA TODAS LAS VALIDACIONES, SE EJECUTA EL FETCH
-    // -------------------------------------------------------------
-    const nomina = calcularNomina(datos.sueldo, datos.tipoContrato, datos.tipoSalario);
-    const datosAEnviar = {
-        ...datos,
-        valorHora: nomina.valorHora,
-        recibeAuxilioTransporte: nomina.recibeAuxilio
-    };
-
-    try {
-    const response = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuario/${datos.email}`, {            method: 'PUT',
-            body: JSON.stringify(datosAEnviar)
-        });
-
-        if (response.status === 401) {
-            alert('Sesión expirada.');
-            navigate('/login');
+        const datos = datosEditRef.current || {};
+        const errores = validarCamposModal();
+        
+        if (errores.length > 0) {
+            alert(`❌ Por favor complete/corrija los siguientes campos:\n\n• ${errores.join('\n• ')}`);
             return;
         }
 
-        const result = await response.json();
-        if (result.success) {
-            alert('✅ Actualizado correctamente');
-            onGuardar();
-            onClose();
-        } else {
-            alert('❌ ' + (result.error || 'Error al guardar'));
+        const tipoEmpleado = datos.tipoEmpleado ? String(datos.tipoEmpleado).trim() : '';
+        const tipoContrato = datos.tipoContrato ? String(datos.tipoContrato).trim() : '';
+        const tipoDocumento = datos.tipoDocumento ? String(datos.tipoDocumento).trim() : '';
+
+        if (!tipoEmpleado || tipoEmpleado === '') {
+            alert('❌ Debe seleccionar un Tipo de Empleado.');
+            return;
         }
-    } catch (err) {
-        alert('❌ Error de conexión');
-    }
-}, [calcularNomina, onGuardar, onClose]);
+        if (!tipoContrato || tipoContrato === '') {
+            alert('❌ Debe seleccionar un Tipo de Contrato.');
+            return;
+        }
+        if (!tipoDocumento || tipoDocumento === '') {
+            alert('❌ Debe seleccionar un Tipo de Documento.');
+            return;
+        }
+        if (!datos.datosBancarios?.banco || !datos.datosBancarios?.numeroCuenta?.trim()) {
+            alert('❌ Por favor complete la información bancaria.');
+            return;
+        }
+        if (/\d/.test(datos.nombre)) {
+            alert('❌ El nombre no debe contener números.');
+            return;
+        }
+        if (!/^\d+$/.test(datos.documento)) {
+            alert('❌ El documento solo debe contener números.');
+            return;
+        }
+
+        const nomina = calcularNomina(datos.sueldo, datos.tipoContrato, datos.tipoSalario);
+        const datosAEnviar = {
+            ...datos,
+            valorHora: nomina.valorHora,
+            recibeAuxilioTransporte: nomina.recibeAuxilio
+        };
+
+        try {
+            // ✅ CON AXIOS 
+            const response = await axios.put(`/usuario/${datos.email}`, datosAEnviar);
+            
+            if (response.data.success) {
+                alert('✅ Actualizado correctamente');
+                onGuardar();
+                onClose();
+            } else {
+                alert('❌ ' + (response.data.error || 'Error al guardar'));
+            }
+        } catch (error) {
+            if (error.response?.status === 401) {
+                navigate('/login');
+            } else {
+                alert('❌ Error de conexión: ' + (error.response?.data?.error || error.message));
+            }
+        }
+    }, [validarCamposModal, calcularNomina, onGuardar, onClose, navigate]);
 
     if (!usuario) return null;
     const user = usuario;
@@ -650,7 +648,7 @@ const guardar = useCallback(async (e) => {
 });
 
 // ============================================================
-// GESTION USUARIOS — ESTRUCTURA ALINEADA CON ADMIN.JS
+// GESTION USUARIOS — CON AXIOS
 // ============================================================
 function GestionUsuarios() {
     const navigate = useNavigate();
@@ -671,24 +669,26 @@ function GestionUsuarios() {
     const [modoEdicionInicial, setModoEdicionInicial] = useState(false);
     const [errores, setErrores] = useState({});
 
-    const cargarUsuarios = useCallback(() => {
-        const endpoint = vistaActiva === 'activos'
-    ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuarios/activos`
-    : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuarios/retirados`;
-        fetchConAuth(endpoint)
-            .then(res => {
-                if (res.status === 401) {
-                    alert('Sesion expirada. Inicie sesion nuevamente.');
-                    navigate('/login');
-                    throw new Error('No autorizado');
-                }
-                return res.json();
-            })
-            .then(resJson => {
-                if (resJson.success) setUsuarios(resJson.data);
-            })
-            .catch(err => console.error('Error al cargar:', err));
-    }, [vistaActiva]);
+    // ============================================================
+    // CARGAR USUARIOS CON AXIOS
+    // ============================================================
+    const cargarUsuarios = useCallback(async () => {
+        try {
+            const endpoint = vistaActiva === 'activos' ? '/usuarios/activos' : '/usuarios/retirados';
+            const response = await axios.get(endpoint);
+            if (response.data.success) {
+                setUsuarios(response.data.data);
+            }
+        } catch (error) {
+            if (error.response?.status === 401) {
+                alert('Sesion expirada. Inicie sesion nuevamente.');
+                navigate('/login');
+            } else {
+                console.error('Error al cargar usuarios:', error);
+                alert('Error al cargar usuarios');
+            }
+        }
+    }, [vistaActiva, navigate]);
 
     useEffect(() => {
         if (!esAdmin()) {
@@ -697,7 +697,7 @@ function GestionUsuarios() {
         } else {
             cargarUsuarios();
         }
-    }, [cargarUsuarios]);
+    }, [cargarUsuarios, navigate]);
 
     const calcularNomina = useCallback((sueldo, tipoContrato, tipoSalario) => {
         const sueldoNum = Number(sueldo) || 0;
@@ -709,42 +709,116 @@ function GestionUsuarios() {
         };
     }, []);
 
-    const validarFormulario = useCallback(() => {
-        const errs = {};
-        if (!nuevoUsuario.nombre) errs.nombre = 'Obligatorio';
-        else if (/\d/.test(nuevoUsuario.nombre)) errs.nombre = 'No debe contener números';
-
-        if (!nuevoUsuario.email) errs.email = 'Obligatorio';
-        if (!nuevoUsuario.password) errs.password = 'Obligatorio';
-        if (!nuevoUsuario.documento) errs.documento = 'Obligatorio';
-        else if (!/^\d+$/.test(nuevoUsuario.documento)) errs.documento = 'Solo números permitidos';
-
-        if (!nuevoUsuario.cargo) errs.cargo = 'Obligatorio';
-        if (!nuevoUsuario.sueldo || Number(nuevoUsuario.sueldo) <= 0) errs.sueldo = 'Debe ser mayor a 0';
-        if (!nuevoUsuario.fechaIngreso) errs.fechaIngreso = 'Obligatorio';
-        if (!nuevoUsuario.rol) errs.rol = 'Obligatorio';
-
-        if (!nuevoUsuario.eps) errs.eps = 'Obligatorio';
-        else if (/\d/.test(nuevoUsuario.eps)) errs.eps = 'No debe contener números';
-
-        if (!nuevoUsuario.fondoPension) errs.fondoPension = 'Obligatorio';
-        if (!nuevoUsuario.datosBancarios.banco) errs.banco = 'Obligatorio';
-        if (!nuevoUsuario.datosBancarios.numeroCuenta) errs.numeroCuenta = 'Obligatorio';
-        else if (!/^\d+$/.test(nuevoUsuario.datosBancarios.numeroCuenta)) errs.numeroCuenta = 'Solo números permitidos';
-
-        if (!nuevoUsuario.tipoContrato) errs.tipoContrato = 'Obligatorio';
-
-        if (nuevoUsuario.numeroCuentaFondo && !/^\d+$/.test(nuevoUsuario.numeroCuentaFondo)) {
-            errs.numeroCuentaFondo = 'Solo números permitidos';
-        }
-
-        setErrores(errs);
-        return Object.keys(errs).length === 0;
-    }, [nuevoUsuario]);
-
+    // ============================================================
+    // CREAR USUARIO CON AXIOS
+    // ============================================================
     const manejarCrear = useCallback(async (e) => {
         e.preventDefault();
-        if (!validarFormulario()) return;
+        
+        const camposRequeridos = [];
+        const erroresTemp = {};
+        
+        if (!nuevoUsuario.nombre?.trim()) {
+            camposRequeridos.push('Nombre(s)');
+            erroresTemp.nombre = 'Obligatorio';
+        } else if (/\d/.test(nuevoUsuario.nombre)) {
+            erroresTemp.nombre = 'No debe contener números';
+        }
+        
+        if (!nuevoUsuario.email?.trim()) {
+            camposRequeridos.push('Correo Corporativo');
+            erroresTemp.email = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.password?.trim()) {
+            camposRequeridos.push('Contraseña');
+            erroresTemp.password = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.tipoDocumento?.trim()) {
+            camposRequeridos.push('Tipo Documento');
+            erroresTemp.tipoDocumento = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.documento?.trim()) {
+            camposRequeridos.push('Número Documento');
+            erroresTemp.documento = 'Obligatorio';
+        } else if (!/^\d+$/.test(nuevoUsuario.documento)) {
+            erroresTemp.documento = 'Solo números permitidos';
+        }
+        
+        if (!nuevoUsuario.cargo?.trim()) {
+            camposRequeridos.push('Cargo');
+            erroresTemp.cargo = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.sueldo || Number(nuevoUsuario.sueldo) <= 0) {
+            camposRequeridos.push('Sueldo Base');
+            erroresTemp.sueldo = 'Debe ser mayor a 0';
+        }
+        
+        if (!nuevoUsuario.fechaIngreso?.trim()) {
+            camposRequeridos.push('Fecha Ingreso');
+            erroresTemp.fechaIngreso = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.rol?.trim()) {
+            camposRequeridos.push('Rol');
+            erroresTemp.rol = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.eps?.trim()) {
+            camposRequeridos.push('EPS');
+            erroresTemp.eps = 'Obligatorio';
+        } else if (/\d/.test(nuevoUsuario.eps)) {
+            erroresTemp.eps = 'No debe contener números';
+        }
+        
+        if (!nuevoUsuario.fondoPension?.trim()) {
+            camposRequeridos.push('Fondo de Pensiones');
+            erroresTemp.fondoPension = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.datosBancarios?.banco?.trim()) {
+            camposRequeridos.push('Banco');
+            erroresTemp.banco = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.datosBancarios?.numeroCuenta?.trim()) {
+            camposRequeridos.push('Número de Cuenta');
+            erroresTemp.numeroCuenta = 'Obligatorio';
+        } else if (!/^\d+$/.test(nuevoUsuario.datosBancarios.numeroCuenta)) {
+            erroresTemp.numeroCuenta = 'Solo números permitidos';
+        }
+        
+        if (!nuevoUsuario.tipoContrato?.trim()) {
+            camposRequeridos.push('Tipo de Contrato');
+            erroresTemp.tipoContrato = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.tipoEmpleado?.trim()) {
+            camposRequeridos.push('Tipo de Empleado');
+            erroresTemp.tipoEmpleado = 'Obligatorio';
+        }
+        
+        if (!nuevoUsuario.turnoAsignado?.trim()) {
+            camposRequeridos.push('Turno Asignado');
+            erroresTemp.turnoAsignado = 'Obligatorio';
+        }
+        
+        if (nuevoUsuario.numeroCuentaFondo && !/^\d+$/.test(nuevoUsuario.numeroCuentaFondo)) {
+            erroresTemp.numeroCuentaFondo = 'Solo números permitidos';
+            camposRequeridos.push('Número Cuenta Fondo (formato inválido)');
+        }
+        
+        setErrores(erroresTemp);
+        
+        if (Object.keys(erroresTemp).length > 0) {
+            const mensaje = `❌ Por favor complete los siguientes campos obligatorios:\n\n• ${camposRequeridos.join('\n• ')}`;
+            alert(mensaje);
+            return;
+        }
+        
         const nomina = calcularNomina(nuevoUsuario.sueldo, nuevoUsuario.tipoContrato, nuevoUsuario.tipoSalario);
         const dataEnviar = {
             ...nuevoUsuario,
@@ -753,12 +827,12 @@ function GestionUsuarios() {
             valorHora: nomina.valorHora,
             recibeAuxilioTransporte: nomina.recibeAuxilio
         };
+        
         try {
-            const response = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuarios`, {
-            method: 'POST', body: JSON.stringify(dataEnviar)
-            });
-            const data = await response.json();
-            if (data.success) {
+            // ✅ CON AXIOS - MÁS LIMPIO
+            const response = await axios.post('/usuarios', dataEnviar);
+            
+            if (response.data.success) {
                 alert('✅ Usuario creado exitosamente');
                 setNuevoUsuario({
                     nombre: '', email: '', password: '', tipoDocumento: '', documento: '',
@@ -769,12 +843,20 @@ function GestionUsuarios() {
                     tipoContrato: '', tipoSalario: 'por_hora', recibeAuxilioTransporte: true,
                     tipoEmpleado: '', turnoAsignado: '', estadoLaboral: 'activo'
                 });
-                setErrores({}); cargarUsuarios();
+                setErrores({});
+                cargarUsuarios();
             } else {
-                alert('❌ Error: ' + (data.error || 'No se pudo crear'));
+                alert('❌ Error: ' + (response.data.error || 'No se pudo crear el usuario'));
             }
-        } catch (err) { alert('❌ Error de conexion'); }
-    }, [nuevoUsuario, validarFormulario, calcularNomina, cargarUsuarios]);
+        } catch (error) {
+            console.error('Error al crear usuario:', error);
+            if (error.response?.status === 401) {
+                navigate('/login');
+            } else {
+                alert('❌ Error de conexión: ' + (error.response?.data?.error || error.message));
+            }
+        }
+    }, [nuevoUsuario, calcularNomina, cargarUsuarios, navigate]);
 
     const verUsuario = useCallback((user) => {
         setModoEdicionInicial(false);
@@ -786,13 +868,19 @@ function GestionUsuarios() {
         setUsuarioDetalle(user);
     }, []);
 
+    // ============================================================
+    // ELIMINAR USUARIO CON AXIOS
+    // ============================================================
     const eliminarUsuario = useCallback(async (id) => {
         if (window.confirm('¿Eliminar usuario permanentemente?')) {
             try {
-               await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/usuarios/${id}`, { method: 'DELETE' });
+                // ✅ CON AXIOS - MÁS LIMPIO
+                await axios.delete(`/usuarios/${id}`);
                 cargarUsuarios();
+            } catch (error) {
+                console.error('Error al eliminar usuario:', error);
+                alert('❌ Error al eliminar: ' + (error.response?.data?.error || error.message));
             }
-            catch (err) { alert('❌ Error al eliminar'); }
         }
     }, [cargarUsuarios]);
 
@@ -804,375 +892,370 @@ function GestionUsuarios() {
         return coincideRol && coincideTexto;
     });
 
-    
-// Detectar rol del usuario desde localStorage o default
-const userRol = localStorage.getItem('rol') || 'ADMIN';
+    const userRol = localStorage.getItem('rol') || 'ADMIN';
     
     return (
-      <div className="dba-container">
-        <div className="dba-wrapper">
-            <div className="dba-header-text">
-                <h1 className="dba-title">👥 Gestión de Usuarios</h1>
-                <p className="dba-subtitle">
-                    Neoconstrucciones S.A.S — <strong>Rol: {userRol.toUpperCase()}</strong>
-                </p>
-            </div>
+        <div className="dba-container">
+            <div className="dba-wrapper">
+                <div className="dba-header-text">
+                    <h1 className="dba-title">👥 Gestión de Usuarios</h1>
+                    <p className="dba-subtitle">
+                        Neoconstrucciones S.A.S — <strong>Rol: {userRol.toUpperCase()}</strong>
+                    </p>
+                </div>
 
-            {/* TABS ACTIVOS / RETIRADOS */}
-            <div className="tabs-container">
-                {[
-                    { key: 'activos', label: '✅ Personal Activo', color: '#2e7d32' },
-                    { key: 'retirados', label: '📋 Historial Retirados', color: '#c62828' },
-                ].map(tab => (
-                    <button key={tab.key} onClick={() => setVistaActiva(tab.key)}
-                        className={`tab-button ${vistaActiva === tab.key ? 'tab-button-active' : ''}`}
-                        style={{ color: vistaActiva === tab.key ? tab.color : '#666' }}>
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
+                <div className="tabs-container">
+                    {[
+                        { key: 'activos', label: '✅ Personal Activo', color: '#2e7d32' },
+                        { key: 'retirados', label: '📋 Historial Retirados', color: '#c62828' },
+                    ].map(tab => (
+                        <button key={tab.key} onClick={() => setVistaActiva(tab.key)}
+                            className={`tab-button ${vistaActiva === tab.key ? 'tab-button-active' : ''}`}
+                            style={{ color: vistaActiva === tab.key ? tab.color : '#666' }}>
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
 
-            {/* FILTROS */}
-            <div className="filtro-container">
-                <input type="text" placeholder="🔍 Buscar por nombre, cedula o cargo..."
-                    value={busquedaTexto} onChange={(e) => setBusquedaTexto(e.target.value)}
-                    className="filtro-input" />
-                <select value={filtroRol} onChange={(e) => setFiltroRol(e.target.value)}>
-                    <option value="">Todos los roles</option>
-                    <OpcionesRol />
-                </select>
-            </div>
+                <div className="filtro-container">
+                    <input type="text" placeholder="🔍 Buscar por nombre, cedula o cargo..."
+                        value={busquedaTexto} onChange={(e) => setBusquedaTexto(e.target.value)}
+                        className="filtro-input" />
+                    <select value={filtroRol} onChange={(e) => setFiltroRol(e.target.value)}>
+                        <option value="">Todos los roles</option>
+                        <OpcionesRol />
+                    </select>
+                </div>
 
-            {/* FORMULARIO CREACION (solo en vista activos) */}
-            {vistaActiva === 'activos' && (
-                <form onSubmit={manejarCrear} className="form-crear">
-
-                    {/* SECCION 1: INFORMACION BASICA */}
-                    <Seccion titulo="Información Basica" icono="👤" abierta={false}>
-                        <div className="form-grid">
-                            <div className="form-group">
-                                <label>Nombre(s) y Apellido(s) *</label>
-                                <input type="text" value={nuevoUsuario.nombre} placeholder="Nombres completos"
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/[0-9]/g, '');
-                                        setNuevoUsuario({ ...nuevoUsuario, nombre: val });
-                                    }}
-                                    className={errores.nombre ? 'input-error' : ''} />
-                                {errores.nombre && <span className="form-error">{errores.nombre}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Correo Corporativo *</label>
-                                <input type="email" value={nuevoUsuario.email} placeholder="correo@neo.com"
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, email: e.target.value })}
-                                    className={errores.email ? 'input-error' : ''} />
-                                {errores.email && <span className="form-error">{errores.email}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Contrasena *</label>
-                                <input type="password" value={nuevoUsuario.password} placeholder="Contrasena"
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })}
-                                    className={errores.password ? 'input-error' : ''} />
-                                {errores.password && <span className="form-error">{errores.password}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Tipo Documento *</label>
-                                <select value={nuevoUsuario.tipoDocumento}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, tipoDocumento: e.target.value })}>
-                                    <OpcionesTipoDocumento />
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Numero Documento *</label>
-                                <input type="text" value={nuevoUsuario.documento} placeholder="Numero de documento"
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/[^0-9]/g, '');
-                                        setNuevoUsuario({ ...nuevoUsuario, documento: val });
-                                    }}
-                                    className={errores.documento ? 'input-error' : ''} />
-                                {errores.documento && <span className="form-error">{errores.documento}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Cargo *</label>
-                                <input type="text" value={nuevoUsuario.cargo} placeholder="Ej: Ingeniero, Oficial, Ayudante"
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, cargo: e.target.value })}
-                                    className={errores.cargo ? 'input-error' : ''} />
-                                {errores.cargo && <span className="form-error">{errores.cargo}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Sueldo Base *</label>
-                                <input type="number" value={nuevoUsuario.sueldo} placeholder="0" min="0"
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === '' || Number(val) >= 0) {
-                                            setNuevoUsuario({ ...nuevoUsuario, sueldo: val });
-                                        }
-                                    }}
-                                    className={errores.sueldo ? 'input-error' : ''} />
-                                {errores.sueldo && <span className="form-error">{errores.sueldo}</span>}
-                                {nuevoUsuario.sueldo > 0 && (
-                                    <span className="font-size-11 text-gray block mt-1">
-                                        {(() => {
-                                            const sueldoNum = Number(nuevoUsuario.sueldo);
-                                            if (sueldoNum < SMLV) return `❌ Minimo legal: $${SMLV.toLocaleString('es-CO')}`;
-                                            if (sueldoNum <= TOPE_AUXILIO) return `✅ Recibe auxilio transporte: $${AUXILIO_TRANSPORTE.toLocaleString('es-CO')} (Tope: $${TOPE_AUXILIO.toLocaleString('es-CO')})`;
-                                            return `❌ No recibe auxilio (Supera tope: $${TOPE_AUXILIO.toLocaleString('es-CO')})`;
-                                        })()}
-                                        {' | '}
-                                        Valor hora: ${calcularNomina(nuevoUsuario.sueldo, nuevoUsuario.tipoContrato, nuevoUsuario.tipoSalario).valorHora.toLocaleString('es-CO')}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="form-group">
-                                <label>Fecha Ingreso *</label>
-                                <input type="date" value={nuevoUsuario.fechaIngreso}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, fechaIngreso: e.target.value })}
-                                    className={errores.fechaIngreso ? 'input-error' : ''} />
-                                {errores.fechaIngreso && <span className="form-error">{errores.fechaIngreso}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Rol *</label>
-                                <select value={nuevoUsuario.rol}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}
-                                    className={errores.rol ? 'input-error' : ''}>
-                                    <OpcionesRol />
-                                </select>
-                                {nuevoUsuario.rol && (
-                                    <span className="font-size-11 text-blue block mt-1">
-                                        Nivel ARL asignado: {getNivelARLByRol(nuevoUsuario.rol)}
-                                        ({getNivelARLByRol(nuevoUsuario.rol) === 1 ? 'Oficina' : getNivelARLByRol(nuevoUsuario.rol) === 2 ? 'Tecnico' : 'Obra'})
-                                    </span>
-                                )}
-                                {errores.rol && <span className="form-error">{errores.rol}</span>}
-                            </div>
-                        </div>
-                    </Seccion>
-
-                    {/* SECCION 2: SEGURIDAD SOCIAL */}
-                    <Seccion titulo="Seguridad Social" icono="🏥" abierta={false}>
-                        <div className="form-grid">
-                            <div className="form-group">
-                                <label>EPS *</label>
-                                <input type="text" value={nuevoUsuario.eps} placeholder="Ej: Sanitas, Sura, Nueva EPS"
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/[0-9]/g, '');
-                                        setNuevoUsuario({ ...nuevoUsuario, eps: val });
-                                    }}
-                                    className={errores.eps ? 'input-error' : ''} />
-                                {errores.eps && <span className="form-error">{errores.eps}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Fondo de Pensiones *</label>
-                                <select value={nuevoUsuario.fondoPension}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, fondoPension: e.target.value })}
-                                    className={errores.fondoPension ? 'input-error' : ''}>
-                                    <OpcionesFondoPension />
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Fondo de Cesantias *</label>
-                                <select value={nuevoUsuario.fondoCesantias}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, fondoCesantias: e.target.value })}>
-                                    <OpcionesFondoCesantias />
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Numero Cuenta Fondo *</label>
-                                <input type="text" value={nuevoUsuario.numeroCuentaFondo} placeholder="Numero de cuenta"
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/[^0-9]/g, '');
-                                        setNuevoUsuario({ ...nuevoUsuario, numeroCuentaFondo: val });
-                                    }} />
-                            </div>
-                            <div className="form-group">
-                                <label>Caja de Compensacion *</label>
-                                <select value={nuevoUsuario.cajaCompensacion}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, cajaCompensacion: e.target.value })}>
-                                    <OpcionesCajaCompensacion />
-                                </select>
-                            </div>
-                        </div>
-                    </Seccion>
-
-                    {/* SECCION 3: DATOS BANCARIOS */}
-                    <Seccion titulo="Datos Bancarios " icono="💳" abierta={false}>
-                        <div className="form-grid">
-                            <div className="form-group">
-                                <label>Banco *</label>
-                                <select value={nuevoUsuario.datosBancarios.banco}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, datosBancarios: { ...nuevoUsuario.datosBancarios, banco: e.target.value } })}
-                                    className={errores.banco ? 'input-error' : ''}>
-                                    <OpcionesBanco />
-                                </select>
-                                {errores.banco && <span className="form-error">{errores.banco}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Tipo de Cuenta *</label>
-                                <select value={nuevoUsuario.datosBancarios.tipoCuenta}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, datosBancarios: { ...nuevoUsuario.datosBancarios, tipoCuenta: e.target.value } })}>
-                                    <option value="ahorros">Ahorros</option>
-                                    <option value="corriente">Corriente</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Numero de Cuenta *</label>
-                                <input type="text" value={nuevoUsuario.datosBancarios.numeroCuenta} placeholder="Numero de cuenta"
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/[^0-9]/g, '');
-                                        setNuevoUsuario({ ...nuevoUsuario, datosBancarios: { ...nuevoUsuario.datosBancarios, numeroCuenta: val } });
-                                    }}
-                                    className={errores.numeroCuenta ? 'input-error' : ''} />
-                                {errores.numeroCuenta && <span className="form-error">{errores.numeroCuenta}</span>}
-                            </div>
-                        </div>
-                    </Seccion>
-
-                    {/* SECCION 4: CONFIGURACION NOMINA */}
-                    <Seccion titulo="Configuracion Nomina" icono="💰" abierta={false}>
-                        <div className="form-grid">
-                            <div className="form-group">
-                                <label>Tipo de Contrato *</label>
-                                <select value={nuevoUsuario.tipoContrato}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, tipoContrato: e.target.value })}
-                                    className={errores.tipoContrato ? 'input-error' : ''}>
-                                    <OpcionesTipoContrato />
-                                </select>
-                                {errores.tipoContrato && <span className="form-error">{errores.tipoContrato}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Tipo de Salario *</label>
-                                <select value={nuevoUsuario.tipoSalario}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, tipoSalario: e.target.value })}>
-                                    <OpcionesTipoSalario />
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Tipo de Empleado *</label>
-                                <select value={nuevoUsuario.tipoEmpleado}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, tipoEmpleado: e.target.value })}>
-                                    <OpcionesTipoEmpleado />
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Turno Asignado *</label>
-                                <select value={nuevoUsuario.turnoAsignado}
-                                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, turnoAsignado: e.target.value })}>
-                                    <OpcionesTurno />
-                                </select>
-                            </div>
-                        </div>
-                    </Seccion>
-
-                    <button type="submit" className="btn-guardar btn-guardar-mt">
-                        + Agregar Personal
-                    </button>
-                </form>
-            )}
-
-            {/* TABLA DE USUARIOS */}
-            <div className="table-container">
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Correo Corporativo</th>
-                            <th className="text-center">Rol</th>
-                            <th className="text-center">Doc</th>
-                            <th>Cargo</th>
-                            <th className="text-right">Sueldo</th>
-                            <th className="text-center">ARL</th>
-                            <th className="text-center">Contrato</th>
-                            <th className="text-center">Turno</th>
-                            <th className="text-center">Estado</th>
-                            <th className="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {usuariosFiltrados.map((user, idx) => (
-                            <tr key={user._id} className={idx % 2 === 0 ? 'table-row-even' : 'table-row-odd'}>
-                                <td data-label="Nombre">
-                                    <strong className="font-size-13 text-dark">{user.nombre}</strong>
-                                    {user.liquidacionGenerada && (
-                                        <span className="font-size-10 text-red block">⚠️ Liquidado</span>
-                                    )}
-                                </td>
-                                <td data-label="Email">
-                                    <Tooltip text={user.email}>
-                                        <span className="font-size-12 text-gray text-ellipsis">
-                                            {user.email}
+                {vistaActiva === 'activos' && (
+                    <form onSubmit={manejarCrear} className="form-crear">
+                        <Seccion titulo="Información Basica" icono="👤" abierta={false}>
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <label>Nombre(s) y Apellido(s) *</label>
+                                    <input type="text" value={nuevoUsuario.nombre} placeholder="Nombres completos"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/[0-9]/g, '');
+                                            setNuevoUsuario({ ...nuevoUsuario, nombre: val });
+                                        }}
+                                        className={errores.nombre ? 'input-error' : ''} />
+                                    {errores.nombre && <span className="form-error">{errores.nombre}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Correo Corporativo *</label>
+                                    <input type="email" value={nuevoUsuario.email} placeholder="correo@neo.com"
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, email: e.target.value })}
+                                        className={errores.email ? 'input-error' : ''} />
+                                    {errores.email && <span className="form-error">{errores.email}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Contrasena *</label>
+                                    <input type="password" value={nuevoUsuario.password} placeholder="Contrasena"
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })}
+                                        className={errores.password ? 'input-error' : ''} />
+                                    {errores.password && <span className="form-error">{errores.password}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Tipo Documento *</label>
+                                    <select value={nuevoUsuario.tipoDocumento}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, tipoDocumento: e.target.value })}>
+                                        <OpcionesTipoDocumento />
+                                    </select>
+                                    {errores.tipoDocumento && <span className="form-error">{errores.tipoDocumento}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Numero Documento *</label>
+                                    <input type="text" value={nuevoUsuario.documento} placeholder="Numero de documento"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/[^0-9]/g, '');
+                                            setNuevoUsuario({ ...nuevoUsuario, documento: val });
+                                        }}
+                                        className={errores.documento ? 'input-error' : ''} />
+                                    {errores.documento && <span className="form-error">{errores.documento}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Cargo *</label>
+                                    <input type="text" value={nuevoUsuario.cargo} placeholder="Ej: Ingeniero, Oficial, Ayudante"
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, cargo: e.target.value })}
+                                        className={errores.cargo ? 'input-error' : ''} />
+                                    {errores.cargo && <span className="form-error">{errores.cargo}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Sueldo Base *</label>
+                                    <input type="number" value={nuevoUsuario.sueldo} placeholder="0" min="0"
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === '' || Number(val) >= 0) {
+                                                setNuevoUsuario({ ...nuevoUsuario, sueldo: val });
+                                            }
+                                        }}
+                                        className={errores.sueldo ? 'input-error' : ''} />
+                                    {errores.sueldo && <span className="form-error">{errores.sueldo}</span>}
+                                    {nuevoUsuario.sueldo > 0 && (
+                                        <span className="font-size-11 text-gray block mt-1">
+                                            {(() => {
+                                                const sueldoNum = Number(nuevoUsuario.sueldo);
+                                                if (sueldoNum < SMLV) return `❌ Minimo legal: $${SMLV.toLocaleString('es-CO')}`;
+                                                if (sueldoNum <= TOPE_AUXILIO) return `✅ Recibe auxilio transporte: $${AUXILIO_TRANSPORTE.toLocaleString('es-CO')} (Tope: $${TOPE_AUXILIO.toLocaleString('es-CO')})`;
+                                                return `❌ No recibe auxilio (Supera tope: $${TOPE_AUXILIO.toLocaleString('es-CO')})`;
+                                            })()}
+                                            {' | '}
+                                            Valor hora: ${calcularNomina(nuevoUsuario.sueldo, nuevoUsuario.tipoContrato, nuevoUsuario.tipoSalario).valorHora.toLocaleString('es-CO')}
                                         </span>
-                                    </Tooltip>
-                                </td>
-                                <td data-label="Rol" className="text-center">
-                                    <RolBadge rol={user.rol} />
-                                </td>
-                                <td data-label="Doc" className="text-center font-size-12 text-gray text-mono">
-                                    {user.documento}
-                                </td>
-                                <td data-label="Cargo" className="font-size-13 text-gray">
-                                    {user.cargo}
-                                </td>
-                                <td data-label="Sueldo" className="text-right font-size-13 font-bold text-green text-mono">
-                                    ${(user.sueldo || 0).toLocaleString()}
-                                </td>
-                                <td data-label="ARL" className="text-center">
-                                    <ArlBadge nivel={getNivelARLByRol(user.rol)} />
-                                </td>
-                                <td data-label="Contrato" className="text-center">
-                                    <span className="tag-gray">{abrevContrato(user.tipoContrato)}</span>
-                                </td>
-                                <td data-label="Turno" className="text-center font-size-12 text-gray">
-                                    {abrevTurno(user.turnoAsignado)}
-                                </td>
-                                <td data-label="Estado" className="text-center">
-                                    <EstadoBadge estado={user.estadoLaboral} />
-                                </td>
-                                <td data-label="Acciones" className="text-center">
-                                    <div className="acciones-flex">
-                                        <button onClick={() => verUsuario(user)}
-                                            className="btn-xs btn-info-outline">
-                                            👁️Ver
-                                        </button>
-                                        {vistaActiva === 'activos' && (
-                                            <>
-                                                <button onClick={() => iniciarEdicion(user)}
-                                                    className="btn-xs btn-warning-outline">
-                                                    ✏️ Editar
-                                                </button>
-                                                <button onClick={() => eliminarUsuario(user._id)}
-                                                    className="btn-xs btn-danger-outline">
-                                                    🗑️ Eliminar
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {usuariosFiltrados.length === 0 && (
-                    <div className="text-center text-gray no-results">
-                        No se encontraron resultados
-                    </div>
-                )}
-            </div>
+                                    )}
+                                </div>
+                                <div className="form-group">
+                                    <label>Fecha Ingreso *</label>
+                                    <input type="date" value={nuevoUsuario.fechaIngreso}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, fechaIngreso: e.target.value })}
+                                        className={errores.fechaIngreso ? 'input-error' : ''} />
+                                    {errores.fechaIngreso && <span className="form-error">{errores.fechaIngreso}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Rol *</label>
+                                    <select value={nuevoUsuario.rol}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}
+                                        className={errores.rol ? 'input-error' : ''}>
+                                        <OpcionesRol />
+                                    </select>
+                                    {nuevoUsuario.rol && (
+                                        <span className="font-size-11 text-blue block mt-1">
+                                            Nivel ARL asignado: {getNivelARLByRol(nuevoUsuario.rol)}
+                                            ({getNivelARLByRol(nuevoUsuario.rol) === 1 ? 'Oficina' : getNivelARLByRol(nuevoUsuario.rol) === 2 ? 'Tecnico' : 'Obra'})
+                                        </span>
+                                    )}
+                                    {errores.rol && <span className="form-error">{errores.rol}</span>}
+                                </div>
+                            </div>
+                        </Seccion>
 
-            {/* MODAL DETALLE */}
-            {usuarioDetalle && (
-                <ModalDetalle
-                    usuario={usuarioDetalle}
-                    onClose={() => setUsuarioDetalle(null)}
-                    onGuardar={cargarUsuarios}
-                    calcularNomina={calcularNomina}
-                    modoEdicionInicial={modoEdicionInicial}
-                />
-            )}
-            {/* Barra de Operaciones Inferior */}
-            <div className="db-actions-group">
-                <button onClick={() => navigate('/admin')} className="btn-primary">⚙️ Inicio </button>
+                        <Seccion titulo="Seguridad Social" icono="🏥" abierta={false}>
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <label>EPS *</label>
+                                    <input type="text" value={nuevoUsuario.eps} placeholder="Ej: Sanitas, Sura, Nueva EPS"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/[0-9]/g, '');
+                                            setNuevoUsuario({ ...nuevoUsuario, eps: val });
+                                        }}
+                                        className={errores.eps ? 'input-error' : ''} />
+                                    {errores.eps && <span className="form-error">{errores.eps}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Fondo de Pensiones *</label>
+                                    <select value={nuevoUsuario.fondoPension}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, fondoPension: e.target.value })}
+                                        className={errores.fondoPension ? 'input-error' : ''}>
+                                        <OpcionesFondoPension />
+                                    </select>
+                                    {errores.fondoPension && <span className="form-error">{errores.fondoPension}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Fondo de Cesantias *</label>
+                                    <select value={nuevoUsuario.fondoCesantias}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, fondoCesantias: e.target.value })}>
+                                        <OpcionesFondoCesantias />
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Numero Cuenta Fondo *</label>
+                                    <input type="text" value={nuevoUsuario.numeroCuentaFondo} placeholder="Numero de cuenta"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/[^0-9]/g, '');
+                                            setNuevoUsuario({ ...nuevoUsuario, numeroCuentaFondo: val });
+                                        }} />
+                                    {errores.numeroCuentaFondo && <span className="form-error">{errores.numeroCuentaFondo}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Caja de Compensacion *</label>
+                                    <select value={nuevoUsuario.cajaCompensacion}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, cajaCompensacion: e.target.value })}>
+                                        <OpcionesCajaCompensacion />
+                                    </select>
+                                </div>
+                            </div>
+                        </Seccion>
+
+                        <Seccion titulo="Datos Bancarios " icono="💳" abierta={false}>
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <label>Banco *</label>
+                                    <select value={nuevoUsuario.datosBancarios.banco}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, datosBancarios: { ...nuevoUsuario.datosBancarios, banco: e.target.value } })}
+                                        className={errores.banco ? 'input-error' : ''}>
+                                        <OpcionesBanco />
+                                    </select>
+                                    {errores.banco && <span className="form-error">{errores.banco}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Tipo de Cuenta *</label>
+                                    <select value={nuevoUsuario.datosBancarios.tipoCuenta}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, datosBancarios: { ...nuevoUsuario.datosBancarios, tipoCuenta: e.target.value } })}>
+                                        <option value="ahorros">Ahorros</option>
+                                        <option value="corriente">Corriente</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Numero de Cuenta *</label>
+                                    <input type="text" value={nuevoUsuario.datosBancarios.numeroCuenta} placeholder="Numero de cuenta"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/[^0-9]/g, '');
+                                            setNuevoUsuario({ ...nuevoUsuario, datosBancarios: { ...nuevoUsuario.datosBancarios, numeroCuenta: val } });
+                                        }}
+                                        className={errores.numeroCuenta ? 'input-error' : ''} />
+                                    {errores.numeroCuenta && <span className="form-error">{errores.numeroCuenta}</span>}
+                                </div>
+                            </div>
+                        </Seccion>
+
+                        <Seccion titulo="Configuracion Nomina" icono="💰" abierta={false}>
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <label>Tipo de Contrato *</label>
+                                    <select value={nuevoUsuario.tipoContrato}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, tipoContrato: e.target.value })}
+                                        className={errores.tipoContrato ? 'input-error' : ''}>
+                                        <OpcionesTipoContrato />
+                                    </select>
+                                    {errores.tipoContrato && <span className="form-error">{errores.tipoContrato}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Tipo de Salario *</label>
+                                    <select value={nuevoUsuario.tipoSalario}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, tipoSalario: e.target.value })}>
+                                        <OpcionesTipoSalario />
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Tipo de Empleado *</label>
+                                    <select value={nuevoUsuario.tipoEmpleado}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, tipoEmpleado: e.target.value })}
+                                        className={errores.tipoEmpleado ? 'input-error' : ''}>
+                                        <OpcionesTipoEmpleado />
+                                    </select>
+                                    {errores.tipoEmpleado && <span className="form-error">{errores.tipoEmpleado}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Turno Asignado *</label>
+                                    <select value={nuevoUsuario.turnoAsignado}
+                                        onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, turnoAsignado: e.target.value })}
+                                        className={errores.turnoAsignado ? 'input-error' : ''}>
+                                        <OpcionesTurno />
+                                    </select>
+                                    {errores.turnoAsignado && <span className="form-error">{errores.turnoAsignado}</span>}
+                                </div>
+                            </div>
+                        </Seccion>
+
+                        <button type="submit" className="btn-guardar btn-guardar-mt">
+                            + Agregar Personal
+                        </button>
+                    </form>
+                )}
+
+                <div className="table-container">
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Correo Corporativo</th>
+                                <th className="text-center">Rol</th>
+                                <th className="text-center">Documento</th>
+                                <th>Cargo</th>
+                                <th className="text-right">Sueldo</th>
+                                <th className="text-center">ARL</th>
+                                <th className="text-center">Contrato</th>
+                                <th className="text-center">Turno</th>
+                                <th className="text-center">Estado</th>
+                                <th className="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {usuariosFiltrados.map((user, idx) => (
+                                <tr key={user._id} className={idx % 2 === 0 ? 'table-row-even' : 'table-row-odd'}>
+                                    <td data-label="Nombre">
+                                        <strong className="font-size-13 text-dark">{user.nombre}</strong>
+                                        {user.liquidacionGenerada && (
+                                            <span className="font-size-10 text-red block">⚠️ Liquidado</span>
+                                        )}
+                                    </td>
+                                    <td data-label="Correo Corporativo">
+                                        <Tooltip text={user.email}>
+                                            <span className="font-size-12 text-gray text-ellipsis">
+                                                {user.email}
+                                            </span>
+                                        </Tooltip>
+                                    </td>
+                                    <td data-label="Rol" className="text-center">
+                                        <RolBadge rol={user.rol} />
+                                    </td>
+                                    <td data-label="Documento" className="text-center font-size-12 text-gray text-mono">
+                                        {user.documento}
+                                    </td>
+                                    <td data-label="Cargo" className="font-size-13 text-gray">
+                                        {user.cargo}
+                                    </td>
+                                    <td data-label="Sueldo" className="text-right font-size-13 font-bold text-green text-mono">
+                                        ${(user.sueldo || 0).toLocaleString()}
+                                    </td>
+                                    <td data-label="ARL" className="text-center">
+                                        <ArlBadge nivel={getNivelARLByRol(user.rol)} />
+                                    </td>
+                                    <td data-label="Contrato" className="text-center">
+                                        <span className="tag-gray">{abrevContrato(user.tipoContrato)}</span>
+                                    </td>
+                                    <td data-label="Turno" className="text-center font-size-12 text-gray">
+                                        {abrevTurno(user.turnoAsignado)}
+                                    </td>
+                                    <td data-label="Estado" className="text-center">
+                                        <EstadoBadge estado={user.estadoLaboral} />
+                                    </td>
+                                    <td data-label="Acciones" className="text-center">
+                                        <div className="acciones-flex">
+                                            <button onClick={() => verUsuario(user)}
+                                                className="btn-xs btn-info-outline">
+                                                👁️Ver
+                                            </button>
+                                            {vistaActiva === 'activos' && (
+                                                <>
+                                                    <button onClick={() => iniciarEdicion(user)}
+                                                        className="btn-xs btn-warning-outline">
+                                                        ✏️ Editar
+                                                    </button>
+                                                    <button onClick={() => eliminarUsuario(user._id)}
+                                                        className="btn-xs btn-danger-outline">
+                                                        🗑️ Eliminar
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {usuariosFiltrados.length === 0 && (
+                        <div className="text-center text-gray no-results">
+                            No se encontraron resultados
+                        </div>
+                    )}
+                </div>
+
+                {usuarioDetalle && (
+                    <ModalDetalle
+                        usuario={usuarioDetalle}
+                        onClose={() => setUsuarioDetalle(null)}
+                        onGuardar={cargarUsuarios}
+                        calcularNomina={calcularNomina}
+                        modoEdicionInicial={modoEdicionInicial}
+                    />
+                )}
+                
+                <div className="db-actions-group">
+                    <button onClick={() => navigate('/admin')} className="btn-primary">⚙️ Inicio </button>
+                </div>
             </div>
         </div>
-    </div>
     );
 }
 

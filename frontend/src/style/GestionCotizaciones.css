@@ -1,6 +1,6 @@
 /* ============================================
    GESTIONCOTIZACIONES.CSS — Gestión de Cotizaciones
-   Alineado con usuario.css / servicios.css
+   Responsivo Horizontal y Vertical
    ============================================ */
 
 :root {
@@ -17,18 +17,17 @@
   --gris-600: #475569;
   --gris-700: #334155;
   --gris-800: #1e293b;
-  --font-base: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  --font-base: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 /* ============================================
-   CONTENEDOR PRINCIPAL
+   CONTENEDOR PRINCIPAL (Responsive)
    ============================================ */
 .dba-container {
   min-height: 100vh;
   width: 100%;
-  display: block;
   background-color: var(--gris-100);
-  padding: clamp(24px, 4vw, 48px) 0;
+  padding: clamp(20px, 4vw, 48px) 0;
   box-sizing: border-box;
 }
 
@@ -41,43 +40,52 @@
   flex-direction: column;
 }
 
-/* ===== HEADER ===== */
+/* ============================================
+   HEADER
+   ============================================ */
+.dba-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: clamp(16px, 2vw, 24px);
+}
+
 .dba-header-text {
   text-align: left;
-  margin-bottom: clamp(20px, 3vw, 32px);
 }
 
 .dba-title {
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 800;
-  margin: 0;
+  color: var(--azul-oscuro);
+  margin: 0 0 6px 0;
   font-family: var(--font-base);
-  line-height: 1.2;
 }
 
 .dba-subtitle {
   color: var(--gris-500);
   font-size: clamp(0.875rem, 1.5vw, 1rem);
-  margin-top: 8px;
   font-family: var(--font-base);
 }
-
 .dba-subtitle strong {
   color: var(--azul-claro);
   font-weight: 700;
 }
 
-/* ============================================
-   HEADER CON ACCIONES
-   ============================================ */
-.header-acciones {
+.dba-header-actions {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: clamp(24px, 3vw, 32px);
-  flex-wrap: wrap;
   gap: 12px;
-  width: 100%;
+  flex-wrap: wrap;
+}
+
+.dba-title-list {
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  text-align: center;
+  margin-bottom: 20px;
+  margin-top: 8px;
+  color: var(--gris-700);
 }
 
 /* ============================================
@@ -90,26 +98,20 @@
   border: 1px solid var(--gris-200);
   margin-bottom: clamp(16px, 2vw, 24px);
   display: flex;
-  gap: clamp(10px, 1.5vw, 16px);
+  gap: 12px;
   flex-wrap: wrap;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .filtro-input {
   padding: 10px 14px;
   border-radius: 8px;
   border: 1.5px solid var(--gris-300);
-  font-family: var(--font-base);
   font-size: 0.9375rem;
-  color: var(--negro);
   background: var(--blanco);
-  transition: border-color 0.2s, box-shadow 0.2s;
   flex: 1;
   min-width: 200px;
-  max-width: 400px;
 }
-
 .filtro-input:focus {
   outline: none;
   border-color: var(--azul-claro);
@@ -120,141 +122,65 @@
   padding: 10px 14px;
   border-radius: 8px;
   border: 1.5px solid var(--gris-300);
-  font-family: var(--font-base);
   font-size: 0.9375rem;
-  color: var(--negro);
   background: var(--blanco);
-  min-width: 180px;
+  min-width: 150px;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .filtro-container select:focus {
   outline: none;
   border-color: var(--azul-claro);
   box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
 }
 
-/* ============================================
-   BOTONES
-   ============================================ */
-button {
-  cursor: pointer;
-  border: none;
+.btn-limpiar {
+  background: var(--gris-100);
+  color: var(--gris-600);
+  border: 1px solid var(--gris-200);
   padding: 8px 16px;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  cursor: pointer;
   font-weight: 600;
-  font-size: clamp(0.8rem, 1.1vw, 0.875rem);
-  font-family: var(--font-base);
+  transition: 0.2s;
 }
+.btn-limpiar:hover {
+  background: var(--gris-200);
+}
+
+/* ============================================
+   BOTONES (Crear, Tabla, etc.)
+   ============================================ */
+button { cursor: pointer; border: none; border-radius: 8px; transition: 0.2s; font-weight: 600; font-family: var(--font-base); }
 
 .btn-crear {
-  background-color: #1DBD8E;
+  background: #1DBD8E;
   color: var(--blanco);
-  padding: 10px 20px;
+  padding: 10px 24px;
   font-size: clamp(0.875rem, 1.2vw, 1rem);
-  border-radius: 10px;
-  font-weight: 700;
 }
-
 .btn-crear:hover {
-  background-color: #00D4C6;
-  transform: translateY(-1px);
+  background: #00D4C6;
+  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
-.btn-recargar {
-  background: var(--gris-500);
-  color: var(--blanco);
-  padding: 8px 15px;
-  border-radius: 8px;
-  font-size: 0.8125rem;
-}
+.btn-editar { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; padding: 5px 10px; font-size: 0.8125rem; }
+.btn-editar:hover { background: #fef3c7; }
 
-.btn-recargar:hover {
-  background: var(--gris-600);
-}
+.btn-ver { background: #eff6ff; color: var(--azul-claro); border: 1px solid #bfdbfe; padding: 5px 10px; font-size: 0.8125rem; }
+.btn-ver:hover { background: #bfdbfe; }
 
-/* Botones de acción en tabla — MISMO ESTILO QUE USUARIO.CSS */
-.btn-editar {
-  background: #fffbeb;
-  color: #d97706;
-  border: 1px solid #fde68a;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-}
+.btn-aprobar { background: #dff8e3; color: #095035; border: 1px solid #73CC80; padding: 5px 10px; font-size: 0.8125rem; }
+.btn-aprobar:hover { background: #97eba4; }
 
-.btn-editar:hover {
-  background-color: #fef3c7;
-}
+.btn-rechazar { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; font-size: 0.8125rem; }
+.btn-rechazar:hover { background: #fecaca; }
 
-.btn-ver {
-  background: #eff6ff;
-  color: var(--azul-claro);
-  border: 1px solid #bfdbfe;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-}
+.btn-factura { background: #6cbeb9; color: #fff; border: 1px solid #0FA69D; padding: 5px 10px; font-size: 0.8125rem; width: 100%; }
+.btn-factura:hover { background: #007268; }
 
-.btn-ver:hover {
-  background-color: #bfdbfe;
-}
-
-.btn-aprobar {
-  background-color: #dff8e3;
-  color: #095035;
-  border: 1px solid #73CC80;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-}
-
-.btn-aprobar:hover {
-  background-color: #97eba4;
-}
-
-.btn-rechazar {
-  background: #fef2f2;
-  color: #dc2626;
-  border:  1px solid #fecaca;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-}
-
-.btn-rechazar:hover {
-  background-color: #fecaca;
-}
-
-.btn-factura {
-  background: #6cbeb9;
-  color: #fff;
-  border: 1px solid #0FA69D;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-  width: 100%;
-}
-
-.btn-factura:hover {
-  background-color: #007268;
-}
-
-.btn-proyecto {
-  background-color: #73CC80;
-  color: var(--blanco);
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-  width: 100%;
-}
-
-.btn-proyecto:hover {
-  background-color: #1DBD8E;
-}
+.btn-proyecto { background: #73CC80; color: var(--blanco); padding: 5px 10px; font-size: 0.8125rem; width: 100%; }
+.btn-proyecto:hover { background: #1DBD8E; }
 
 /* ============================================
    TABLA DE COTIZACIONES
@@ -265,11 +191,9 @@ button {
   max-height: 70vh;
   border-radius: 12px;
   border: 1px solid var(--gris-200);
-  position: relative;
   background: var(--blanco);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   margin-bottom: clamp(16px, 2vw, 24px);
-  padding: clamp(16px, 2vw, 24px);
+  padding: clamp(12px, 2vw, 20px);
 }
 
 .tabla-cotizaciones {
@@ -278,80 +202,43 @@ button {
   border-spacing: 0;
   font-size: clamp(0.8rem, 1.1vw, 0.875rem);
   min-width: 950px;
-  font-family: var(--font-base);
-  table-layout: fixed;
 }
 
-/* Sticky header */
+/* Sticky Header */
 .tabla-cotizaciones thead {
   position: sticky;
   top: 0;
   z-index: 10;
 }
-
-.tabla-cotizaciones thead tr {
-  background-color: var(--azul-claro);
-}
-
 .tabla-cotizaciones th {
   padding: 14px 12px;
   text-align: left;
   font-weight: 700;
-  font-size: clamp(0.7rem, 1vw, 0.8125rem);
-  white-space: nowrap;
-  background-color: var(--azul-claro);
+  background: var(--azul-claro);
   color: var(--blanco);
   border-bottom: 2px solid var(--azul-oscuro);
-  position: sticky;
-  top: 0;
-  z-index: 10;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  font-family: var(--font-base);
 }
-
-/* Primer columna - padding extra */
-.tabla-cotizaciones td:first-child {
-  padding-left: 20px;
-}
-
 .tabla-cotizaciones td {
-  padding: 12px 12px;
+  padding: 12px;
   border-bottom: 1px solid var(--gris-200);
   color: var(--gris-700);
   vertical-align: top;
-  background-color: var(--blanco);
-  font-family: var(--font-base);
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* Hover filas */
-.tabla-cotizaciones tbody tr:hover td {
-  background-color: rgba(19, 145, 200, 0.04);
-}
+.table-row-even td { background: var(--blanco); }
+.table-row-odd td { background: var(--gris-50); }
+.tabla-cotizaciones tbody tr:hover td { background: rgba(19, 145, 200, 0.04); }
 
-.table-row-even td {
-  background: var(--blanco);
-}
-
-.table-row-odd td {
-  background: var(--gris-50);
-}
-
-/* Forzar que el texto largo en Empresa/Sede se corte */
-.tabla-cotizaciones td:nth-child(2) {
+/* Ajuste de columnas */
+.empresa-sede-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-/* Info cliente dentro de Empresa/Sede - permitir wrap para datos */
-.tabla-cotizaciones td:nth-child(2) .info-cliente {
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-}
+.info-cliente { font-size: 0.75rem; color: var(--gris-500); margin-top: 4px; line-height: 1.5; }
+.info-cliente div { margin: 1px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ============================================
    ESTADO BADGE
@@ -364,24 +251,6 @@ button {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  font-family: var(--font-base);
-  white-space: nowrap;
-}
-
-/* ============================================
-   INFO CLIENTE EN TABLA
-   ============================================ */
-.info-cliente {
-  font-size: 0.75rem;
-  color: var(--gris-500);
-  margin-top: 4px;
-  line-height: 1.5;
-}
-
-.info-cliente div {
-  margin: 1px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -392,44 +261,17 @@ button {
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
-  align-items: flex-start;
   justify-content: center;
-  max-width: 100%;
 }
-
 .acciones-columna {
   display: flex;
   gap: 5px;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 100%;
+  margin-top: 8px;
 }
 
-.acciones-container {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  justify-content: center;
-}
-
-/* Botones de acción compactos */
-.btn-editar,
-.btn-ver,
-.btn-aprobar,
-.btn-rechazar,
-.btn-factura,
-.btn-proyecto {
-  padding: 5px 8px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-  min-width: 0;
-}
-
-/* ============================================
-   ALERTA PENDIENTE
-   ============================================ */
 .alerta-pendiente {
   font-size: 0.7rem;
   color: #856404;
@@ -438,34 +280,18 @@ button {
   border-radius: 4px;
   text-align: center;
   width: 100%;
-  font-family: var(--font-base);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
 }
 
 /* ============================================
-   CARGANDO / SIN RESULTADOS
+   ESTADOS DE CARGA Y VACÍO
    ============================================ */
-.cargando {
-  text-align: center;
-  padding: clamp(24px, 4vw, 40px);
-  color: var(--gris-500);
-  font-family: var(--font-base);
-  font-size: clamp(0.875rem, 1.2vw, 1rem);
-}
-
-.sin-resultados {
-  text-align: center;
-  padding: clamp(24px, 4vw, 40px);
-  color: var(--gris-400);
-  font-family: var(--font-base);
-  font-size: clamp(0.875rem, 1.2vw, 1rem);
-}
+.cargando, .sin-resultados { text-align: center; padding: 40px; color: var(--gris-500); }
 
 /* ============================================
-   RESUMEN
+   RESUMEN INFERIOR
    ============================================ */
 .resumen {
   margin-top: clamp(16px, 2vw, 24px);
@@ -475,40 +301,6 @@ button {
   border: 1px solid var(--gris-200);
   font-size: 0.875rem;
   color: var(--gris-600);
-  font-family: var(--font-base);
-}
-
-/* ============================================
-   BARRA DE NAVEGACIÓN INFERIOR
-   ============================================ */
-.db-actions-group {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: clamp(16px, 2vw, 24px);
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.btn-nav-db {
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: clamp(0.875rem, 1.2vw, 1rem);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: var(--font-base);
-  border: none;
-}
-
-.btn-dark-db {
-  background: var(--gris-700);
-  color: var(--blanco);
-}
-
-.btn-dark-db:hover {
-  background: var(--gris-800);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* ============================================
@@ -516,263 +308,77 @@ button {
    ============================================ */
 .text-center { text-align: center; }
 .text-right { text-align: right; }
-.text-left { text-align: left; }
-.text-mono { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; }
+.text-mono { font-family: monospace; }
 .font-bold { font-weight: 700; }
-.font-size-12 { font-size: 0.75rem; }
 .font-size-13 { font-size: 0.8125rem; }
-.text-gray { color: var(--gris-500); }
 .text-dark { color: var(--negro); }
-.text-success { color: #16a34a !important; font-weight: 700; }
-
-.mt-1 { margin-top: 4px; }
 .mt-2 { margin-top: 8px; }
-.mt-3 { margin-top: 12px; }
-.mt-4 { margin-top: 16px; }
 
 /* ============================================
    RESPONSIVE HORIZONTAL
    ============================================ */
 @media (max-width: 1024px) {
-  .header-acciones {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
+  .dba-header { flex-direction: column; align-items: stretch; }
+  .dba-header-actions { justify-content: flex-end; }
 }
 
 @media (max-width: 768px) {
-  .dba-container {
-    padding: 16px 0;
-  }
+  .dba-container { padding: 16px 0; }
+  .dba-wrapper { padding: 0 16px; }
+  .btn-crear { width: 100%; text-align: center; }
 
-  .dba-wrapper {
-    padding: 0 16px;
-  }
+  .filtro-container { flex-direction: column; align-items: stretch; gap: 10px; }
+  .filtro-input { width: 100%; max-width: none; }
+  .filtro-container select { width: 100%; }
 
-  .header-acciones {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    justify-content: center;
-  }
-
-  .btn-crear {
-    width: 100%;
-    text-align: center;
-  }
-
-  .filtro-container {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 10px !important;
-  }
-
-  .filtro-input {
-    width: 100% !important;
-    max-width: none;
-  }
-
-  .filtro-container select {
-    width: 100%;
-  }
-
-  .table-container {
-    max-height: 60vh;
-    border-radius: 8px;
-    padding: 12px;
-  }
-
-  /* En móvil: resetear a auto layout para cards */
-  .tabla-cotizaciones {
-    min-width: unset;
-    table-layout: auto;
-  }
-
-  .tabla-cotizaciones thead {
-    display: none;
-  }
-
-  .tabla-cotizaciones,
-  .tabla-cotizaciones tbody,
-  .tabla-cotizaciones tr,
-  .tabla-cotizaciones td {
-    display: block;
-    width: 100%;
-  }
-
+  .table-container { max-height: 60vh; padding: 0; border: none; background: transparent; }
+  
+  .tabla-cotizaciones { min-width: unset; }
+  .tabla-cotizaciones thead { display: none; }
+  
   .tabla-cotizaciones tr {
-    margin-bottom: 12px;
+    display: block;
+    margin-bottom: 16px;
     border: 1px solid var(--gris-200);
     border-radius: 10px;
-    overflow: hidden;
     background: var(--blanco);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    padding: 12px;
   }
-
+  
   .tabla-cotizaciones td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: none;
     text-align: right;
-    padding-left: 50%;
-    position: relative;
-    border-bottom: 1px solid var(--gris-200);
-    background: var(--blanco);
-    font-size: 0.8125rem;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    overflow: visible;
-    text-overflow: clip;
-    white-space: normal;
   }
-
   .tabla-cotizaciones td::before {
     content: attr(data-label);
-    position: absolute;
-    left: 12px;
-    width: 45%;
-    text-align: left;
     font-weight: 700;
     color: var(--azul-claro);
     font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
   }
 
-  .tabla-cotizaciones td:last-child {
-    border-bottom: none;
-  }
-
-  .table-container {
-    overflow-x: hidden;
-    max-height: unset;
-    border: none;
-    background: transparent;
-  }
-
-  .acciones-flex {
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-
-  .acciones-columna {
-    flex-direction: column;
-    align-items: flex-end;
-    width: 100%;
-  }
-
-  .btn-editar,
-  .btn-ver,
-  .btn-aprobar,
-  .btn-rechazar,
-  .btn-factura,
-  .btn-proyecto {
-    padding: 6px 12px;
-    font-size: 0.8125rem;
-  }
-
-  .info-cliente div {
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
-  }
+  .info-cliente div { white-space: normal; }
+  .acciones-flex { justify-content: flex-end; }
+  .acciones-columna { align-items: flex-end; }
 }
 
 @media (max-width: 480px) {
-  .dba-container {
-    padding: 12px 0;
-  }
-
-  .dba-wrapper {
-    padding: 0 12px;
-  }
-
-  .dba-title {
-    font-size: 1.2rem;
-  }
-
-  .btn-recargar {
-    width: 100%;
-  }
-
-  .db-actions-group {
-    justify-content: center;
-  }
-
-  .btn-nav-db {
-    width: 100%;
-    text-align: center;
-  }
+  .dba-container { padding: 12px 0; }
+  .dba-wrapper { padding: 0 12px; }
 }
 
 /* ============================================
-   RESPONSIVE VERTICAL (ALTURA DE PANTALLA)
+   RESPONSIVE VERTICAL (ALTURA)
    ============================================ */
-@media (max-height: 700px) {
-  .table-container {
-    max-height: 55vh;
-  }
-}
-
-@media (max-height: 600px) {
-  .dba-container {
-    padding: 12px 0;
-  }
-
-  .dba-wrapper {
-    padding: 0 12px;
-  }
-
-  .table-container {
-    max-height: 50vh;
-  }
-
-  .dba-title {
-    font-size: 1.15rem;
-    margin-bottom: 12px;
-  }
-}
-
-@media (max-height: 500px) {
-  .table-container {
-    max-height: 45vh;
-  }
-
-  .dba-title {
-    font-size: 1.15rem;
-    margin-bottom: 12px;
-  }
-
-  .filtro-container {
-    padding: 8px;
-    margin-bottom: 12px;
-  }
-}
+@media (max-height: 700px) { .table-container { max-height: 55vh; } }
+@media (max-height: 600px) { .table-container { max-height: 50vh; } }
+@media (max-height: 500px) { .table-container { max-height: 45vh; } }
 
 /* Landscape móvil */
 @media (max-height: 500px) and (orientation: landscape) and (max-width: 900px) {
-  .filtro-container {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-}
-
-/* ============================================
-   SCROLLBAR
-   ============================================ */
-.table-container::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.table-container::-webkit-scrollbar-track {
-  background: var(--gris-100);
-  border-radius: 4px;
-}
-
-.table-container::-webkit-scrollbar-thumb {
-  background: var(--gris-300);
-  border-radius: 4px;
-}
-
-.table-container::-webkit-scrollbar-thumb:hover {
-  background: var(--gris-400);
+  .filtro-container { flex-direction: row; flex-wrap: wrap; }
 }
