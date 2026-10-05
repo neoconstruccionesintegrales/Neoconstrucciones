@@ -58,8 +58,8 @@ exports.crearFacturaIndependiente = async (req, res) => {
         }
 
         // Generar ID de factura (mismo consecutivo)
-        const siguienteNumero = await Contador.obtenerSiguiente('facturas');
-        const idFactura = `FAC-${String(siguienteNumero).padStart(3, '0')}`;
+        const siguienteNumero = await Contador.obtenerSiguiente('cuenta_cobro');
+        const idFactura = `CDC-${String(siguienteNumero).padStart(3, '0')}`;
 
         // Determinar sede
         const esPrincipal = String(idSede).includes('PRINCIPAL');
@@ -108,7 +108,7 @@ exports.crearFacturaIndependiente = async (req, res) => {
             nitCliente: nitClienteFinal,
             contactoCliente: contactoClienteFinal,
             correoCliente: correoClienteFinal,
-            nombreProyecto: 'Factura Independiente',
+            nombreProyecto: 'Cuenta de Cobro Independiente',
             datosEmisor: {
                 razonSocial: 'Neoconstrucciones Integrales SAS',
                 nit: '901.421.096-1',
@@ -152,14 +152,14 @@ exports.crearFacturaIndependiente = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: "Factura independiente creada exitosamente",
+            message: "Cuenta de cobro independiente creada exitosamente",
             data: nuevaFactura
         });
 
     } catch (error) {
-        console.error("--- ERROR EN CREAR FACTURA INDEPENDIENTE ---", error);
+        console.error("--- ERROR EN CREAR CUENTA DE COBRO INDEPENDIENTE ---", error);
         if (error.code === 11000) {
-            return res.status(409).json({ error: "Conflicto de ID", details: "Ya existe una factura con este ID" });
+            return res.status(409).json({ error: "Conflicto de ID", details: "Ya existe una cuenta de cobro con este ID" });
         }
         if (error.name === 'ValidationError') {
             return res.status(400).json({ error: "Datos inválidos", details: error.errors });
@@ -177,7 +177,7 @@ exports.getAllFacturas = async (req, res) => {
         res.json({ success: true, data: facturas });
     } catch (error) {
         console.error("Error en getAllFacturas:", error);
-        res.status(500).json({ success: false, error: "Error al obtener facturas", details: error.message });
+        res.status(500).json({ success: false, error: "Error al obtener cuentas de cobro", details: error.message });
     }
 };
 
@@ -194,7 +194,7 @@ exports.getFacturaById = async (req, res) => {
 
         const factura = await Factura.findOne(filtro);
         if (!factura) {
-            return res.status(404).json({ success: false, message: "Factura no encontrada" });
+            return res.status(404).json({ success: false, message: "Cuenta de cobro no encontrada" });
         }
 
         // Enriquecer con datos del cliente si es necesario
@@ -207,7 +207,7 @@ exports.getFacturaById = async (req, res) => {
         res.json({ success: true, data: facturaEnriquecida });
     } catch (error) {
         console.error("Error en getFacturaById:", error);
-        res.status(500).json({ success: false, error: "Error al obtener factura", details: error.message });
+        res.status(500).json({ success: false, error: "Error al obtener cuenta de cobro", details: error.message });
     }
 };
 
@@ -230,7 +230,7 @@ exports.updateEstadoFactura = async (req, res) => {
 
         const factura = await Factura.findOne(filtro);
         if (!factura) {
-            return res.status(404).json({ error: "Factura no encontrada" });
+            return res.status(404).json({ error: "Cuenta de cobro no encontrada" });
         }
 
         // Validar transiciones de estado según tipo de factura
@@ -247,12 +247,12 @@ exports.updateEstadoFactura = async (req, res) => {
 
         // Validar que no se pueda pagar una factura ya anulada
         if (factura.estado === 'Anulada') {
-            return res.status(400).json({ error: "No se puede modificar una factura anulada" });
+            return res.status(400).json({ error: "No se puede modificar una cuenta de cobro anulada" });
         }
 
         // Validar que no se pueda anular una factura pagada
         if (factura.estado === 'Pagada' && estado !== 'Anulada') {
-            return res.status(400).json({ error: "No se puede modificar una factura pagada" });
+            return res.status(400).json({ error: "No se puede modificar una cuenta de cobro pagada" });
         }
 
         // Si se marca como pagada, actualizar fechas
@@ -270,7 +270,7 @@ exports.updateEstadoFactura = async (req, res) => {
 
         // Si se anula, validar que no esté pagada
         if (estado === 'Anulada' && factura.estado === 'Pagada') {
-            return res.status(400).json({ error: "No se puede anular una factura pagada" });
+            return res.status(400).json({ error: "No se puede anular una cuenta de cobro pagada" });
         }
 
         factura.estado = estado;
@@ -299,7 +299,7 @@ exports.updateEstadoFactura = async (req, res) => {
 
         res.json({
             success: true,
-            message: `Factura actualizada a estado: ${estado}`,
+            message: `Cuenta de cobro actualizada a estado: ${estado}`,
             data: factura
         });
 
@@ -322,20 +322,20 @@ exports.deleteFactura = async (req, res) => {
 
         const factura = await Factura.findOne(filtro);
         if (!factura) {
-            return res.status(404).json({ error: "Factura no encontrada" });
+            return res.status(404).json({ error: "Cuenta de cobro no encontrada" });
         }
 
         // No permitir eliminar facturas pagadas
         if (factura.estado === 'Pagada') {
-            return res.status(403).json({ error: "No se puede eliminar una factura pagada" });
+            return res.status(403).json({ error: "No se puede eliminar una cuenta de cobro pagada" });
         }
 
         await Factura.findOneAndDelete(filtro);
-        res.json({ success: true, message: "Factura eliminada correctamente" });
+        res.json({ success: true, message: "Cuenta de cobro eliminada correctamente" });
 
     } catch (error) {
         console.error("--- ERROR EN DELETEFACTURA ---", error);
-        res.status(500).json({ error: "Error al eliminar factura", details: error.message });
+        res.status(500).json({ error: "Error al eliminar cuenta de cobro", details: error.message });
     }
 };
 // controllers/facturaController.js
@@ -353,17 +353,17 @@ exports.anularFactura = async (req, res) => {
 
         const factura = await Factura.findOne(filtro);
         if (!factura) {
-            return res.status(404).json({ error: "Factura no encontrada" });
+            return res.status(404).json({ error: "Cuenta de cobro no encontrada" });
         }
 
         // No permitir anular facturas pagadas
         if (factura.estado === 'Pagada') {
-            return res.status(400).json({ error: "No se puede anular una factura pagada" });
+            return res.status(400).json({ error: "No se puede anular una cuenta de cobro pagada" });
         }
 
         // Si ya está anulada, no hacer nada
         if (factura.estado === 'Anulada') {
-            return res.status(400).json({ error: "La factura ya está anulada" });
+            return res.status(400).json({ error: "La cuenta de cobro ya está anulada" });
         }
 
         // Guardar estado anterior para posibles liberaciones de hitos
@@ -399,14 +399,14 @@ exports.anularFactura = async (req, res) => {
 
         res.json({
             success: true,
-            message: `Factura ${factura.idFactura} anulada exitosamente`,
+            message: `Cuenta de cobro ${factura.idFactura} anulada exitosamente`,
             data: factura,
             estadoAnterior: estadoAnterior
         });
 
     } catch (error) {
-        console.error("--- ERROR EN ANULAR FACTURA ---", error);
-        res.status(500).json({ error: "Error al anular factura", details: error.message });
+        console.error("--- ERROR EN ANULAR CUENTA DE COBRO ---", error);
+        res.status(500).json({ error: "Error al anular cuenta de cobro", details: error.message });
     }
 };
 
@@ -420,7 +420,7 @@ exports.getFacturasByProyecto = async (req, res) => {
         res.json({ success: true, data: facturas });
     } catch (error) {
         console.error("Error en getFacturasByProyecto:", error);
-        res.status(500).json({ error: "Error al obtener facturas", details: error.message });
+        res.status(500).json({ error: "Error al obtener cuentas de cobros", details: error.message });
     }
 };
 
@@ -434,6 +434,6 @@ exports.getFacturasByCliente = async (req, res) => {
         res.json({ success: true, data: facturas });
     } catch (error) {
         console.error("Error en getFacturasByCliente:", error);
-        res.status(500).json({ error: "Error al obtener facturas", details: error.message });
+        res.status(500).json({ error: "Error al obtener cuentas de cobros", details: error.message });
     }
 };

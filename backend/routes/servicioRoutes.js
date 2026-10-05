@@ -6,7 +6,8 @@ const {
   obtenerServicios,
   crearServicio,
   eliminarServicio,
-  actualizarServicio
+  actualizarServicio,
+  reactivarServicio  // ✅ NUEVA FUNCIÓN IMPORTADA
 } = require('../controllers/servicioController');
 
 // Importar middleware de autenticación
@@ -25,7 +26,10 @@ router.post('/', authMiddleware, authorize('admin'), crearServicio);
 // PUT /api/servicios/:idServicio - Actualizar un servicio por su idServicio (solo admin)
 router.put('/:idServicio', authMiddleware, authorize('admin'), actualizarServicio);
 
-// DELETE /api/servicios/:idServicio - Eliminar un servicio por su idServicio (solo admin)
+// DELETE /api/servicios/:idServicio - Inactivar un servicio por su idServicio (solo admin)
 router.delete('/:idServicio', authMiddleware, authorize('admin'), eliminarServicio);
+
+// ✅ NUEVA RUTA: Reactivar un servicio (cambiar de Inactivo a Activo)
+router.put('/:idServicio/reactivar', authMiddleware, authorize('admin'), reactivarServicio);
 
 module.exports = router;

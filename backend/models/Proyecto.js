@@ -43,7 +43,6 @@ const FacturaSubSchema = new mongoose.Schema({
   netoACobrar: { type: Number, default: 0 },
   esFacturaAdicional: { type: Boolean, default: false },
   idCotizacionAdicional: { type: String, default: null },
-  // Referencia al hito que paga esta factura
   idHito: { type: String, default: null },
   numeroHito: { type: Number, default: null },
   porcentajeSaldo: { type: Number, default: null },
@@ -97,7 +96,7 @@ const HitoSchema = new mongoose.Schema({
 }, { _id: true });
 
 // ============================================================
-// 5. Schema principal del Proyecto
+// 5. Schema principal del Proyecto (MODIFICADO)
 // ============================================================
 const ProyectoSchema = new mongoose.Schema({
   // IDs
@@ -128,10 +127,10 @@ const ProyectoSchema = new mongoose.Schema({
   porcentajeAvance: { type: Number, default: 0, min: 0, max: 100 },
   seguimiento: { type: String, default: 'Iniciando proyecto...' },
 
-  // Estado del proyecto
+  // Estado del proyecto (AGREGAR 'Eliminado' al enum)
   estado: {
     type: String,
-    enum: ['Creado', 'En Espera de Anticipo', 'Iniciado', 'En Ejecucion', 'Finalizado', 'Cancelado'],
+    enum: ['Creado', 'En Espera de Anticipo', 'Iniciado', 'En Ejecucion', 'Finalizado', 'Cancelado', 'Eliminado'],
     default: 'Creado'
   },
 
@@ -142,7 +141,7 @@ const ProyectoSchema = new mongoose.Schema({
     default: 'anticipo_final'
   },
 
-  // Hitos (MEJORADO - ahora usa HitoSchema)
+  // Hitos
   tieneHitos: { type: Boolean, default: false },
   hitos: [HitoSchema],
 
@@ -159,11 +158,47 @@ const ProyectoSchema = new mongoose.Schema({
   items: { type: Array, default: [] },
 
   // Metadata
-  creadoPor: { type: String, default: 'Sistema' }
+  creadoPor: { type: String, default: 'Sistema' },
+
+  // ============================================================
+  // ✅ NUEVOS CAMPOS PARA SOFT DELETE
+  // ============================================================
+  eliminado: { 
+    type: Boolean, 
+    default: false 
+  },
+  fechaEliminacion: { 
+    type: Date, 
+    default: null 
+  },
+  eliminadoPor: { 
+    type: String, 
+    default: null 
+  },
+  motivoEliminacion: { 
+    type: String, 
+    default: '' 
+  },
+
+  // ============================================================
+  // ✅ HISTORIAL DE ELIMINACIONES (Para auditoría completa)
+  // ============================================================
+  historialEliminacion: [{
+    fecha: { type: Date, default: Date.now },
+    eliminadoPor: { type: String, default: '' },
+    motivo: { type: String, default: '' },
+    facturasAnuladas: [{
+      idFactura: { type: String },
+      valor: { type: Number },
+      estadoAnterior: { type: String }
+    }],
+    cotizacionesAnuladas: [{ type: String }]
+  }]
+
 }, { timestamps: true });
 
 // ============================================================
-// Middleware pre-save
+// Middleware pre-save (SIN CAMBIOS)
 // ============================================================
 ProyectoSchema.pre('save', async function() {
   // Calcular saldo
@@ -184,16 +219,12 @@ ProyectoSchema.pre('save', async function() {
       (acc, f) => acc + (f.valor || 0), 0
     );
   }
-
-  // El avance se maneja manualmente desde seguimientos
-  // this.actualizarAvanceDesdeHitos();
 });
 
 // ============================================================
-// Metodos de instancia
+// Metodos de instancia (SIN CAMBIOS)
 // ============================================================
 
-// NUEVO: Completar un hito
 ProyectoSchema.methods.completarHito = function(idHito, idFacturaPagada = null) {
   const hito = this.hitos.find(h => h.idHito === idHito);
   if (!hito) return { success: false, message: 'Hito no encontrado' };
@@ -202,7 +233,6 @@ ProyectoSchema.methods.completarHito = function(idHito, idFacturaPagada = null) 
     return { success: false, message: 'El hito ya está completado' };
   }
 
-  // Verificar que el hito anterior esté completado
   const index = this.hitos.findIndex(h => h.idHito === idHito);
   if (index > 0 && !this.hitos[index - 1].completado) {
     return { success: false, message: 'Debe completar el hito anterior primero' };
@@ -217,19 +247,16 @@ ProyectoSchema.methods.completarHito = function(idHito, idFacturaPagada = null) 
   return { success: true, message: 'Hito completado', hito };
 };
 
-// NUEVO: Obtener siguiente hito pendiente
 ProyectoSchema.methods.obtenerSiguienteHitoPendiente = function() {
   if (!this.hitos || this.hitos.length === 0) return null;
   return this.hitos.find(h => !h.completado) || null;
 };
 
-// NUEVO: Obtener hito por ID de factura
 ProyectoSchema.methods.obtenerHitoPorFactura = function(idFactura) {
   if (!this.hitos || this.hitos.length === 0) return null;
   return this.hitos.find(h => h.idFactura === idFactura) || null;
 };
 
-// NUEVO: Marcar hito como factura generada
 ProyectoSchema.methods.marcarHitoFacturado = function(idHito, idFactura) {
   const hito = this.hitos.find(h => h.idHito === idHito);
   if (!hito) return { success: false, message: 'Hito no encontrado' };
@@ -237,17 +264,16 @@ ProyectoSchema.methods.marcarHitoFacturado = function(idHito, idFactura) {
   hito.facturaGenerada = true;
   hito.idFactura = idFactura;
   
-  return { success: true, message: 'Hito marcado como facturado', hito };
+  return { success: true, message: 'Hito marcado como pagado', hito };
 };
 
-// NUEVO: Verificar si se puede generar factura para un hito
 ProyectoSchema.methods.puedeGenerarFacturaHito = function(idHito) {
   const hito = this.hitos.find(h => h.idHito === idHito);
   if (!hito) return { puede: false, razon: 'Hito no encontrado' };
-  if (hito.facturaGenerada) return { puede: false, razon: 'El hito ya tiene factura generada' };
+  if (hito.facturaGenerada) return { puede: false, razon: 'El hito ya tiene cuenta de cobro generada' };
   
   const index = this.hitos.findIndex(h => h.idHito === idHito);
-  if (index === 0) return { puede: true }; // Primer hito siempre
+  if (index === 0) return { puede: true };
   
   const anterior = this.hitos[index - 1];
   if (!anterior.completado) {
@@ -257,7 +283,6 @@ ProyectoSchema.methods.puedeGenerarFacturaHito = function(idHito) {
   return { puede: true };
 };
 
-// NUEVO: Obtener porcentaje total facturado de hitos
 ProyectoSchema.methods.obtenerPorcentajeFacturadoHitos = function() {
   if (!this.hitos || this.hitos.length === 0) return 0;
   return this.hitos.reduce((acc, h) => acc + (h.facturaGenerada ? h.porcentajePago : 0), 0);

@@ -1,7 +1,6 @@
 /* ============================================
-   COTIZACION.CSS — Unificado (Crear + Editar)
+   COTIZACION.CSS 
    Paleta: Azul claro #1391c8 | Azul oscuro #0077b1
-           Blanco #ffffff | Negro #0e0e0e
    ============================================ */
 
 :root {
@@ -544,13 +543,12 @@ textarea:disabled {
   font-family: var(--font-base);
 }
 
-.tabla-cotizacion td {
-  padding: 10px 10px;
+.tabla-cotizaciones td {
+  padding: 12px 12px;           /* ← misma medida horizontal que servicios */
   border-bottom: 1px solid var(--gris-200);
   color: var(--gris-700);
-  vertical-align: middle;
-  background-color: var(--blanco);
-  font-family: var(--font-base);
+  vertical-align: middle;     /* ← cambia a middle, como servicios/usuarios */
+  background-color: var(--blanco);  /* ← explícito, evita transparencias */
 }
 
 .tabla-cotizacion tbody tr:hover td {
@@ -735,7 +733,7 @@ textarea:disabled {
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 500px;
+  max-width: 900px;
   font-family: var(--font-base);
 }
 

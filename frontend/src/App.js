@@ -25,6 +25,7 @@ import GestionNovedades from './pages/GestionNovedades';
 import GenerarNomina from './pages/GenerarNomina';
 import ComprobantePago from './pages/ComprobantePago';
 import Liquidacion from './pages/Liquidacion';
+import ReportesNomina from './pages/Compras/ReportesNomina';
 import Proyectos from './pages/Proyectos';
 import Facturas from './pages/Facturas';
 import RegistroLaboral from './components/RegistroLaboral.jsx';
@@ -34,6 +35,10 @@ import GestionCotizaciones from './pages/GestionCotizaciones';
 import EditarCotizacion from './pages/EditarCotizacion';
 import GestionDescuentos from './pages/GestionDescuentos'; 
 import ConsignacionCesantias from './pages/ConsignacionCesantias';
+
+// ✅ NUEVOS: Componentes de Compras
+import Proveedores from './pages/Compras/Proveedores';
+import FacturasCompra from './pages/Compras/FacturasCompra';
 
 import './App.css';
 
@@ -155,11 +160,11 @@ function App() {
             </RoleRoute></PrivateRoute>
           } />
 
-           {/* CESANTIAS-FONDO */}
+          {/* CESANTIAS-FONDO */}
           <Route path="/nomina/cesantias-fondo" element={
-           <PrivateRoute><RoleRoute allowedRoles={['admin', 'gerente', 'contabilidad']}>
+            <PrivateRoute><RoleRoute allowedRoles={['admin', 'gerente', 'contabilidad']}>
               <AdminHeader /><ConsignacionCesantias />
-          </RoleRoute></PrivateRoute>
+            </RoleRoute></PrivateRoute>
           } />
           
           {/* Comprobantes - Todos los roles */}
@@ -167,10 +172,10 @@ function App() {
             <PrivateRoute><AdminHeader /><ComprobantePago /></PrivateRoute>
           } />
 
-          {/* Reportes - Admin, Gerente, Contabilidad */}
+          {/* Reportes - Admin, Contabilidad */}
           <Route path="/nomina/reportes" element={
-            <PrivateRoute><RoleRoute allowedRoles={['admin', 'gerente', 'contabilidad']}>
-              <AdminHeader /><GenerarNomina /> {/* O un componente ReportesNomina si lo creas */}
+            <PrivateRoute><RoleRoute allowedRoles={['admin', 'contabilidad']}>
+              <AdminHeader /><ReportesNomina /> 
             </RoleRoute></PrivateRoute>
           } />
 
@@ -180,8 +185,29 @@ function App() {
               <AdminHeader /><Liquidacion />
             </RoleRoute></PrivateRoute>
           } />
+
+          {/* ==========================================
+              🛒 MÓDULO DE COMPRAS
+              ========================================== */}
+          
+          {/* Proveedores - Admin, Contabilidad */}
+          <Route path="/compras/proveedores" element={
+            <PrivateRoute><RoleRoute allowedRoles={['admin', 'contabilidad']}>
+              <AdminHeader /><Proveedores /> 
+            </RoleRoute></PrivateRoute>
+          } />
+
+          {/* Facturas de Compra - Admin, Contabilidad */}
+          <Route path="/compras/facturas" element={
+            <PrivateRoute><RoleRoute allowedRoles={['admin', 'contabilidad']}>
+              <AdminHeader /><FacturasCompra /> 
+            </RoleRoute></PrivateRoute>
+          } />
    
-          {/* Rutas existentes */}
+          {/* ==========================================
+              📋 OTROS MÓDULOS
+              ========================================== */}
+          
           <Route path="/admin-servicios" element={
             <PrivateRoute><AdminHeader /><Servicios /></PrivateRoute>
           } />
@@ -195,7 +221,7 @@ function App() {
           } />
 
           <Route path="/facturas" element={
-            <PrivateRoute><AdminHeader /><Facturas/></PrivateRoute>
+            <PrivateRoute><AdminHeader /><Facturas /></PrivateRoute>
           } />
 
           <Route path="/clientes" element={

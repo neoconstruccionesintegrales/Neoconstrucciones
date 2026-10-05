@@ -96,7 +96,7 @@ const EditarCotizacion = () => {
         if (nuevoEstado === 'Aprobada') {
             var tipos = ['1. Anticipo 40% + Final 60%', '2. Pago Único (100%)', '3. Por Etapas (40%+30%+30%)', '4. Por Etapas (40%+20%+20%+20%)'];
             var tipoSeleccionado = window.prompt(
-                'Seleccione tipo de facturación:\n' + tipos.join('\n') + '\n\nIngrese el número:'
+                'Seleccione tipo de pago cuenta de cobro:\n' + tipos.join('\n') + '\n\nIngrese el número:'
             );
 
             if (tipoSeleccionado === null) {

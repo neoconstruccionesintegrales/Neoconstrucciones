@@ -35,7 +35,7 @@ export async function generarPDFFactura(factura, logoBase64 = null) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(26);
   doc.setFont('helvetica', 'bold');
-  doc.text('FACTURA', pageWidth / 2, 28, { align: 'center' });
+  doc.text('CUENTA DE COBRO', pageWidth / 2, 28, { align: 'center' });
 
   // INFO FACTURA DERECHA (alineada verticalmente con el logo)
   doc.setFontSize(11);
@@ -66,7 +66,7 @@ export async function generarPDFFactura(factura, logoBase64 = null) {
 
   doc.setTextColor(...colorSecundario);
   doc.setFont('helvetica', 'bold');
-  doc.text('FACTURAR A', margin, 62);
+  doc.text('CUENTA DE COBRO A', margin, 62);
 
   doc.setTextColor(...colorTextoGris);
   doc.setFont('helvetica', 'normal');
@@ -104,7 +104,7 @@ export async function generarPDFFactura(factura, logoBase64 = null) {
     doc.setTextColor(...colorTextoGris);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.text(`NOTA: Esta factura corresponde al anticipo del ${factura.anticipoPorcentaje}% del proyecto.`, margin + 3, notaY + 7);
+    doc.text(`NOTA: Esta cuenta de cobro corresponde al anticipo del ${factura.anticipoPorcentaje}% del proyecto.`, margin + 3, notaY + 7);
     notaY += 16;
   } else if (factura.saldoPorcentaje > 0 && factura.saldoPorcentaje < 100) {
     doc.setFillColor(255, 255, 255);
@@ -115,7 +115,7 @@ export async function generarPDFFactura(factura, logoBase64 = null) {
     doc.setTextColor(...colorTextoGris);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.text(`NOTA: Esta factura corresponde al saldo del proyecto.`, margin + 3, notaY + 7);
+    doc.text(`NOTA: Esta cuenta de cobro corresponde al saldo del proyecto.`, margin + 3, notaY + 7);
     notaY += 16;
   }
 
@@ -235,7 +235,7 @@ export async function generarPDFFactura(factura, logoBase64 = null) {
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  const retencionTexto = `Esta factura esta sujeta a retencion en la fuente del ${factura.retencionPorcentaje || 2}% ($${Number(factura.retencion || 0).toLocaleString('es-CO')}). La retencion es de caracter informativo; el valor a pagar es el Total con IVA.`;
+  const retencionTexto = `Esta cuenta de cobro esta sujeta a retencion en la fuente del ${factura.retencionPorcentaje || 2}% ($${Number(factura.retencion || 0).toLocaleString('es-CO')}). La retencion es de caracter informativo; el valor a pagar es el Total con IVA.`;
   const retencionSplit = doc.splitTextToSize(retencionTexto, totalesX - margin - 16);
   doc.text(retencionSplit, margin + 3, notasY + 11);
 

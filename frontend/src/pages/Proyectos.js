@@ -115,11 +115,11 @@ function Proyectos() {
   const guardarCambios = async (idProyecto) => {
     try {
       await axios.put(`${API_URL}/proyectos/${idProyecto}`, { 
-    porcentajeAvance: Number(camposEditar.porcentajeAvance), 
-    seguimiento: camposEditar.seguimiento, 
-    nombreProyecto: camposEditar.nombreProyecto.toUpperCase(), 
-    estado: camposEditar.estado 
-});
+        porcentajeAvance: Number(camposEditar.porcentajeAvance), 
+        seguimiento: camposEditar.seguimiento, 
+        nombreProyecto: camposEditar.nombreProyecto.toUpperCase(), 
+        estado: camposEditar.estado 
+      });
       alert('Proyecto actualizado'); 
       setEditandoID(null); 
       cargarDatos();
@@ -128,23 +128,48 @@ function Proyectos() {
     }
   };
 
+  // ============================================
+  // ELIMINAR PROYECTO (Soft Delete)
+  // ============================================
   const eliminarProyecto = async (id) => {
-    if (!window.confirm("¿Eliminar este proyecto? Se eliminarán también las facturas no pagadas asociadas.")) return;
+    if (!window.confirm(
+      "⚠️ ¿Esta seguro de eliminar este proyecto?\n\n" +
+      "• El proyecto se marcará como ELIMINADO\n" +
+      "• Las cuentas de cobro NO PAGADAS se conservarán con estado ANULADO\n" +
+      "• Las cuentas de cobro PAGADAS NO permite la eliminación de Proyecto\n" +
+      "¿Deseas continuar?"
+    )) return;
+
     try {
-      await axios.delete(`${API_URL}/proyectos/${id}`);
-      alert("Proyecto eliminado");
+      const response = await axios.delete(`${API_URL}/proyectos/${id}`);
+      
+      const data = response.data?.data || {};
+      let mensajeExito = `✅ ${response.data?.message || 'Proyecto eliminado'}`;
+      
+      if (data.facturasAfectadas > 0) {
+        mensajeExito += `\n\n📄 cuentas de cobro afectadas: ${data.facturasAfectadas}`;
+        mensajeExito += `\n💡 Estas cuentas de cobro conservan notación del proyecto eliminado.`;
+      }
+      
+      alert(mensajeExito);
       cargarDatos();
+      
     } catch (error) {
       const mensaje = error.response?.data?.message || error.message;
-      const facturasPagadas = error.response?.data?.facturasPagadas;
-      if (facturasPagadas && facturasPagadas.length > 0) {
-        alert(`NO SE PUEDE ELIMINAR:
-${mensaje}
-
-Facturas pagadas:
-${facturasPagadas.join('\n')}`);
+      const facturasPagadas = error.response?.data?.facturasPagadas || [];
+      const cantidad = error.response?.data?.cantidadFacturasPagadas || facturasPagadas.length;
+      
+      if (facturasPagadas.length > 0) {
+        let mensajeError = `❌ No se puede eliminar el proyecto.\n\n`;
+        mensajeError += `📌 ${mensaje}\n\n`;
+        mensajeError += `📄 cuentas de cobro pagadas (${cantidad}):\n`;
+        facturasPagadas.forEach((factura, index) => {
+          mensajeError += `   ${index + 1}. ${factura}\n`;
+        });
+             
+        alert(mensajeError);
       } else {
-        alert("Error: " + mensaje);
+        alert("❌ Error: " + mensaje);
       }
     }
   };
@@ -255,6 +280,7 @@ ${facturasPagadas.join('\n')}`);
       case 'Pausado': return '#f39c12'; 
       case 'Finalizado': return '#3498db'; 
       case 'Cancelado': return '#e74c3c'; 
+      case 'Eliminado': return '#dc3545';
       default: return '#95a5a6'; 
     } 
   };
@@ -291,6 +317,7 @@ ${facturasPagadas.join('\n')}`);
             <option value="En Ejecucion">En Ejecucion</option>
             <option value="Finalizado">Finalizado</option>
             <option value="Cancelado">Cancelado</option>
+            <option value="Eliminado">🗑️ Eliminado</option>
           </select>
           <select value={filtroCliente} onChange={(e) => setFiltroCliente(e.target.value)}>
             <option value="Todos">Todos los clientes</option>
@@ -300,9 +327,9 @@ ${facturasPagadas.join('\n')}`);
           </select>
           <button 
             onClick={() => { setFiltroTexto(''); setFiltroEstado('Todos'); setFiltroCliente('Todos'); }}
-            className="btn-secondary btn-sm"
+            className="btn-limpiar" title="Limpiar filtros"
           >
-            🔄 Limpiar
+            🧹 Limpiar
           </button>
         </div>
 
@@ -311,22 +338,27 @@ ${facturasPagadas.join('\n')}`);
           <div className="tablero-list">
             {proyectosFiltrados.map(p => {
               const info = obtenerInfoCliente(p.idCliente, p.idSede);
+              const isEliminado = p.eliminado === true;
               return (
                 <article 
                   key={p.idProyecto} 
                   className="proyecto-item"
-                  style={{ borderLeft: `6px solid ${colorProgreso(p.porcentajeAvance)}` }}
+                  style={{ 
+                    borderLeft: `6px solid ${isEliminado ? '#dc3545' : colorProgreso(p.porcentajeAvance)}`,
+                    opacity: isEliminado ? 0.7 : 1,
+                    background: isEliminado ? '#f8f9fa' : 'white'
+                  }}
                 >
                   {/* HEADER TARJETA */}
                   <div className="item-header">
                     <span className="proyecto-id">{p.idProyecto}</span>
                     <span 
                       className="estado-badge" 
-                      style={{ backgroundColor: colorEstado(p.estado) }}
+                      style={{ backgroundColor: isEliminado ? '#dc3545' : colorEstado(p.estado) }}
                     >
-                      {p.estado}
+                      {isEliminado ? '🗑️ ELIMINADO' : p.estado}
                     </span>
-                    {p.tieneHitos && <span className="hito-badge">HITOS</span>}
+                    {p.tieneHitos && !isEliminado && <span className="hito-badge">HITOS</span>}
                     <span className="sede-text">{info.sede}</span>
                     <span className="fecha-text">{new Date(p.fechaInicio).toLocaleDateString()}</span>
                   </div>
@@ -343,30 +375,55 @@ ${facturasPagadas.join('\n')}`);
                     </div>
                   </div>
 
-                  {/* BARRA PROGRESO */}
-                  <div className="progreso-container">
-                    <div className="progreso-labels">
-                      <span>Avance: {p.porcentajeAvance}%</span>
-                      <span>Presupuesto: ${Number(p.presupuestoTotal).toLocaleString()}</span>
+                  {/* BARRA PROGRESO - Ocultar si está eliminado */}
+                  {!isEliminado && (
+                    <div className="progreso-container">
+                      <div className="progreso-labels">
+                        <span>Avance: {p.porcentajeAvance}%</span>
+                        <span>Presupuesto: ${Number(p.presupuestoTotal).toLocaleString()}</span>
+                      </div>
+                      <div className="progreso-barra-bg">
+                        <div 
+                          className="progreso-barra-fill" 
+                          style={{ 
+                            width: `${p.porcentajeAvance}%`, 
+                            background: colorProgreso(p.porcentajeAvance) 
+                          }} 
+                        />
+                      </div>
                     </div>
-                    <div className="progreso-barra-bg">
-                      <div 
-                        className="progreso-barra-fill" 
-                        style={{ 
-                          width: `${p.porcentajeAvance}%`, 
-                          background: colorProgreso(p.porcentajeAvance) 
-                        }} 
-                      />
-                    </div>
-                  </div>
+                  )}
 
-                  {/* RESUMEN FINANCIERO */}
-                  <div className="resumen-financiero">
-                    <span>Ejecutado: ${Number(p.valorTotalEjecutado || 0).toLocaleString()}</span>
-                    <span>Facturado: ${Number(p.valorTotalFacturado || 0).toLocaleString()}</span>
-                    <span>Cotiz. Adic: {p.cotizacionesAdicionales?.length || 0}</span>
-                    <span>Facturas: {p.facturas?.length || 0}</span>
-                  </div>
+                  {/* Si está eliminado, mostrar mensaje */}
+                  {isEliminado && (
+                    <div className="alert-banner alert-danger" style={{ margin: '8px 0', padding: '8px', background: '#f8d7da', borderRadius: '4px' }}>
+                      <span style={{ color: '#721c24' }}>
+                        🗑️ Proyecto eliminado el {p.fechaEliminacion ? new Date(p.fechaEliminacion).toLocaleDateString() : 'fecha desconocida'}
+                        {p.eliminadoPor && ` por ${p.eliminadoPor}`}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* RESUMEN FINANCIERO - Mostrar solo si no está eliminado */}
+                  {!isEliminado && (
+                    <div className="resumen-financiero">
+                      <span>Ejecutado: ${Number(p.valorTotalEjecutado || 0).toLocaleString()}</span>
+                      <span>
+                        Cobrado: $
+                        {Number(
+                          (p.facturas || [])
+                            .filter(f => f.estado !== 'Anulada')
+                            .reduce((sum, f) => sum + (f.valor || 0), 0)
+                        ).toLocaleString()}
+                        {' '}
+                        <small style={{ color: '#6c757d' }}>
+                          ({(p.facturas || []).filter(f => f.estado === 'Anulada').length} anul.)
+                        </small>
+                      </span>
+                      <span>Cotiz. Adic: {p.cotizacionesAdicionales?.length || 0}</span>
+                      <span>Cuentas de cobro: {(p.facturas || []).filter(f => f.estado !== 'Anulada').length}</span>
+                    </div>
+                  )}
 
                   {/* SEGUIMIENTO */}
                   <p className="seguimiento-text">{p.seguimiento || 'Sin novedades'}</p>
@@ -425,52 +482,72 @@ ${facturasPagadas.join('\n')}`);
                     </div>
                   ) : (
                     <div className="acciones-container">
-                      <button onClick={() => verDetalle(p)} className="btn-info btn-xs">
-                        👁️ Ver
-                      </button>
-                      <button onClick={() => iniciarEdicion(p)} className="btn-warning btn-xs">
-                        ✏️ Editar
-                      </button>
-                      <button onClick={() => abrirCotizacionFull(p)} className="btn-purple btn-xs">
-                        + Cotizacion
-                      </button>
-                      <button onClick={() => abrirSeguimientos(p)} className="btn-teal btn-xs">
-                        Seguimiento
-                      </button>
-
-                      {/* Boton +Factura con verificacion de saldo pendiente */}
-                      {(() => {
-                        const totalFacturadoBase = p.facturas?.reduce((sum, f) => {
-                          if (!f.esFacturaAdicional && !f.idCotizacionAdicional) {
-                            return sum + (f.valor || 0);
-                          }
-                          return sum;
-                        }, 0) || 0;
-                        const presupuestoBase = p.presupuestoTotal || 0;
-                        const saldoPendienteBase = presupuestoBase - totalFacturadoBase;
-
-                        const tieneCotizacionesConSaldo = p.cotizacionesAdicionales?.some(c => {
-                          if (c.estado !== 'Aprobada' && c.estado !== 'En Proceso') return false;
-                          const facturasDeCotizacion = p.facturas?.filter(
-                            f => f.idCotizacionAdicional === c.idCotizacion && 
-                                 (f.estado === 'Pagada' || f.estado === 'Anticipo ya Pagado')
-                          ) || [];
-                          const totalFacturado = facturasDeCotizacion.reduce((sum, f) => sum + (f.valor || 0), 0);
-                          const totalCotizacion = c.total || c.valor || 0;
-                          return totalFacturado < totalCotizacion;
-                        });
-
-                        const mostrarBoton = saldoPendienteBase > 100 || tieneCotizacionesConSaldo;
-                        return mostrarBoton ? (
-                          <button onClick={() => abrirFacturaFull(p)} className="btn-orange btn-xs">
-                            + Factura
+                      {!isEliminado ? (
+                        <>
+                          <button onClick={() => verDetalle(p)} className="btn-info btn-xs">
+                            👁️ Ver
                           </button>
-                        ) : null;
-                      })()}
+                          <button onClick={() => iniciarEdicion(p)} className="btn-warning btn-xs">
+                            ✏️ Editar
+                          </button>
+                          <button onClick={() => abrirCotizacionFull(p)} className="btn-purple btn-xs">
+                            + Cotizacion
+                          </button>
+                          <button onClick={() => abrirSeguimientos(p)} className="btn-teal btn-xs">
+                            Seguimiento
+                          </button>
 
-                      <button onClick={() => eliminarProyecto(p.idProyecto)} className="btn-danger btn-xs">
-                        🗑️ Eliminar
-                      </button>
+                          {/* Boton +Factura con verificacion de saldo pendiente */}
+                          {(() => {
+                            const totalFacturadoBase = p.facturas?.reduce((sum, f) => {
+                              if (!f.esFacturaAdicional && !f.idCotizacionAdicional) {
+                                return sum + (f.valor || 0);
+                              }
+                              return sum;
+                            }, 0) || 0;
+                            const presupuestoBase = p.presupuestoTotal || 0;
+                            const saldoPendienteBase = presupuestoBase - totalFacturadoBase;
+
+                            const tieneCotizacionesConSaldo = p.cotizacionesAdicionales?.some(c => {
+                              if (c.estado !== 'Aprobada' && c.estado !== 'En Proceso') return false;
+                              const facturasDeCotizacion = p.facturas?.filter(
+                                f => f.idCotizacionAdicional === c.idCotizacion && 
+                                     (f.estado === 'Pagada' || f.estado === 'Anticipo ya Pagado')
+                              ) || [];
+                              const totalFacturado = facturasDeCotizacion.reduce((sum, f) => sum + (f.valor || 0), 0);
+                              const totalCotizacion = c.total || c.valor || 0;
+                              return totalFacturado < totalCotizacion;
+                            });
+
+                            const mostrarBoton = saldoPendienteBase > 100 || tieneCotizacionesConSaldo;
+                            return mostrarBoton ? (
+                              <button onClick={() => abrirFacturaFull(p)} className="btn-orange btn-xs">
+                                + Cuenta de cobro
+                              </button>
+                            ) : null;
+                          })()}
+
+                          <button onClick={() => eliminarProyecto(p.idProyecto)} className="btn-danger btn-xs">
+                            🗑️ Eliminar
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => verDetalle(p)} className="btn-info btn-xs">
+                            👁️ Ver
+                          </button>
+                          <span style={{ 
+                            color: '#dc3545', 
+                            fontSize: '12px', 
+                            fontWeight: 'bold',
+                            padding: '4px 8px',
+                            background: '#f8d7da',
+                            borderRadius: '4px'
+                          }}>
+                            🗑️ Eliminado
+                          </span>
+                        </>
+                      )}
                     </div>
                   )}
                 </article>
@@ -500,28 +577,41 @@ ${facturasPagadas.join('\n')}`);
               </div>
 
               <div className="modal-body">
-                {(() => {
-                  const info = obtenerInfoCliente(proyectoDetalle.idCliente, proyectoDetalle.idSede);
-                  return (
-                    <div className="modal-section">
-                      <h4 className="modal-section-title">📋 Informacion General</h4>
-                      <div className="info-grid">
-                        <p><strong>ID:</strong> {proyectoDetalle.idProyecto}</p>
-                        <p><strong>Cliente:</strong> {info.nombre}</p>
-                        <p><strong>Sede:</strong> {info.sede}</p>
-                        <p>
-                          <strong>Estado:</strong>{' '}
-                          <span style={{ color: colorEstado(proyectoDetalle.estado) }}>
-                            {proyectoDetalle.estado}
-                          </span>
-                        </p>
-                        <p><strong>Presupuesto Base:</strong> ${Number(proyectoDetalle.presupuestoTotal).toLocaleString()}</p>
-                        <p><strong>Avance:</strong> {proyectoDetalle.porcentajeAvance}%</p>
-                        {proyectoDetalle.idCotizacion && <p><strong>Cotizacion Base:</strong> {proyectoDetalle.idCotizacion}</p>}
-                      </div>
-                    </div>
-                  );
-                })()}
+                <div className="modal-section">
+                  <h4 className="modal-section-title">📋 Informacion General</h4>
+                  {(() => {
+                    const info = obtenerInfoCliente(proyectoDetalle.idCliente, proyectoDetalle.idSede);
+                    const isEliminado = proyectoDetalle.eliminado === true;
+                    return (
+                      <>
+                        {isEliminado && (
+                          <div className="alert-banner alert-danger" style={{ padding: '12px', background: '#f8d7da', borderRadius: '4px', marginBottom: '12px' }}>
+                            <span style={{ color: '#721c24' }}>
+                              🗑️ <strong>PROYECTO ELIMINADO</strong>
+                              {proyectoDetalle.fechaEliminacion && ` el ${new Date(proyectoDetalle.fechaEliminacion).toLocaleDateString()}`}
+                              {proyectoDetalle.eliminadoPor && ` por ${proyectoDetalle.eliminadoPor}`}
+                              {proyectoDetalle.motivoEliminacion && ` - Motivo: ${proyectoDetalle.motivoEliminacion}`}
+                            </span>
+                          </div>
+                        )}
+                        <div className="info-grid">
+                          <p><strong>ID:</strong> {proyectoDetalle.idProyecto}</p>
+                          <p><strong>Cliente:</strong> {info.nombre}</p>
+                          <p><strong>Sede:</strong> {info.sede}</p>
+                          <p>
+                            <strong>Estado:</strong>{' '}
+                            <span style={{ color: isEliminado ? '#dc3545' : colorEstado(proyectoDetalle.estado) }}>
+                              {isEliminado ? '🗑️ ELIMINADO' : proyectoDetalle.estado}
+                            </span>
+                          </p>
+                          <p><strong>Presupuesto Base:</strong> ${Number(proyectoDetalle.presupuestoTotal).toLocaleString()}</p>
+                          <p><strong>Avance:</strong> {proyectoDetalle.porcentajeAvance}%</p>
+                          {proyectoDetalle.idCotizacion && <p><strong>Cotizacion Base:</strong> {proyectoDetalle.idCotizacion}</p>}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
 
                 {/* COTIZACIONES ADICIONALES */}
                 <div className="modal-section">
@@ -558,7 +648,7 @@ ${facturasPagadas.join('\n')}`);
                               </td>
                               <td>{c.fecha ? new Date(c.fecha).toLocaleDateString() : (c.fechaAgregado ? new Date(c.fechaAgregado).toLocaleDateString() : 'N/A')}</td>
                               <td className="text-center">
-                                {c.estado === 'Pendiente' && (
+                                {c.estado === 'Pendiente' && !proyectoDetalle.eliminado && (
                                   <>
                                     <button 
                                       onClick={() => { setShowDetalle(false); abrirCotizacionFull(proyectoDetalle, c); }}
@@ -569,7 +659,7 @@ ${facturasPagadas.join('\n')}`);
                                     </button>
                                     <button 
                                       onClick={async () => {
-                                        if (!window.confirm('¿Aprobar esta cotizacion adicional? Se generara la factura de anticipo.')) return;
+                                        if (!window.confirm('¿Aprobar esta cotizacion adicional? Se generara cuenta de cobro de anticipo.')) return;
                                         try {
                                           await axios.post(`${API_URL}/proyectos/${proyectoDetalle.idProyecto}/cotizaciones-adicionales/${c.idCotizacion}/aprobar`, {}, {
                                             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -602,159 +692,161 @@ ${facturasPagadas.join('\n')}`);
                   ) : <p className="text-gray font-size-13" style={{ fontStyle: 'italic' }}>No hay cotizaciones adicionales</p>}
                 </div>
 
-                {/* HITOS DEL PROYECTO */}
-                <div className="modal-section">
-                  <h4 className="modal-section-title">
-                    🎯 Hitos del Proyecto ({proyectoDetalle.hitos?.length || 0})
-                  </h4>
-                  {proyectoDetalle.hitos?.length > 0 ? (
-                    <div className="modal-table-container">
-                      <table className="modal-table">
-                        <thead>
-                          <tr>
-                            <th>#</th>
-                            <th>Hito</th>
-                            <th className="text-right">%</th>
-                            <th className="text-right">Monto</th>
-                            <th className="text-center">Estado</th>
-                            <th className="text-center">Factura</th>
-                            <th className="text-center">Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {proyectoDetalle.hitos.map((hito) => {
-                            const facturaAsociada = proyectoDetalle.facturas?.find(f => f.idHito === hito.idHito);
-                            return (
-                              <tr key={hito.idHito} style={{ 
-                                background: hito.completado ? '#d4edda' : hito.facturaGenerada ? '#fff3cd' : 'white'
-                              }}>
-                                <td style={{ fontWeight: 'bold' }}>{hito.numeroHito}</td>
-                                <td>
-                                  <strong>{hito.nombre}</strong><br/>
-                                  <span className="font-size-11 text-gray">{hito.descripcion}</span>
-                                </td>
-                                <td className="text-right">{hito.porcentajePago}%</td>
-                                <td className="text-right">${Number(hito.montoEstimado).toLocaleString()}</td>
-                                <td className="text-center">
-                                  {hito.completado ? (
-                                    <span className="font-size-11" style={{ background: '#28a745', color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
-                                      ✓ Completado
-                                    </span>
-                                  ) : hito.cubiertoPorSaldo ? (
-                                    <span className="font-size-11" style={{ background: '#6c757d', color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
-                                      Cubierto por Saldo
-                                    </span>
-                                  ) : hito.facturaGenerada ? (
-                                    <span className="font-size-11" style={{ background: '#17a2b8', color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
-                                      {hito.idFactura ? 'Facturado' : 'En Proceso'}
-                                    </span>
-                                  ) : (
-                                    <span className="font-size-11" style={{ background: '#ffc107', color: '#212529', padding: '2px 8px', borderRadius: '4px' }}>
-                                      Pendiente
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="text-center">
-                                  {hito.cubiertoPorSaldo && hito.idFacturaSaldo ? (
-                                    <span className="font-size-11" style={{ background: '#6c757d', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>
-                                      {hito.idFacturaSaldo}
-                                    </span>
-                                  ) : hito.facturaGenerada && hito.idFactura ? (
-                                    <span className="font-size-11" style={{ 
-                                      background: facturaAsociada?.estado === 'Pagada' ? '#28a745' : 
-                                                   facturaAsociada?.estado === 'Anticipo ya Pagado' ? '#17a2b8' : '#ffc107',
-                                      color: facturaAsociada?.estado === 'Pendiente de Anticipo' ? '#212529' : 'white',
-                                      padding: '2px 6px', borderRadius: '4px' 
-                                    }}>
-                                      {hito.idFactura}
-                                    </span>
-                                  ) : (
-                                    <span className="font-size-11 text-gray">Sin factura</span>
-                                  )}
-                                </td>
-                                <td className="text-center">
-                                  {hito.facturaGenerada && facturaAsociada?.estado === 'Pagada' && !hito.completado && !hito.cubiertoPorSaldo && (
-                                    <button
-                                      onClick={async () => {
-                                        if (!window.confirm(`¿Marcar el hito "${hito.nombre}" como completado?`)) return;
-                                        try {
-                                          await axios.post(`${API_URL}/proyectos/${proyectoDetalle.idProyecto}/hitos/${hito.idHito}/completar`,{},
-                                          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-                                          );
-                                          alert(`Hito ${hito.nombre} completado!`);
-                                          cargarDatos();
-                                          verDetalle(proyectoDetalle);
-                                        } catch (e) {
-                                          alert('Error: ' + (e.response?.data?.message || e.message));
-                                        }
-                                      }}
-                                      className="btn-success btn-xs"
-                                      style={{ marginRight: '4px' }}
-                                    >
-                                      Completar
-                                    </button>
-                                  )}
-                                  {!hito.facturaGenerada && !hito.completado && !hito.cubiertoPorSaldo && (
-                                    <button
-                                      onClick={() => {
-                                        setShowDetalle(false);
-                                        abrirFacturaFull(proyectoDetalle, {
-                                          _esDesdeHito: true,
-                                          idHito: hito.idHito,
-                                          concepto: `${hito.nombre} (${hito.porcentajePago}%)`
-                                        });
-                                      }}
-                                      className="btn-orange btn-xs"
-                                    >
-                                      + Factura
-                                    </button>
-                                  )}
-                                  {hito.facturaGenerada && hito.idFactura && !hito.cubiertoPorSaldo && (
-                                    <button
-                                      onClick={() => { 
-                                        setShowDetalle(false); 
-                                        navigate(`/facturas?factura=${hito.idFactura}`); 
-                                      }}
-                                      className="btn-info btn-xs"
-                                      style={{ marginLeft: '4px' }}
-                                    >
-                                      Ver
-                                    </button>
-                                  )}
-                                  {hito.cubiertoPorSaldo && hito.idFacturaSaldo && (
-                                    <button
-                                      onClick={() => { 
-                                        setShowDetalle(false); 
-                                        navigate(`/facturas?factura=${hito.idFacturaSaldo}`); 
-                                      }}
-                                      className="btn-secondary btn-xs"
-                                      style={{ marginLeft: '4px' }}
-                                    >
-                                      Ver Saldo
-                                    </button>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <p className="text-gray font-size-13" style={{ fontStyle: 'italic' }}>
-                      Este proyecto no tiene hitos configurados. Tipo de pago: {proyectoDetalle.tipoPago || 'No definido'}
-                    </p>
-                  )}
-                </div>
+                {/* HITOS DEL PROYECTO - Mostrar solo si no está eliminado */}
+                {!proyectoDetalle.eliminado && (
+                  <div className="modal-section">
+                    <h4 className="modal-section-title">
+                      🎯 Hitos del Proyecto ({proyectoDetalle.hitos?.length || 0})
+                    </h4>
+                    {proyectoDetalle.hitos?.length > 0 ? (
+                      <div className="modal-table-container">
+                        <table className="modal-table">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Hito</th>
+                              <th className="text-right">%</th>
+                              <th className="text-right">Monto</th>
+                              <th className="text-center">Estado</th>
+                              <th className="text-center">Cuenta de cobro</th>
+                              <th className="text-center">Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {proyectoDetalle.hitos.map((hito) => {
+                              const facturaAsociada = proyectoDetalle.facturas?.find(f => f.idHito === hito.idHito);
+                              return (
+                                <tr key={hito.idHito} style={{ 
+                                  background: hito.completado ? '#d4edda' : hito.facturaGenerada ? '#fff3cd' : 'white'
+                                }}>
+                                  <td style={{ fontWeight: 'bold' }}>{hito.numeroHito}</td>
+                                  <td>
+                                    <strong>{hito.nombre}</strong><br/>
+                                    <span className="font-size-11 text-gray">{hito.descripcion}</span>
+                                  </td>
+                                  <td className="text-right">{hito.porcentajePago}%</td>
+                                  <td className="text-right">${Number(hito.montoEstimado).toLocaleString()}</td>
+                                  <td className="text-center">
+                                    {hito.completado ? (
+                                      <span className="font-size-11" style={{ background: '#28a745', color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
+                                        ✓ Completado
+                                      </span>
+                                    ) : hito.cubiertoPorSaldo ? (
+                                      <span className="font-size-11" style={{ background: '#6c757d', color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
+                                        Cubierto por Saldo
+                                      </span>
+                                    ) : hito.facturaGenerada ? (
+                                      <span className="font-size-11" style={{ background: '#17a2b8', color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
+                                        {hito.idFactura ? 'Cobrado' : 'En Proceso'}
+                                      </span>
+                                    ) : (
+                                      <span className="font-size-11" style={{ background: '#ffc107', color: '#212529', padding: '2px 8px', borderRadius: '4px' }}>
+                                        Pendiente
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="text-center">
+                                    {hito.cubiertoPorSaldo && hito.idFacturaSaldo ? (
+                                      <span className="font-size-11" style={{ background: '#6c757d', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>
+                                        {hito.idFacturaSaldo}
+                                      </span>
+                                    ) : hito.facturaGenerada && hito.idFactura ? (
+                                      <span className="font-size-11" style={{ 
+                                        background: facturaAsociada?.estado === 'Pagada' ? '#28a745' : 
+                                                     facturaAsociada?.estado === 'Anticipo ya Pagado' ? '#17a2b8' : '#ffc107',
+                                        color: facturaAsociada?.estado === 'Pendiente de Anticipo' ? '#212529' : 'white',
+                                        padding: '2px 6px', borderRadius: '4px' 
+                                      }}>
+                                        {hito.idFactura}
+                                      </span>
+                                    ) : (
+                                      <span className="font-size-11 text-gray">Sin cuenta de cobro</span>
+                                    )}
+                                  </td>
+                                  <td className="text-center">
+                                    {hito.facturaGenerada && facturaAsociada?.estado === 'Pagada' && !hito.completado && !hito.cubiertoPorSaldo && !proyectoDetalle.eliminado && (
+                                      <button
+                                        onClick={async () => {
+                                          if (!window.confirm(`¿Marcar el hito "${hito.nombre}" como completado?`)) return;
+                                          try {
+                                            await axios.post(`${API_URL}/proyectos/${proyectoDetalle.idProyecto}/hitos/${hito.idHito}/completar`,{},
+                                            { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                                            );
+                                            alert(`Hito ${hito.nombre} completado!`);
+                                            cargarDatos();
+                                            verDetalle(proyectoDetalle);
+                                          } catch (e) {
+                                            alert('Error: ' + (e.response?.data?.message || e.message));
+                                          }
+                                        }}
+                                        className="btn-success btn-xs"
+                                        style={{ marginRight: '4px' }}
+                                      >
+                                        Completar
+                                      </button>
+                                    )}
+                                    {!hito.facturaGenerada && !hito.completado && !hito.cubiertoPorSaldo && !proyectoDetalle.eliminado && (
+                                      <button
+                                        onClick={() => {
+                                          setShowDetalle(false);
+                                          abrirFacturaFull(proyectoDetalle, {
+                                            _esDesdeHito: true,
+                                            idHito: hito.idHito,
+                                            concepto: `${hito.nombre} (${hito.porcentajePago}%)`
+                                          });
+                                        }}
+                                        className="btn-orange btn-xs"
+                                      >
+                                        + Cuenta de cobro
+                                      </button>
+                                    )}
+                                    {hito.facturaGenerada && hito.idFactura && !hito.cubiertoPorSaldo && (
+                                      <button
+                                        onClick={() => { 
+                                          setShowDetalle(false); 
+                                          navigate(`/facturas?factura=${hito.idFactura}`); 
+                                        }}
+                                        className="btn-info btn-xs"
+                                        style={{ marginLeft: '4px' }}
+                                      >
+                                        Ver
+                                      </button>
+                                    )}
+                                    {hito.cubiertoPorSaldo && hito.idFacturaSaldo && (
+                                      <button
+                                        onClick={() => { 
+                                          setShowDetalle(false); 
+                                          navigate(`/facturas?factura=${hito.idFacturaSaldo}`); 
+                                        }}
+                                        className="btn-secondary btn-xs"
+                                        style={{ marginLeft: '4px' }}
+                                      >
+                                        Ver Saldo
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray font-size-13" style={{ fontStyle: 'italic' }}>
+                        Este proyecto no tiene hitos configurados. Tipo de pago: {proyectoDetalle.tipoPago || 'No definido'}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* FACTURAS */}
                 <div className="modal-section">
                   <h4 className="modal-section-title">
-                    💳 Facturas ({proyectoDetalle.facturas?.length || 0})
+                    💳 Cuentas de cobro ({proyectoDetalle.facturas?.length || 0})
                   </h4>
 
-                  {/* Boton para generar factura de saldo */}
-                  {(() => {
+                  {/* Boton para generar factura de saldo - Solo si no está eliminado */}
+                  {!proyectoDetalle.eliminado && (() => {
                     const totalFacturadoBase = proyectoDetalle.facturas?.reduce((sum, f) => {
                       if (!f.esFacturaAdicional && !f.idCotizacionAdicional) {
                         return sum + (f.valor || 0);
@@ -790,7 +882,7 @@ ${facturasPagadas.join('\n')}`);
                           }}
                           className="btn-orange btn-sm"
                         >
-                          + Generar Factura de Saldo
+                          + Generar Cuenta de Cobro de Saldo
                         </button>
                       </div>
                     ) : null;
@@ -801,7 +893,7 @@ ${facturasPagadas.join('\n')}`);
                       <table className="modal-table">
                         <thead>
                           <tr>
-                            <th>ID Factura</th>
+                            <th>ID Cuenta de cobro</th>
                             <th className="text-right">Valor</th>
                             <th>Concepto</th>
                             <th className="text-center">Hito</th>
@@ -815,7 +907,7 @@ ${facturasPagadas.join('\n')}`);
                             const hitoAsociado = proyectoDetalle.hitos?.find(h => h.idHito === f.idHito);
 
                             let mostrarBotonFactura = false;
-                            if (f.esFacturaAdicional && f.idCotizacionAdicional) {
+                            if (f.esFacturaAdicional && f.idCotizacionAdicional && !proyectoDetalle.eliminado) {
                               const cotizacionAdic = proyectoDetalle.cotizacionesAdicionales?.find(
                                 c => c.idCotizacion === f.idCotizacionAdicional
                               );
@@ -850,13 +942,14 @@ ${facturasPagadas.join('\n')}`);
                                 <td>
                                   <span style={{
                                     background: f.estado === 'Pagada' ? '#28a745' : 
+                                     f.estado === 'Anulada' ? '#6c757d' :
                                      f.estado === 'Pendiente de Anticipo' ? '#ffc107' :
                                      f.estado === 'Anticipo ya Pagado' ? '#17a2b8' :
                                      f.estado === 'Pendiente de Saldo' ? '#fd7e14' :
                                      f.estado === 'Pendiente de 2da Etapa' ? '#6f42c1' :
                                      '#dc3545',
                                     color: f.estado === 'Pendiente de Anticipo' ? '#212529' : 'white',
-                                    padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600
+                                    padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, textDecoration: f.estado === 'Anulada' ? 'line-through' : 'none'
                                   }}>
                                     {f.estado}
                                   </span>
@@ -881,7 +974,7 @@ ${facturasPagadas.join('\n')}`);
                                       className="btn-orange btn-xs"
                                       style={{ marginLeft: '4px' }}
                                     >
-                                      + Factura
+                                      + Cuenta de cobro
                                     </button>
                                   )}
                                 </td>
@@ -892,7 +985,7 @@ ${facturasPagadas.join('\n')}`);
                       </table>
                     </div>
                   ) : (
-                    <p className="text-gray font-size-13" style={{ fontStyle: 'italic' }}>No hay facturas registradas</p>
+                    <p className="text-gray font-size-13" style={{ fontStyle: 'italic' }}>No hay cuentas de cobro registradas</p>
                   )}
                 </div>
 
@@ -909,7 +1002,7 @@ ${facturasPagadas.join('\n')}`);
                       <p className="resumen-value">${Number(proyectoDetalle.valorTotalEjecutado || 0).toLocaleString()}</p>
                     </div>
                     <div className="resumen-item">
-                      <p className="resumen-label">Total Facturado</p>
+                      <p className="resumen-label">Total Cobrado</p>
                       <p className="resumen-value">${Number(proyectoDetalle.valorTotalFacturado || 0).toLocaleString()}</p>
                     </div>
                   </div>
@@ -917,18 +1010,22 @@ ${facturasPagadas.join('\n')}`);
               </div>
 
               <div className="modal-footer">
-                <button 
-                  onClick={() => { setShowDetalle(false); abrirCotizacionFull(proyectoDetalle); }}
-                  className="btn-purple"
-                >
-                  + Cotizacion Adicional
-                </button>
-                <button 
-                  onClick={() => { setShowDetalle(false); abrirFacturaFull(proyectoDetalle); }}
-                  className="btn-orange"
-                >
-                  + Nueva Factura
-                </button>
+                {!proyectoDetalle.eliminado && (
+                  <>
+                    <button 
+                      onClick={() => { setShowDetalle(false); abrirCotizacionFull(proyectoDetalle); }}
+                      className="btn-purple"
+                    >
+                      + Cotizacion Adicional
+                    </button>
+                    <button 
+                      onClick={() => { setShowDetalle(false); abrirFacturaFull(proyectoDetalle); }}
+                      className="btn-orange"
+                    >
+                      + Nueva Cuenta de cobro
+                    </button>
+                  </>
+                )}
                 <button 
                   onClick={() => setShowDetalle(false)}
                   className="btn-secondary"

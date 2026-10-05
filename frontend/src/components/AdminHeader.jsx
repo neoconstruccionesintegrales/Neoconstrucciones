@@ -52,7 +52,9 @@ function AdminHeader() {
       items: [
         { to: '/gestion-cotizaciones', label: 'Cotizaciones' },
         { to: '/proyectos', label: 'Proyectos' },
-        { to: '/facturas', label: 'Facturación' },
+        { to: '/facturas', label: 'Cuentas de cobro' },
+        { to: '/compras/proveedores', label: 'Proveedores' },
+        { to: '/compras/facturas', label: 'Orden de compra' },
       ],
     },
     {
@@ -76,7 +78,7 @@ function AdminHeader() {
   ];
 
   const menuContabilidad = [
-    { type: 'link', to: '/facturas', label: 'Facturación' },
+    { type: 'link', to: '/facturas', label: 'Cuentas de Cobro' },
     { type: 'link', to: '/registro-laboral', label: 'Mi Registro Laboral' },
   ];
 

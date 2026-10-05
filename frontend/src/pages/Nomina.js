@@ -144,7 +144,7 @@ function Nomina() {
     { label: 'Generar Nómina', icon: '💰', path: '/nomina/generar', roles: ['admin', 'gerente', 'secretaria'] },
     { label: 'Gestión de Descuentos', icon: '💳', path: '/nomina/descuentos', roles: ['admin', 'gerente', 'contabilidad'] },
     { label: 'Comprobantes de Pago', icon: '🧾', path: '/nomina/comprobantes', roles: ['admin', 'gerente', 'secretaria', 'supervisor', 'oficial', 'ayudante', 'residente', 'contabilidad'] },
-    { label: 'Reporte para Contador', icon: '📊', path: '/nomina/reportes', roles: ['admin', 'gerente', 'contabilidad'] },
+    { label: 'Reporte para Contador', icon: '📊', path: '/nomina/reportes', roles: ['admin', 'contabilidad'] },
     { label: 'Liquidación de Contrato', icon: '⚖️', path: '/nomina/liquidacion', roles: ['admin', 'gerente'] },
     { label: 'Consignar Cesantías a Fondo', icon: '🏦', path: '/nomina/cesantias-fondo', roles: ['admin', 'gerente', 'contabilidad'] },
   ];

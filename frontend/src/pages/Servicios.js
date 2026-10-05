@@ -22,6 +22,7 @@ function Servicios() {
     const [categoria, setCategoria] = useState('EST');
     const [busqueda, setBusqueda] = useState('');
     const [filtroCategoria, setFiltroCategoria] = useState('TODOS');
+    const [filtroEstado, setFiltroEstado] = useState('TODOS'); // ✅ NUEVO
     const [errores, setErrores] = useState({});
 
     const [nuevoServicio, setNuevoServicio] = useState({
@@ -31,6 +32,7 @@ function Servicios() {
         precioUnitario: 0,
         costoManoObraEspecializada: 0,
         descripcion: '',
+        estado: 'Activo', // ✅ NUEVO
         materiales: [{ nombreMaterial: '', costoEstimado: 0 }]
     });
 
@@ -92,10 +94,14 @@ function Servicios() {
         return Object.keys(errs).length === 0;
     };
 
-    // 5. ELIMINAR
+    // 5. ELIMINAR (INACTIVAR)
     const eliminarServicio = async (idServicio) => {
-        const confirmar = window.confirm('¿Está seguro de eliminar el servicio ' + idServicio + '? Esta acción no se puede deshacer.');
+        const confirmar = window.confirm('⚠️ ¿Está seguro de marcar como INACTIVO el servicio ' + idServicio + '?\n\n' +
+            '• El servicio permanecerá en la base de datos\n' +
+            '• No aparecerá en listados por defecto\n' +
+            '• Puede ser reactivado por un administrador');
         if (!confirmar) return;
+        
         try {
             const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/servicios/${idServicio}`, { method: 'DELETE' });
             if (res.status === 401) {
@@ -105,11 +111,35 @@ function Servicios() {
             }
             const resultado = await res.json();
             if (resultado.success) {
-                alert('Registro eliminado correctamente.');
+                alert('✅ Servicio marcado como INACTIVO.');
                 obtenerServicios();
                 limpiarFormulario();
             } else {
-                alert('No se pudo eliminar: ' + (resultado.error || 'Error desconocido'));
+                alert('No se pudo inactivar: ' + (resultado.error || 'Error desconocido'));
+            }
+        } catch (error) {
+            alert('Error de conexion con el servidor.');
+        }
+    };
+
+    // ✅ NUEVO: REACTIVAR SERVICIO
+    const reactivarServicio = async (idServicio) => {
+        const confirmar = window.confirm('¿Está seguro de REACTIVAR el servicio ' + idServicio + '?');
+        if (!confirmar) return;
+        
+        try {
+            const res = await fetchConAuth(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/servicios/${idServicio}/reactivar`, { method: 'PUT' });
+            if (res.status === 401) {
+                alert('No autorizado. Inicie sesion nuevamente.');
+                window.location.href = '/login';
+                return;
+            }
+            const resultado = await res.json();
+            if (resultado.success) {
+                alert('✅ Servicio reactivado correctamente.');
+                obtenerServicios();
+            } else {
+                alert('No se pudo reactivar: ' + (resultado.error || 'Error desconocido'));
             }
         } catch (error) {
             alert('Error de conexion con el servidor.');
@@ -157,6 +187,7 @@ function Servicios() {
             precioUnitario: 0,
             costoManoObraEspecializada: 0,
             descripcion: '',
+            estado: 'Activo',
             materiales: [{ nombreMaterial: '', costoEstimado: 0 }]
         });
     }, [obtenerSiguienteID]);
@@ -182,7 +213,7 @@ function Servicios() {
                 return;
             }
             if (res.ok) {
-                alert(modoEdicion ? 'Actualizado correctamente!' : 'Guardado en base de datos!');
+                alert(modoEdicion ? '✅ Actualizado correctamente!' : '✅ Guardado en base de datos!');
                 obtenerServicios();
                 limpiarFormulario();
                 setMostrarFormulario(false);
@@ -199,7 +230,11 @@ function Servicios() {
             (srv.nombre || '').toLowerCase().includes(term) ||
             (srv.idServicio || '').toLowerCase().includes(term);
         const cumpleCategoria = filtroCategoria === 'TODOS' || (srv.idServicio && srv.idServicio.startsWith(filtroCategoria));
-        return cumpleBusqueda && cumpleCategoria;
+        
+        // ✅ Filtrar por estado
+        const cumpleEstado = filtroEstado === 'TODOS' || srv.estado === filtroEstado;
+        
+        return cumpleBusqueda && cumpleCategoria && cumpleEstado;
     });
 
     // 8. PROTECCION
@@ -240,7 +275,7 @@ function Servicios() {
                 )}
 
                 {/* ============================================
-                    FORMULARIO — GRID DE 4 COLUMNAS
+                    FORMULARIO
                     ============================================ */}
                 {(mostrarFormulario || modoEdicion) && (
                     <div className="dba-card srv-form-card">
@@ -262,9 +297,6 @@ function Servicios() {
                             </button>
                         </div>
                         <form onSubmit={enviarServicio} noValidate>
-                            {/* ═══════════════════════════════════════
-                               GRID DE 4 COLUMNAS
-                               ═══════════════════════════════════════ */}
                             <div className="srv-form-grid-4">
                                 {/* Fila 1 */}
                                 <div className="srv-form-group">
@@ -306,12 +338,15 @@ function Servicios() {
                                 </div>
                                 <div className="srv-form-group">
                                     <label className="srv-label">Estado</label>
-                                    <input
-                                        type="text"
-                                        value="Activo"
-                                        disabled
-                                        className="srv-input"
-                                    />
+                                    <select
+                                        name="estado"
+                                        value={nuevoServicio.estado}
+                                        onChange={manejarCambioAdmin}
+                                        className="srv-select"
+                                    >
+                                        <option value="Activo">✅ Activo</option>
+                                        <option value="Inactivo">❌ Inactivo</option>
+                                    </select>
                                 </div>
 
                                 {/* Fila 2 */}
@@ -365,9 +400,7 @@ function Servicios() {
                                 </div>
                             </div>
 
-                            {/* ═══════════════════════════════════════
-                               MATERIALES / INSUMOS
-                               ═══════════════════════════════════════ */}
+                            {/* MATERIALES */}
                             <div className="srv-materiales-section">
                                 <h4 className="srv-section-title">📦 Desglose de Materiales</h4>
                                 {errores.materiales && (
@@ -415,9 +448,7 @@ function Servicios() {
                                 </button>
                             </div>
 
-                            {/* ═══════════════════════════════════════
-                               BOTONES DE ACCIÓN
-                               ═══════════════════════════════════════ */}
+                            {/* BOTONES */}
                             <div className="srv-form-actions">
                                 <button type="submit" className="srv-btn-primary">
                                     {modoEdicion ? '💾 Actualizar' : '💾 Guardar'}
@@ -454,7 +485,7 @@ function Servicios() {
                             className="srv-input"
                         />
                     </div>
-                    <div className="srv-form-group" style={{ flex: 1, minWidth: '180px', margin: 0 }}>
+                    <div className="srv-form-group" style={{ flex: 1, minWidth: '150px', margin: 0 }}>
                         <label className="srv-label">Filtrar por Categoría</label>
                         <select
                             value={filtroCategoria}
@@ -467,10 +498,22 @@ function Servicios() {
                             <option value="CIV">Obra Civil</option>
                         </select>
                     </div>
+                    <div className="srv-form-group" style={{ flex: 1, minWidth: '150px', margin: 0 }}>
+                        <label className="srv-label">Filtrar por Estado</label>
+                        <select
+                            value={filtroEstado}
+                            onChange={e => setFiltroEstado(e.target.value)}
+                            className="srv-select"
+                        >
+                            <option value="TODOS">📊 Todos</option>
+                            <option value="Activo">✅ Activos</option>
+                            <option value="Inactivo">❌ Inactivos</option>
+                        </select>
+                    </div>
                 </div>
 
                 {/* ============================================
-                    TABLA DE SERVICIOS — ESTILO ALINEADO CON USUARIOS
+                    TABLA DE SERVICIOS
                     ============================================ */}
                 <div className="table-container">
                     <table className="admin-table">
@@ -478,6 +521,7 @@ function Servicios() {
                             <tr>
                                 <th>ID</th>
                                 <th>Servicio</th>
+                                <th>Estado</th>
                                 <th className="text-right">Mano Obra</th>
                                 <th className="text-right">Valor Unitario</th>
                                 <th className="text-center">Acciones</th>
@@ -492,6 +536,11 @@ function Servicios() {
                                         </td>
                                         <td data-label="Servicio">
                                             <strong className="font-size-13 text-dark">{s.nombre}</strong>
+                                        </td>
+                                        <td data-label="Estado">
+                                            <span className={`srv-estado-badge ${s.estado === 'Activo' ? 'srv-estado-activo' : 'srv-estado-inactivo'}`}>
+                                                {s.estado || 'Activo'}
+                                            </span>
                                         </td>
                                         <td data-label="Mano Obra" className="text-right text-mono">
                                             $ {Number(s.costoManoObraEspecializada || 0).toLocaleString()}
@@ -509,22 +558,32 @@ function Servicios() {
                                                         window.scrollTo({ top: 0, behavior: 'smooth' });
                                                     }}
                                                     className="srv-btn-edit"
+                                                    disabled={s.estado === 'Inactivo'}
+                                                    title={s.estado === 'Inactivo' ? 'No se puede editar un servicio inactivo' : ''}
                                                 >
                                                     ✏️ Editar
                                                 </button>
-                                                <button
-                                                    onClick={() => eliminarServicio(s.idServicio)}
-                                                    className="srv-btn-delete"
-                                                >
-                                                    🗑️ Eliminar
-                                                </button>
+                                                {s.estado === 'Activo' ? (
+                                                    <button
+                                                        onClick={() => eliminarServicio(s.idServicio)}
+                                                        className="srv-btn-delete"
+                                                    >
+                                                        🗑️ Inactivar
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => reactivarServicio(s.idServicio)}
+                                                        className="srv-btn-reactivate">
+                                                        🔄 Reactivar
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="5" className="no-results">
+                                    <td colSpan="6" className="no-results">
                                         🔍 No se encontraron servicios con los filtros aplicados.
                                     </td>
                                 </tr>

@@ -136,7 +136,7 @@ const GestionCotizaciones = () => {
                     mensaje += ' Proyecto: ' + res.data.proyecto.idProyecto;
                 }
                 if (res.data.factura) {
-                    mensaje += ' Factura: ' + res.data.factura.idFactura;
+                    mensaje += ' Cuenta de cobro: ' + res.data.factura.idFactura;
                 }
                 if (res.data.esCotizacionAdicional) {
                     mensaje += '(Nota: Cotizacion adicional - No se creo proyecto)';
@@ -202,16 +202,22 @@ const GestionCotizaciones = () => {
         return coincideEstado && coincideBusqueda;
     });
 
-    const colorEstado = useCallback(function (estado) {
-        switch (estado) {
-            case 'Pendiente': return '#fde68a';
-            case 'Aprobada': return '#73CC80';
-            case 'Rechazada': return '#F24F4F';
-            case 'Caducada': return '#95a5a6';
-            case 'Superada': return '#bfdbfe';
-            default: return '#95a5a6';
-        }
-    }, []);
+   const colorEstado = useCallback(function (estado) {
+    switch (estado) {
+        case 'Pendiente': 
+            return { backgroundColor: '#fffbeb', color: '#d97706', border: '1px solid #d97706' };
+        case 'Aprobada':  
+            return { backgroundColor: '#dff8e3', color: '#095035', border: '1px solid #73CC80' }; 
+        case 'Rechazada': 
+            return { backgroundColor: '#fef2f2', color: '#dc2626' , border: '1px solid #dc2626'};
+        case 'Caducada': 
+            return { backgroundColor: '#f1f5f9', color: '#1e293b', border: '1px solid #334155' };
+        case 'Superada': 
+            return { backgroundColor: '#eff6ff', color: '#1391c8' , border: '1px solid #1391c8'};
+        default: 
+            return { backgroundColor: '#95a5a6', color: '#1a1a2e', border: '1px solid #1a1a2e' }; // ✅ Siempre devolver objeto
+    }
+}, []);
 
     // ============================================================
     // RENDER
@@ -326,14 +332,14 @@ const GestionCotizaciones = () => {
                                                 </td>
 
                                                 {/* Estado */}
-                                                <td data-label="Estado" className="text-center">
-                                                    <span
-                                                        className="estado-badge"
-                                                        style={{ backgroundColor: colorEstado(c.estado_general) }}
-                                                    >
-                                                        {c.estado_general}
-                                                    </span>
-                                                </td>
+                                               <td data-label="Estado" className="text-center">
+    <span
+        className="estado-badge"
+        style={colorEstado(c.estado_general)}
+    >
+        {c.estado_general}
+    </span>
+</td>
 
                                                 {/* Fecha Vencimiento */}
                                                 <td data-label="Fecha de Vencimiento" className="text-center">
@@ -401,9 +407,9 @@ const GestionCotizaciones = () => {
                                                                 <button
                                                                     onClick={function () { navigate('/facturas?cotizacion=' + c.idCotizacion); }}
                                                                     className="btn-factura"
-                                                                    title="Ver factura de anticipo"
+                                                                    title="Ver cuenta de cobro de anticipo"
                                                                 >
-                                                                    📄 Ver Factura
+                                                                    📄 Ver Cuenta de cobro
                                                                 </button>
                                                             )}
 

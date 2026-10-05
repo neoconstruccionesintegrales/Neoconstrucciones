@@ -15,6 +15,7 @@ const METODOS_PAGO = [
     'Pasarela de pago Online',
     'Tarjeta de credito/debito'
 ];
+
 const Facturas = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -116,14 +117,13 @@ const Facturas = () => {
     };
 
     const cargarCatalogoServicios = async () => {
-    try {
-        const res = await axios.get(`${API_URL}/servicios`).catch(() => ({ data: { data: [] } }));
-        setCatalogoServicios(res.data?.data || []);
-        // ✅ (La línea de setServiciosFiltrados fue borrada aquí)
-    } catch (error) {
-        console.error("Error cargando catálogo:", error);
-    }
-};
+        try {
+            const res = await axios.get(`${API_URL}/servicios`).catch(() => ({ data: { data: [] } }));
+            setCatalogoServicios(res.data?.data || []);
+        } catch (error) {
+            console.error("Error cargando catálogo:", error);
+        }
+    };
 
     const obtenerInfoProyecto = (idProyecto) => {
         return proyectos.find(p => p.idProyecto === idProyecto) || null;
@@ -213,7 +213,7 @@ const Facturas = () => {
             };
 
             await axios.post(`${API_URL}/proyectos/${proyectoSeleccionado.idProyecto}/facturas`, payload);
-            alert("Factura creada exitosamente");
+            alert("Cuenta de cobro creada exitosamente");
             setShowModal(false);
             cargarDatos();
         } catch (error) {
@@ -225,7 +225,7 @@ const Facturas = () => {
 
     const abrirModalIndependiente = () => {
         if (!puedeCrearFacturaIndependiente()) {
-            alert("No tienes permisos para crear facturas independientes. Roles autorizados: Administrador, Supervisor, Contador");
+            alert("No tienes permisos para crear cuentas de cobro independientes. Roles autorizados: Administrador, Supervisor, Contador");
             return;
         }
         setNuevaFacturaInd({
@@ -236,7 +236,7 @@ const Facturas = () => {
             notasLegales: 'Terminos: Pago a 30 dias. IVA incluido.',
             items: [{
                 id: Date.now(),
-                 idServicio: '',
+                idServicio: '',
                 nombreServicio: '',
                 descripcion: '',
                 cantidad: 1,
@@ -312,18 +312,15 @@ const Facturas = () => {
         return { subtotal, iva, retencion, totalConIva, netoACobrar, ivaPorcentaje, retencionPorcentaje };
     };
 
-        const crearFacturaIndependiente = async (e) => {
+    const crearFacturaIndependiente = async (e) => {
         e.preventDefault();
         if (!nuevaFacturaInd.idCliente) {
             alert("Debes seleccionar un cliente");
             return;
         }
 
-        // ✅ VALIDACIÓN CORREGIDA: Ya no usa .trim() sobre undefined
         if (nuevaFacturaInd.items.some(i => {
-            // Si tiene idServicio (y no es manual), es del catálogo. Es válido.
             if (i.idServicio && i.idServicio !== 'manual') return false;
-            // Si NO tiene idServicio, debe tener un nombreServicio escrito manualmente.
             return !i.nombreServicio || !i.nombreServicio.trim();
         })) {
             alert("Todos los items deben tener un nombre de servicio válido.");
@@ -339,7 +336,6 @@ const Facturas = () => {
                 ? cliente.sedes.find(s => s.id === nuevaFacturaInd.idSede)
                 : null;
 
-            // ✅ CORRECCIÓN AQUÍ: Mapeamos los items y aseguramos que tengan 'nombreServicio'
             const payload = {
                 idCliente: nuevaFacturaInd.idCliente,
                 idSede: nuevaFacturaInd.idSede,
@@ -350,14 +346,10 @@ const Facturas = () => {
                 contactoCliente: esPrincipal ? (cliente.telefono || cliente.celular) : (sedeData?.celular || cliente.telefono || ''),
                 correoCliente: esPrincipal ? cliente.correo : (sedeData?.correoEnc || cliente.correo || ''),
                 metodoPago: nuevaFacturaInd.metodoPago,
-                
-                // ✅ AQUÍ ESTÁ LA MAGIA: Renombramos 'nombre' a 'nombreServicio'
                 items: nuevaFacturaInd.items.map(({ id, ...rest }) => ({
                     ...rest,
-                    // Si viene del catálogo usa rest.nombre, si es manual usa rest.nombreServicio
                     nombreServicio: rest.idServicio ? rest.nombre : rest.nombreServicio
                 })),
-
                 subtotal: totalesInd.subtotal,
                 iva: totalesInd.iva,
                 ivaPorcentaje: totalesInd.ivaPorcentaje,
@@ -374,7 +366,7 @@ const Facturas = () => {
             };
 
             await axios.post(`${API_URL}/facturas/independiente`, payload);
-            alert("Factura independiente creada exitosamente");
+            alert("Cuenta de cobro independiente creada exitosamente");
             setShowModalIndependiente(false);
             cargarDatos();
         } catch (error) {
@@ -386,7 +378,6 @@ const Facturas = () => {
     };
 
     const cambiarEstadoFactura = async (idFactura, nuevoEstado) => {
-        // Verificar si es factura independiente para estados simplificados
         const factura = facturas.find(f => f.idFactura === idFactura);
         const esIndependiente = factura ? esFacturaIndependiente(factura) : false;
 
@@ -399,10 +390,10 @@ const Facturas = () => {
                     mensajeConfirmacion = '¿Está seguro que el cliente YA realizó el pago del anticipo?';
                     break;
                 case 'Pagada':
-                    mensajeConfirmacion = '¿Está seguro que el cliente YA realizó el pago TOTAL de la factura?';
+                    mensajeConfirmacion = '¿Está seguro que el cliente YA realizó el pago TOTAL de cuenta de cobro?';
                     break;
                 case 'Anulada':
-                    mensajeConfirmacion = '¿Está seguro de ANULAR esta factura? Esta acción no se puede deshacer.';
+                    mensajeConfirmacion = '¿Está seguro de ANULAR esta cuenta de cobro? Esta acción no se puede deshacer.';
                     break;
                 default:
                     mensajeConfirmacion = `Confirmar cambio de estado a "${nuevoEstado}"?`;
@@ -413,7 +404,7 @@ const Facturas = () => {
         if (nuevoEstado === 'Pagada') {
             advertencia = '\n\nADVERTENCIA: Una vez marcada como PAGADA, no se podrá revertir el estado.';
         } else if (nuevoEstado === 'Anulada') {
-            advertencia = '\n\nADVERTENCIA: La factura quedará ANULADA permanentemente.';
+            advertencia = '\n\nADVERTENCIA: La cuenta de cobro quedará ANULADA permanentemente.';
         }
 
         if (!window.confirm(mensajeConfirmacion + advertencia)) {
@@ -422,7 +413,7 @@ const Facturas = () => {
 
         try {
             await axios.put(`${API_URL}/facturas/${idFactura}/estado`, { estado: nuevoEstado });
-            alert(`Factura actualizada a: ${nuevoEstado}`);
+            alert(`Cuenta de cobro actualizada a: ${nuevoEstado}`);
             cargarDatos();
             if (showDetalle) verDetalle(idFactura);
         } catch (error) {
@@ -464,15 +455,10 @@ const Facturas = () => {
         }
     };
 
+    // ❌ DESHABILITADA - Ya no se usa por razones contables
     const eliminarFactura = async (idFactura) => {
-        if (!window.confirm("¿Eliminar esta factura?")) return;
-        try {
-            await axios.delete(`${API_URL}/facturas/${idFactura}`);
-            alert("Factura eliminada");
-            cargarDatos();
-        } catch (error) {
-            alert("Error: " + (error.response?.data?.message || error.message));
-        }
+        alert("❌ Las cuentas de cobro no se pueden eliminar por razones contables. Use la opción 'Anular' en su lugar.");
+        return;
     };
 
     const facturasFiltradas = facturas.filter(f => {
@@ -492,14 +478,20 @@ const Facturas = () => {
 
     if (!accesoPermitido) return null;
 
+    // ✅ userRol declarado ANTES de usarlo
     const userRol = localStorage.getItem('rol') || 'ADMIN';
 
-    // Renderizar acciones según tipo de factura
+    // ============================================================
+    // RENDERIZAR ACCIONES SEGÚN TIPO DE FACTURA
+    // ============================================================
     const renderAccionesFactura = (f) => {
         const esIndependiente = esFacturaIndependiente(f);
-        
-        if (esIndependiente) {
-            // Estados simplificados para facturas independientes
+        const estado = f.estado;
+        const esAnulada = estado === 'Anulada';
+        const esPagada = estado === 'Pagada';
+
+        // ✅ Si está anulada o pagada, solo mostrar Ver y PDF
+        if (esAnulada || esPagada) {
             return (
                 <div className="acciones-flex">
                     <button onClick={() => verDetalle(f.idFactura)} className="btn-info-outline btn-xs">
@@ -508,26 +500,43 @@ const Facturas = () => {
                     <button onClick={() => descargarPDFFactura(f)} disabled={generandoPDF} className="btn-danger-outline btn-xs">
                         {generandoPDF ? '...' : 'PDF'}
                     </button>
-                    {f.estado === 'Emitida' && (
-                        <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Pagada')} className="btn-success-outline btn-xs">
-                            Marcar Pagada
-                        </button>
+                    {esAnulada && (
+                        <span className="font-size-11" style={{ color: '#6c757d', fontStyle: 'italic' }}>
+                            Anulada
+                        </span>
                     )}
-                    {f.estado !== 'Pagada' && f.estado !== 'Anulada' && (
-                        <>
-                            <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Anulada')} className="btn-secondary btn-xs">
-                                Anular
-                            </button>
-                            <button onClick={() => eliminarFactura(f.idFactura)} className="btn-danger-outline btn-xs">
-                                🗑️ Eliminar
-                            </button>
-                        </>
+                    {esPagada && (
+                        <span className="font-size-11" style={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                            Pagada
+                        </span>
                     )}
                 </div>
             );
         }
 
-        // Estados para facturas de proyecto
+        // ✅ Facturas activas (no anuladas ni pagadas)
+        if (esIndependiente) {
+            return (
+                <div className="acciones-flex">
+                    <button onClick={() => verDetalle(f.idFactura)} className="btn-info-outline btn-xs">
+                        👁️ Ver
+                    </button>
+                    <button onClick={() => descargarPDFFactura(f)} disabled={generandoPDF} className="btn-danger-outline btn-xs">
+                        {generandoPDF ? '...' : 'PDF'}
+                    </button>
+                    {estado === 'Emitida' && (
+                        <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Pagada')} className="btn-success-outline btn-xs">
+                            Marcar Pagada
+                        </button>
+                    )}
+                    <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Anulada')} className="btn-secondary btn-xs">
+                        Anular
+                    </button>
+                </div>
+            );
+        }
+
+        // ✅ Estados para facturas de proyecto
         return (
             <div className="acciones-flex">
                 <button onClick={() => verDetalle(f.idFactura)} className="btn-info-outline btn-xs">
@@ -536,36 +545,29 @@ const Facturas = () => {
                 <button onClick={() => descargarPDFFactura(f)} disabled={generandoPDF} className="btn-danger-outline btn-xs">
                     {generandoPDF ? '...' : 'PDF'}
                 </button>
-                {f.estado === 'Pendiente de Anticipo' && (
+                {estado === 'Pendiente de Anticipo' && (
                     <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Anticipo ya Pagado')} className="btn-success-outline btn-xs">
                         Marcar Anticipo
                     </button>
                 )}
-                {f.estado === 'Anticipo ya Pagado' && (
+                {estado === 'Anticipo ya Pagado' && (
                     <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Pagada')} className="btn-success-outline btn-xs">
                         Marcar Pagada
                     </button>
                 )}
-                {f.estado === 'Pendiente de Saldo' && (
+                {estado === 'Pendiente de Saldo' && (
                     <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Pagada')} className="btn-success-outline btn-xs">
                         Marcar Pagada
                     </button>
                 )}
-                {f.estado === 'Pendiente de 2da Etapa' && (
+                {estado === 'Pendiente de 2da Etapa' && (
                     <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Pagada')} className="btn-success-outline btn-xs">
                         Marcar Pagada
                     </button>
                 )}
-                {f.estado !== 'Pagada' && f.estado !== 'Anulada' && (
-                    <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Anulada')} className="btn-secondary btn-xs">
-                        Anular
-                    </button>
-                )}
-                {f.estado !== 'Pagada' && (
-                    <button onClick={() => eliminarFactura(f.idFactura)} className="btn-danger-outline btn-xs">
-                        🗑️ Eliminar
-                    </button>
-                )}
+                <button onClick={() => cambiarEstadoFactura(f.idFactura, 'Anulada')} className="btn-secondary btn-xs">
+                    Anular
+                </button>
             </div>
         );
     };
@@ -575,7 +577,7 @@ const Facturas = () => {
             <div className="dba-wrapper">
                 {/* HEADER */}
                 <div className="dba-header-text">
-                    <h1 className="dba-title">📄 Gestión de Facturas</h1>
+                    <h1 className="dba-title">📄 Gestión de Cobros</h1>
                     <p className="dba-subtitle">
                         Neoconstrucciones S.A.S — <strong>Rol: {userRol.toUpperCase()}</strong>
                     </p>
@@ -584,7 +586,7 @@ const Facturas = () => {
                 <div className="header-acciones">
                     {puedeCrearFacturaIndependiente() && (
                         <button onClick={abrirModalIndependiente} className="btn-crear">
-                            + Factura Independiente
+                            + Cuenta de cobro Independiente
                         </button>
                     )}
                 </div>
@@ -602,28 +604,26 @@ const Facturas = () => {
                         <option value="Todos">Todos los estados</option>
                         <option value="Pendiente de Anticipo">Pendiente de Anticipo</option>
                         <option value="Anticipo ya Pagado">Anticipo ya Pagado</option>
-                        <option value="Pendiente de Saldo">Pendiente de Saldo</option>
                         <option value="Pagada">Pagada</option>
                         <option value="Anulada">Anulada</option>
                         <option value="Vencido">Vencido</option>
                     </select>
                     <button
                         onClick={() => { setFiltroTexto(''); setFiltroEstado('Todos'); }}
-                        className="btn-secondary btn-sm"
-                    >
-                        🔄 Limpiar
+                        class="btn-limpiar" title="Limpiar filtros">
+                        🧹 Limpiar
                     </button>
                 </div>
 
                 {/* TABLA */}
                 {cargando && facturas.length === 0 ? (
-                    <div className="no-results">Cargando facturas...</div>
+                    <div className="no-results">Cargando cuentas de cobro...</div>
                 ) : (
                     <div className="table-container">
                         <table className="admin-table">
                             <thead>
                                 <tr>
-                                    <th>ID Factura</th>
+                                    <th>ID Cuenta de cobro</th>
                                     <th>Empresa / Proyecto</th>
                                     <th>Tipo</th>
                                     <th className="text-right">Subtotal</th>
@@ -639,7 +639,7 @@ const Facturas = () => {
                                 {facturasFiltradas.length === 0 && (
                                     <tr>
                                         <td colSpan="10" className="text-center">
-                                            <div className="no-results">No se encontraron facturas</div>
+                                            <div className="no-results">No se encontraron cuentas de cobro</div>
                                         </td>
                                     </tr>
                                 )}
@@ -647,7 +647,7 @@ const Facturas = () => {
                                     const esIndependiente = esFacturaIndependiente(f);
                                     return (
                                         <tr key={f._id || f.idFactura} className={idx % 2 === 0 ? 'table-row-even' : 'table-row-odd'}>
-                                            <td data-label="ID Factura">
+                                            <td data-label="ID Cuenta de cobro">
                                                 <strong className="font-size-13">{f.idFactura}</strong>
                                                 <div className="font-size-11 text-gray">{new Date(f.fechaEmision).toLocaleDateString()}</div>
                                             </td>
@@ -736,7 +736,7 @@ const Facturas = () => {
                         <div className="modal-content" onClick={e => e.stopPropagation()}>
                             <div className="modal-header">
                                 <div>
-                                    <h2 className="modal-title">📄 Nueva Factura desde Proyecto</h2>
+                                    <h2 className="modal-title">📄 Nueva Cuenta de cobro desde Proyecto</h2>
                                 </div>
                                 <button onClick={() => setShowModal(false)} className="btn-link">✕</button>
                             </div>
@@ -809,7 +809,7 @@ const Facturas = () => {
                                             Cancelar
                                         </button>
                                         <button type="submit" disabled={cargando || !proyectoSeleccionado} className="btn-orange">
-                                            {cargando ? 'Creando...' : 'Crear Factura'}
+                                            {cargando ? 'Creando...' : 'Crear cuenta de cobro'}
                                         </button>
                                     </div>
                                 </form>
@@ -826,7 +826,7 @@ const Facturas = () => {
                         <div className="modal-content" onClick={e => e.stopPropagation()}>
                             <div className="modal-header">
                                 <div>
-                                    <h2 className="modal-title">📄 Nueva Factura Independiente</h2>
+                                    <h2 className="modal-title">📄 Nueva Cuenta de cobro Independiente</h2>
                                     <p className="modal-subtitle">Roles autorizados: Administrador, Supervisor, Contador</p>
                                 </div>
                                 <button onClick={() => setShowModalIndependiente(false)} className="btn-link">✕</button>
@@ -926,63 +926,54 @@ const Facturas = () => {
                                             <tbody>
                                                 {nuevaFacturaInd.items.map((item, index) => (
                                                     <tr key={item.id}>
-                                                  <td>
-    {/* SELECT DE SERVICIOS */}
-    <select
-        value={item.idServicio || ""}
-        onChange={(e) => {
-            const idSeleccionado = e.target.value;
-            
-            if (idSeleccionado === "manual") {
-                modificarItemInd(index, 'idServicio', '');
-                modificarItemInd(index, 'nombreServicio', '');
-                modificarItemInd(index, 'descripcion', '');
-                modificarItemInd(index, 'precioUnitario', 0);
-                modificarItemInd(index, 'unidad', 'und');
-            } else {
-                // Caso: Seleccionó un servicio del catálogo
-                const servicioEncontrado = catalogoServicios.find(s => s.idServicio === idSeleccionado);
-                
-                if (servicioEncontrado) {
-                    modificarItemInd(index, 'idServicio', servicioEncontrado.idServicio);
-                    modificarItemInd(index, 'nombreServicio', servicioEncontrado.nombreServicio);
-                    modificarItemInd(index, 'descripcion', servicioEncontrado.descripcion || ''); 
-                    modificarItemInd(index, 'precioUnitario', servicioEncontrado.precioUnitario || 0);
-                    modificarItemInd(index, 'unidad', servicioEncontrado.unidad || 'und');
-                    
-                    // Calculamos el subtotal automáticamente
-                    const cantidadActual = Number(item.cantidad) || 1;
-                    modificarItemInd(index, 'subtotal', (servicioEncontrado.precioUnitario || 0) * cantidadActual);
-                }
-            }
-        }}
-        style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #ced4da' }}
-    >
-        {/* Opción por defecto */}
-        <option value="">-- Seleccione un servicio --</option>
-        
-        {/* Opción para escribir manualmente */}
-        <option value="manual">✏️ Escribir servicio manual...</option>
-        
-        {/* ✅ AQUÍ ESTÁ LA MAGIA: El catálogo de servicios (SIN precios) */}
-        {catalogoServicios.map(s => (
-            <option key={s.idServicio} value={s.idServicio}>
-                {s.nombre}
-            </option>
-        ))}
-    </select>
+                                                        <td>
+                                                            <select
+                                                                value={item.idServicio || ""}
+                                                                onChange={(e) => {
+                                                                    const idSeleccionado = e.target.value;
+                                                                    
+                                                                    if (idSeleccionado === "manual") {
+                                                                        modificarItemInd(index, 'idServicio', '');
+                                                                        modificarItemInd(index, 'nombreServicio', '');
+                                                                        modificarItemInd(index, 'descripcion', '');
+                                                                        modificarItemInd(index, 'precioUnitario', 0);
+                                                                        modificarItemInd(index, 'unidad', 'und');
+                                                                    } else {
+                                                                        const servicioEncontrado = catalogoServicios.find(s => s.idServicio === idSeleccionado);
+                                                                        
+                                                                        if (servicioEncontrado) {
+                                                                            modificarItemInd(index, 'idServicio', servicioEncontrado.idServicio);
+                                                                            modificarItemInd(index, 'nombreServicio', servicioEncontrado.nombreServicio);
+                                                                            modificarItemInd(index, 'descripcion', servicioEncontrado.descripcion || ''); 
+                                                                            modificarItemInd(index, 'precioUnitario', servicioEncontrado.precioUnitario || 0);
+                                                                            modificarItemInd(index, 'unidad', servicioEncontrado.unidad || 'und');
+                                                                            
+                                                                            const cantidadActual = Number(item.cantidad) || 1;
+                                                                            modificarItemInd(index, 'subtotal', (servicioEncontrado.precioUnitario || 0) * cantidadActual);
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #ced4da' }}
+                                                            >
+                                                                <option value="">-- Seleccione un servicio --</option>
+                                                                <option value="manual">✏️ Escribir servicio manual...</option>
+                                                                {catalogoServicios.map(s => (
+                                                                    <option key={s.idServicio} value={s.idServicio}>
+                                                                        {s.nombre}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
 
-    {/* INPUT MANUAL (Solo se muestra si idServicio está vacío) */}
-    {!item.idServicio && (
-        <input
-            type="text"
-            placeholder="Ingrese nombre del servicio..."
-            value={item.nombreServicio || ""}
-            onChange={(e) => modificarItemInd(index, 'nombreServicio', e.target.value)}
-            style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '6px' }}
-        />
-    )}
-</td>
+                                                            {!item.idServicio && (
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Ingrese nombre del servicio..."
+                                                                    value={item.nombreServicio || ""}
+                                                                    onChange={(e) => modificarItemInd(index, 'nombreServicio', e.target.value)}
+                                                                    style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '6px' }}
+                                                                />
+                                                            )}
+                                                        </td>
                                                         <td>
                                                             <input
                                                                 value={item.descripcion}
@@ -1071,7 +1062,7 @@ const Facturas = () => {
                                             Cancelar
                                         </button>
                                         <button type="submit" disabled={cargando || !nuevaFacturaInd.idCliente} className="btn-purple">
-                                            {cargando ? 'Creando...' : 'Crear Factura Independiente'}
+                                            {cargando ? 'Creando...' : 'Crear Cuenta de cobro Independiente'}
                                         </button>
                                     </div>
                                 </form>
@@ -1088,7 +1079,7 @@ const Facturas = () => {
                         <div className="modal-content" onClick={e => e.stopPropagation()}>
                             <div className="modal-header">
                                 <div>
-                                    <h2 className="modal-title">📄 Factura {facturaDetalle?.idFactura || 'N/A'}</h2>
+                                    <h2 className="modal-title">📄 Cuenta de Cobro {facturaDetalle?.idFactura || 'N/A'}</h2>
                                     {esFacturaIndependiente(facturaDetalle) && (
                                         <span className="tipo-badge tipo-independiente" style={{ fontSize: '0.75rem', marginLeft: '8px' }}>
                                             Independiente
@@ -1125,7 +1116,9 @@ const Facturas = () => {
                                     </div>
                                 </div>
 
-                                <h4 className="modal-section-title">Servicios Facturados</h4>
+                                <h4 className="modal-section-title">Servicios Cobrados
+
+                                </h4>
                                 <div className="modal-table-container">
                                     <table className="modal-table">
                                         <thead>
@@ -1152,7 +1145,7 @@ const Facturas = () => {
                                             {(facturaDetalle?.items || []).length === 0 && (
                                                 <tr>
                                                     <td colSpan="6" className="text-center">
-                                                        <p className="text-gray font-size-13" style={{ fontStyle: 'italic' }}>No hay servicios facturados</p>
+                                                        <p className="text-gray font-size-13" style={{ fontStyle: 'italic' }}>No hay servicios cobrados</p>
                                                     </td>
                                                 </tr>
                                             )}
@@ -1166,7 +1159,7 @@ const Facturas = () => {
                                         <div className="resumen-item"><p className="resumen-label">Subtotal</p><p className="resumen-value">${(facturaDetalle?.subtotal || 0).toLocaleString()}</p></div>
                                         <div className="resumen-item"><p className="resumen-label">IVA ({facturaDetalle?.ivaPorcentaje || 19}%)</p><p className="resumen-value">${(facturaDetalle?.iva || 0).toLocaleString()}</p></div>
                                         <div className="resumen-item"><p className="resumen-label">Retención ({facturaDetalle?.retencionPorcentaje || 2}%)</p><p className="resumen-value">${(facturaDetalle?.retencion || 0).toLocaleString()}</p></div>
-                                        <div className="resumen-item"><p className="resumen-label">Total Factura</p><p className="resumen-value">${(facturaDetalle?.totalConIva || 0).toLocaleString()}</p></div>
+                                        <div className="resumen-item"><p className="resumen-label">Total Cuenta de cobro</p><p className="resumen-value">${(facturaDetalle?.totalConIva || 0).toLocaleString()}</p></div>
                                         <div className="resumen-item resumen-neto">
                                             <p className="resumen-label">VALOR NETO A PAGAR</p>
                                             <p className="resumen-value">${(facturaDetalle?.netoACobrar || 0).toLocaleString()}</p>
@@ -1177,7 +1170,6 @@ const Facturas = () => {
 
                             <div className="modal-footer">
                                 {esFacturaIndependiente(facturaDetalle) ? (
-                                    // Estados simplificados para facturas independientes
                                     <>
                                         {facturaDetalle?.estado === 'Emitida' && (
                                             <button onClick={() => { cambiarEstadoFactura(facturaDetalle?.idFactura, 'Pagada'); }} className="btn-success">
@@ -1191,7 +1183,6 @@ const Facturas = () => {
                                         )}
                                     </>
                                 ) : (
-                                    // Estados para facturas de proyecto
                                     <>
                                         {facturaDetalle?.estado === 'Pendiente de Anticipo' && (
                                             <button onClick={() => { cambiarEstadoFactura(facturaDetalle?.idFactura, 'Anticipo ya Pagado'); }} className="btn-success">

@@ -112,28 +112,46 @@ const FacturaSchema = new mongoose.Schema({
   // ESTADO (extendido)
   // ============================================================
   estado: {
-  type: String,
-  enum: [
-    'Pendiente de Anticipo',
-    'Anticipo ya Pagado',
-    'Pendiente de Saldo',        
-    'Pendiente de 2da Etapa',    
-    'Pagada',
-    'Anulada',
-    'Vencido'
-  ],
-  default: 'Pendiente de Anticipo'
-},
+    type: String,
+    enum: [
+      'Pendiente de Anticipo',
+      'Anticipo ya Pagado',
+      'Pendiente de Saldo',        
+      'Pendiente de 2da Etapa',    
+      'Pagada',
+      'Anulada',
+      'Vencido'
+    ],
+    default: 'Pendiente de Anticipo'
+  },
 
   // ============================================================
   // FLAGS
   // ============================================================
   esFacturaAdicional: { type: Boolean, default: false },
-  esIndependiente: { type: Boolean, default: false }, // <-- NUEVO
+  esIndependiente: { type: Boolean, default: false },
   idCotizacionAdicional: { type: String, default: null },
   activaProyecto: { type: Boolean, default: true },
   hitosCubiertos: [{ type: String, default: null }],
-  creadoPor: { type: String, default: 'Sistema' }
+  creadoPor: { type: String, default: 'Sistema' },
+
+  // ============================================================
+  // NOTACIÓN DE PROYECTO ELIMINADO
+  // ============================================================
+  proyectoEliminado: { type: Boolean, default: false },
+  proyectoEliminadoId: { type: String, default: null },
+  proyectoEliminadoNombre: { type: String, default: null },
+  fechaEliminacionProyecto: { type: Date, default: null },
+
+  // ============================================================
+  // ✅ AUDITORÍA DE ANULACIÓN (NUEVO)
+  // ============================================================
+  anulada: { type: Boolean, default: false },
+  anuladaPor: { type: String, default: null },
+  fechaAnulacion: { type: Date, default: null },
+  motivoAnulacion: { type: String, default: null },
+  eliminacionProyectoOrigen: { type: Boolean, default: false, index: true }
+
 }, { timestamps: true });
 
 // ============================================================
@@ -142,8 +160,8 @@ const FacturaSchema = new mongoose.Schema({
 FacturaSchema.pre('save', async function() {
   // Generar idFactura automaticamente si es nuevo y no tiene
   if (this.isNew && !this.idFactura) {
-    const siguienteNumero = await Contador.obtenerSiguiente('facturas');
-    this.idFactura = `FAC-${String(siguienteNumero).padStart(3, '0')}`;
+    const siguienteNumero = await Contador.obtenerSiguiente('cuenta_cobro');
+    this.idFactura = `CDC-${String(siguienteNumero).padStart(3, '0')}`;
   }
 
   // Recalcular si es nuevo o cambio subtotal/porcentajes
@@ -170,12 +188,10 @@ FacturaSchema.pre('save', async function() {
     if (this.anticipoPorcentaje > 0 || this.saldoPorcentaje > 0) {
       const pctAnticipo = this.anticipoPorcentaje || 40;
       const pctSaldo = this.saldoPorcentaje || (100 - pctAnticipo);
-      
-      // ✅ CORRECCION: Anticipo y Saldo sobre TOTAL CON IVA
+
       this.anticipoRequerido = Math.round((this.totalConIva * pctAnticipo) / 100);
       this.saldoRestante = Math.round((this.totalConIva * pctSaldo) / 100);
     } else {
-      // Factura de hito o unica: no hay anticipo/saldo adicional
       this.anticipoRequerido = 0;
       this.saldoRestante = 0;
     }
@@ -209,11 +225,16 @@ FacturaSchema.methods.marcarPagada = function() {
   }
 };
 
-FacturaSchema.methods.anular = function() {
+// ✅ MODIFICADO: ahora acepta auditoría
+FacturaSchema.methods.anular = function(usuario = 'Sistema', motivo = '') {
   if (this.estado === 'Pagada') {
-    throw new Error('No se puede anular una factura ya pagada');
+    throw new Error('No se puede anular una cuenta de cobro ya pagada');
   }
   this.estado = 'Anulada';
+  this.anulada = true;
+  this.anuladaPor = usuario;
+  this.fechaAnulacion = new Date();
+  this.motivoAnulacion = motivo;
 };
 
 FacturaSchema.methods.marcarVencido = function() {

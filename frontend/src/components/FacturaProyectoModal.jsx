@@ -73,7 +73,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
     if (porcentaje === 100) {
       setLabelFactura('Pago Único (100%)');
     } else {
-      setLabelFactura(`Factura Parcial (${porcentaje}%)`);
+      setLabelFactura(`Cuenta de cobro parcial (${porcentaje}%)`);
     }
   };
 
@@ -89,7 +89,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
   // ========== FUNCIONES AUXILIARES  ==========
   const cargarServicios = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/servicios`, {
+      const res = await axios.get(`${API_URL}/servicios`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setServiciosDisponibles(res.data?.data || []);
@@ -195,7 +195,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
         }));
         setItems(itemsHito);
         
-        setNotas(`Factura de ${hito.nombre} - Proyecto: ${proyecto.nombreProyecto}`);
+        setNotas(`Cuenta de cobro de ${hito.nombre} - Proyecto: ${proyecto.nombreProyecto}`);
       }
 
       const fechaHoy = new Date().toISOString().split('T')[0];
@@ -256,7 +256,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
       fechaVen.setDate(fechaVen.getDate() + 30);
       setFechaEmision(fechaHoy);
       setFechaVencimiento(fechaVen.toISOString().split('T')[0]);
-      setNotas(`Factura de saldo (${porcentajeDefault}%) - Proyecto: ${proyecto.nombreProyecto}`);
+      setNotas(`Cuenta de cobro de saldo (${porcentajeDefault}%) - Proyecto: ${proyecto.nombreProyecto}`);
       setNotasLegales('Terminos: Pago a 30 dias. IVA incluido.');
     
     } else if (facturaExistente?.esFacturaAdicional === true && facturaExistente?.idCotizacionAdicional) {
@@ -285,7 +285,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
 
       setFechaEmision(fechaHoy);
       setFechaVencimiento(fechaVen.toISOString().split('T')[0]);
-      setNotas(`Siguiente factura de cotizacion adicional: ${idCotizacion || ''}`);
+      setNotas(`Siguiente cuenta de cobro de cotizacion adicional: ${idCotizacion || ''}`);
       setNotasLegales('Terminos: Pago a 30 dias. IVA incluido.');
       setMetodoPago(facturaExistente?.metodoPago || 'Transferencia Bancaria');
 
@@ -324,7 +324,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
       setItems(proyectoItems);
       setFechaEmision(fechaHoy);
       setFechaVencimiento(fechaVen.toISOString().split('T')[0]);
-      setNotas(`Factura para proyecto: ${proyecto.nombreProyecto}`);
+      setNotas(`Cuenta de cobro para proyecto: ${proyecto.nombreProyecto}`);
       setNotasLegales('Terminos: Pago a 30 dias. IVA incluido.');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -358,7 +358,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
       };
     });
     setItems(itemsSaldo);
-    setNotas(`Factura de saldo (${nuevoPorcentaje}%) - Proyecto: ${proyecto.nombreProyecto}`);
+    setNotas(`Cuenta de cobro de saldo (${nuevoPorcentaje}%) - Proyecto: ${proyecto.nombreProyecto}`);
     
   }, [hitosSeleccionadosSaldo, esSaldoProyecto, proyecto]);
 
@@ -438,27 +438,27 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
     try {
       // MODO HITO - Generar factura desde hito
       if (modoHito && hitoSeleccionado) {
-      const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}/facturas/hito/${hitoSeleccionado.idHito}`;
+      const url = `${API_URL}/proyectos/${proyecto.idProyecto}/facturas/hito/${hitoSeleccionado.idHito}`;
         const payload = {
           metodoPago,
-          notas: notas || `Factura de ${hitoSeleccionado.nombre}`
+          notas: notas || `Cuenta de cobro de ${hitoSeleccionado.nombre}`
         };
 
         const res = await axios.post(url, payload, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
 
-        alert(`Factura ${res.data?.data?.factura?.idFactura || ''} generada para ${hitoSeleccionado.nombre}`);
+        alert(`Cuenta de cobro ${res.data?.data?.factura?.idFactura || ''} generada para ${hitoSeleccionado.nombre}`);
       }
       // SALDO PROYECTO BASE
       else if (esSaldoProyecto) {
               // VALIDACIÓN: debe haber hitos seleccionados
       if (hitosSeleccionadosSaldo.length === 0) {
-        alert("Debes seleccionar al menos un hito para generar la factura de saldo.");
+        alert("Debes seleccionar al menos un hito para generar la cuenta de cobro de saldo.");
         setGuardando(false);
         return;
       }
-      const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}/facturas/saldo`;
+      const url = `${API_URL}/proyectos/${proyecto.idProyecto}/facturas/saldo`;
         const payload = {
           metodoPago,
           items: items.map(({ id, ...rest }) => rest),
@@ -476,12 +476,12 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
 
-        alert(`Factura de saldo ${res.data?.data?.idFactura || ''} creada exitosamente`);
+        alert(`Cuenta de cobro de saldo ${res.data?.data?.idFactura || ''} creada exitosamente`);
       }
       // COTIZACIÓN ADICIONAL
       else if (cotizacionAdicionalData && facturaExistente?.idCotizacionAdicional) {
         const idCotizacion = facturaExistente.idCotizacionAdicional;
-        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}/cotizaciones-adicionales/${idCotizacion}/siguiente-factura`;
+        const url = `${API_URL}/proyectos/${proyecto.idProyecto}/cotizaciones-adicionales/${idCotizacion}/siguiente-factura`;
         const payload = {
           metodoPago: metodoPago || 'Transferencia Bancaria',
           porcentaje: porcentajeManual,
@@ -492,11 +492,11 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
 
-        alert(`Factura ${res.data?.data?.idFactura || ''} generada exitosamente\\n${res.data?.message || ''}`);
+        alert(`Cuenta de cobro ${res.data?.data?.idFactura || ''} generada exitosamente\\n${res.data?.message || ''}`);
       }
       // EDICIÓN
       else if (esEdicion && facturaExistente?.idFactura) {
-       const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/facturas/${facturaExistente.idFactura}`;
+       const url = `${API_URL}/facturas/${facturaExistente.idFactura}`;
         const payload = {
           metodoPago,
           items: items.map(({ id, ...rest }) => rest),
@@ -509,11 +509,11 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
           idCotizacion: proyecto.idCotizacion
         };
         await axios.put(url, payload);
-        alert(`Factura ${facturaExistente.idFactura} actualizada exitosamente`);
+        alert(`Cuenta de cobro ${facturaExistente.idFactura} actualizada exitosamente`);
       }
       // NUEVA FACTURA NORMAL
       else {
-        const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/proyectos/${proyecto.idProyecto}/facturas`;
+        const url = `${API_URL}/proyectos/${proyecto.idProyecto}/facturas`;
         const payload = {
           metodoPago,
           items: items.map(({ id, ...rest }) => rest),
@@ -526,7 +526,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
           idCotizacion: proyecto.idCotizacion
         };
         const res = await axios.post(url, payload);
-        alert(`Factura ${res.data?.data?.idFactura || ''} creada exitosamente`);
+        alert(`Cuenta de cobro ${res.data?.data?.idFactura || ''} creada exitosamente`);
       }
 
       onSuccess?.();
@@ -616,14 +616,14 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
           <div>
             <h2 style={{ margin: 0, color: '#333' }}>
               {modoHito && hitoSeleccionado
-                ? `Factura de Hito: ${hitoSeleccionado.nombre} (${hitoSeleccionado.porcentajePago}%)`
+                ? `Cuenta de cobro de Hito: ${hitoSeleccionado.nombre} (${hitoSeleccionado.porcentajePago}%)`
                 : (esSaldoProyecto
-                  ? 'Factura de Saldo - Proyecto'
+                  ? 'Cuenta de cobro de Saldo - Proyecto'
                   : (cotizacionAdicionalData 
                     ? `${labelFactura} - ${facturaExistente?.idCotizacionAdicional || ''} (${porcentajeManual}%)`
                     : (esEdicion 
-                      ? `Editar Factura ${facturaExistente?.idFactura}`
-                      : 'Nueva Factura')
+                      ? `Editar cuenta de cobro ${facturaExistente?.idFactura}`
+                      : 'Nueva cuenta de cobro')
                   )
                 )
               }
@@ -655,7 +655,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
         {!modoHito && !esSaldoProyecto && !cotizacionAdicionalData && !esEdicion && hitosDisponibles.length > 0 && (
           <div style={{ marginBottom: '15px', padding: '15px', background: '#e8f6f3', borderRadius: '8px', border: '1px solid #1abc9c' }}>
             <label style={{ fontWeight: 'bold', fontSize: '0.9em', color: '#16a085', display: 'block', marginBottom: '8px' }}>
-              Generar factura desde Hito:
+              Generar Cuenta de cobro desde Hito:
             </label>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               {hitosDisponibles.map(hito => (
@@ -679,7 +679,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
                       subtotal: Math.round((item.subtotal || 0) * hito.porcentajePago / 100)
                     }));
                     setItems(itemsHito);
-                    setNotas(`Factura de ${hito.nombre} - Proyecto: ${proyecto.nombreProyecto}`);
+                    setNotas(`Cuenta de cobro de ${hito.nombre} - Proyecto: ${proyecto.nombreProyecto}`);
                   }}
                   style={{
                     padding: '8px 16px',
@@ -696,7 +696,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
               ))}
             </div>
             <p style={{ margin: '8px 0 0 0', fontSize: '0.8em', color: '#6c757d' }}>
-              Seleccione un hito para generar la factura correspondiente. Los hitos deben completarse en orden.
+              Seleccione un hito para generar la cuenta de cobro correspondiente. Los hitos deben completarse en orden.
             </p>
           </div>
         )}
@@ -705,7 +705,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
         {modoHito && hitoSeleccionado && (
           <div style={{ marginBottom: '15px', padding: '15px', background: '#fff3cd', borderRadius: '8px', border: '1px solid #ffc107' }}>
             <p style={{ margin: 0, fontSize: '0.9em', color: '#856404' }}>
-              <strong>Generando factura para:</strong> {hitoSeleccionado.nombre}<br/>
+              <strong>Generando cuenta de cobro para:</strong> {hitoSeleccionado.nombre}<br/>
               <strong>Porcentaje:</strong> {hitoSeleccionado.porcentajePago}% | 
               <strong>Monto estimado:</strong> ${hitoSeleccionado.montoEstimado?.toLocaleString()}<br/>
               <strong>Descripción:</strong> {hitoSeleccionado.descripcion}
@@ -750,8 +750,8 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
               </span>
             </div>
             <p style={{ margin: '8px 0 0 0', fontSize: '0.8em', color: '#856404' }}>
-              Valor de esta factura: <strong>${subtotal.toLocaleString()}</strong> | 
-              Pendiente por facturar: <strong>${(cotizacionAdicionalData?.total - (cotizacionAdicionalData?.total * porcentajeManual / 100))?.toLocaleString() || 'N/A'}</strong>
+              Valor de esta Cuenta de cobro: <strong>${subtotal.toLocaleString()}</strong> | 
+              Pendiente por cobrar: <strong>${(cotizacionAdicionalData?.total - (cotizacionAdicionalData?.total * porcentajeManual / 100))?.toLocaleString() || 'N/A'}</strong>
             </p>
           </div>
         )}
@@ -761,7 +761,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
           <div style={{ marginBottom: '15px', padding: '15px', background: '#d4edda', borderRadius: '8px', border: '1px solid #28a745' }}>
             <div style={{ marginBottom: '10px' }}>
               <label style={{ fontWeight: 'bold', fontSize: '0.9em', color: '#155724', display: 'block', marginBottom: '8px' }}>
-                Selecciona los hitos que cubre esta factura de saldo:
+                Selecciona los hitos que cubre esta cuenta de cobro de saldo:
               </label>
               <span style={{ fontSize: '0.85em', color: '#155724' }}>
                 Saldo disponible: <strong>${(() => {
@@ -792,7 +792,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
               fontWeight: 'bold', fontSize: '0.9em', 
               color: '#856404', display: 'block', marginBottom: '10px' 
             }}>
-              ⚠️ Selecciona los hitos que cubre esta factura de saldo:
+              ⚠️ Selecciona los hitos que cubre esta cuenta de cobro de saldo:
             </label>
             
             {hitosPendientesSaldo.map(h => (
@@ -828,7 +828,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
             
             {hitosSeleccionadosSaldo.length === 0 && (
               <p style={{ color: '#dc3545', fontSize: '0.85em', marginTop: '5px' }}>
-                Debes seleccionar al menos un hito para generar la factura de saldo.
+                Debes seleccionar al menos un hito para generar la cuenta de cobro de saldo.
               </p>
             )}
           </div>
@@ -1043,7 +1043,7 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
             <div><strong>Retencion ({retencionPorcentaje}%):</strong> ${retencion.toLocaleString()}</div>
             <div><strong>Total FACTURA:</strong> ${totalConIva.toLocaleString()}</div>
             <div style={{ gridColumn: '1 / -1', color: '#856404', fontSize: '0.9em', marginTop: '8px', padding: '8px', background: '#fff3cd', borderRadius: '4px' }}>
-              <strong>NOTA:</strong> Esta factura esta sujeta a retencion en la fuente del {retencionPorcentaje}% 
+              <strong>NOTA:</strong> Esta cuenta de cobro esta sujeta a retencion en la fuente del {retencionPorcentaje}% 
               equivalente a <strong>${retencion.toLocaleString()}</strong>
             </div>
             <div style={{ gridColumn: '1 / -1', fontSize: '1.1em', color: '#16a085', marginTop: '5px' }}>
@@ -1079,10 +1079,10 @@ export default function FacturaProyectoModal({ proyecto, facturaExistente, clien
               fontWeight: 'bold'
             }}>
             {guardando ? 'Guardando...' : (
-              modoHito ? `Generar Factura de ${hitoSeleccionado?.nombre || 'Hito'}` :
-              esSaldoProyecto ? 'Generar Factura de Saldo' : 
-              cotizacionAdicionalData ? 'Generar Siguiente Factura' : 
-              esEdicion ? 'Actualizar Factura' : 'Guardar Factura'
+              modoHito ? `Generar cuenta de cobro de ${hitoSeleccionado?.nombre || 'Hito'}` :
+              esSaldoProyecto ? 'Generar cuenta de cobro de Saldo' : 
+              cotizacionAdicionalData ? 'Generar Siguiente cuenta de cobro' : 
+              esEdicion ? 'Actualizar cuenta de cobro' : 'Guardar cuenta de cobro'
             )}
           </button>
         </div>

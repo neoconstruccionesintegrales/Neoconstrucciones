@@ -7,16 +7,23 @@ const materialSchema = new mongoose.Schema({
 });
 
 const servicioSchema = new mongoose.Schema({
-  idServicio: { type: String, required: true, unique: true, trim: true }, // Ej: "EST-PESADA"
+  idServicio: { type: String, required: true, unique: true, trim: true }, // Ej: "EST-001"
   nombre: { type: String, required: true }, // Ej: "Fabricación de Cerchas"
   unidad: { type: String, required: true, default: 'm2' }, // m2, kg, ml, etc.
   precioUnitario: { type: Number, required: true }, // Lo que le cobras al cliente por unidad
     
-// Desglose interno de costos para calcular el subtotal de materiales
+  // Desglose interno de costos para calcular el subtotal de materiales
   materiales: [materialSchema], // Lista donde puedes añadir de 1 a varios materiales
     
   costoManoObraEspecializada: { type: Number, required: true }, // Costo de los soldadores/armadores por unidad
-  descripcion: { type: String }
-});
+  descripcion: { type: String },
+  
+  // ✅ NUEVO CAMPO: Estado del servicio
+  estado: { 
+    type: String, 
+    enum: ['Activo', 'Inactivo'], 
+    default: 'Activo' 
+  }
+}, { timestamps: true });
 
 module.exports = mongoose.model('Servicio', servicioSchema);

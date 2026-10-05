@@ -295,7 +295,7 @@ function Cotizaciones() {
                     mensaje += `\n📋 Proyecto creado: ${resAprobacion.data.proyecto.idProyecto}`;
                 }
                 if (resAprobacion.data.factura) {
-                    mensaje += `\n📄 Factura creada: ${resAprobacion.data.factura.idFactura}`;
+                    mensaje += `\n📄 Cuenta de cobro creada: ${resAprobacion.data.factura.idFactura}`;
                 }
                 alert(mensaje);
                 setGuardando(false);
@@ -504,9 +504,9 @@ function Cotizaciones() {
                 <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div className="modal-content" style={{ background: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '550px', width: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', fontFamily: 'Arial, sans-serif' }}>
                         <h3 style={{ marginTop: 0, color: '#dc3545', borderBottom: '2px solid #eee', paddingBottom: '15px' }}>⚠️ Confirmar Aprobación de Cotización</h3>
-                        <p><strong>Al aprobar esta cotización se creará un Proyecto y una Factura automáticamente.</strong></p>
+                        <p><strong>Al aprobar esta cotización se creará un Proyecto y una cuenta de cobro automáticamente.</strong></p>
                         <div style={{ margin: '20px 0' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Seleccione tipo de facturación:</label>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Seleccione tipo de pago cuenta de cobro:</label>
                             <select value={tipoFacturacion} onChange={(e) => setTipoFacturacion(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ced4da', fontSize: '14px' }}>
                                 <option value="anticipo_final">1. Anticipo 40% + Final 60%</option>
                                 <option value="unica">2. Pago Único (100%)</option>

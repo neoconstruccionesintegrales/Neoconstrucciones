@@ -13,7 +13,7 @@ function Admin() {
     { titulo: 'Gestión de Cotizaciones', icon: '🧾', path: '/gestion-cotizaciones', desc: 'Cotizaciones.', color: '#52647A', permisos: ['admin'] },
     { titulo: 'Gestión de Servicios', icon: '🛠️', path: '/admin-servicios', desc: 'Gestión técnica de ingeniería e insumos.', color: '#0FA69D', permisos: ['admin'] },
     { titulo: 'Gestión de Proyectos', icon: '🏗️', path: '/proyectos', desc: 'Seguimiento de hitos y cronogramas.', color: '#EEB72B', permisos: ['admin'] },
-    { titulo: 'Gestión de Facturación', icon: '🧾', path: '/facturas', desc: 'Emisión de cobros y conciliación.', color: '#007268', permisos: ['admin', 'contabilidad'] },
+    { titulo: 'Gestión de Cobros', icon: '🧾', path: '/facturas', desc: 'Emisión de cobros y conciliación.', color: '#007268', permisos: ['admin', 'contabilidad'] },
     { titulo: 'Gestión de Mensajería y Visitas', icon: '📬', path: '/admin-dashboard', desc: 'Control de clientes y agenda técnica.', color: '#006ECF', permisos: ['admin', 'comercial'] }
   ];
 

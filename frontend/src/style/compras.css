@@ -1,0 +1,1313 @@
+/* ============================================================
+   MÓDULO DE COMPRAS - PROVEEDORES Y FACTURAS DE COMPRA
+   Paleta: Azul claro #1391c8 | Azul oscuro #0077b1 | Blanco #ffffff | Negro #0e0e0e
+   ============================================================ */
+
+:root {
+  --azul-claro: #1391c8;
+  --azul-oscuro: #0077b1;
+  --blanco: #ffffff;
+  --negro: #0e0e0e;
+  --gris-50: #f8fafc;
+  --gris-100: #f1f5f9;
+  --gris-200: #e2e8f0;
+  --gris-300: #cbd5e1;
+  --gris-400: #94a3b8;
+  --gris-500: #64748b;
+  --gris-600: #475569;
+  --gris-700: #334155;
+  --gris-800: #1e293b;
+  --font-base: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+}
+
+/* -------------------- Layout General -------------------- */
+.compras-container {
+  min-height: 100vh;
+  width: 100%;
+  display: block;
+  background-color: var(--gris-100);
+  padding: clamp(24px, 4vw, 48px) 0;
+  box-sizing: border-box;
+}
+
+.compras-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 48px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* -------------------- HEADER -------------------- */
+.compras-header-text {
+  text-align: left;
+  margin-bottom: clamp(20px, 3vw, 32px);
+}
+
+.compras-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color:  var(--azul-oscuro);
+  margin: 0;
+  font-family: var(--font-base);
+  line-height: 1.2;
+}
+
+.compras-subtitle {
+  color: var(--gris-500);
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  margin-top: 8px;
+  font-family: var(--font-base);
+}
+
+.compras-subtitle strong {
+  color: var(--azul-claro);
+  font-weight: 700;
+}
+
+/* -------------------- HEADER ACCIONES -------------------- */
+.header-acciones {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: clamp(20px, 3vw, 28px);
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-crear {
+  background-color: #1DBD8E;
+  color: var(--blanco);
+  padding: 10px 20px;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  border-radius: 10px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-base);
+}
+
+.btn-crear:hover {
+  background-color: #00D4C6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* -------------------- Tarjetas de Resumen -------------------- */
+.compras-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.compras-stat-card {
+  background: var(--blanco);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--azul-claro);
+}
+
+.compras-stat-card .stat-label {
+  font-size: 12px;
+  color: var(--gris-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  font-family: var(--font-base);
+}
+
+.compras-stat-card .stat-value {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-weight: 700;
+  color: var(--gris-800);
+  font-family: var(--font-base);
+}
+
+.compras-stat-card.stat-proveedores { border-left-color: var(--azul-claro); }
+.compras-stat-card.stat-facturas { border-left-color: #2e7d32; }
+.compras-stat-card.stat-pagado { border-left-color: #43a047; }
+.compras-stat-card.stat-pendiente { border-left-color: #e65100; }
+.compras-stat-card.stat-iva { border-left-color: #6a1b9a; }
+.compras-stat-card.stat-proyecto { border-left-color: #1a237e; }
+
+/* -------------------- Filtros -------------------- */
+.compras-filtros {
+  background: var(--blanco);
+  padding: clamp(12px, 2vw, 16px);
+  border-radius: 12px;
+  border: 1px solid var(--gris-200);
+  margin-bottom: clamp(16px, 2vw, 24px);
+  display: flex;
+  gap: clamp(10px, 1.5vw, 16px);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.compras-filtros .filtro-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.compras-filtros .filtro-group label {
+  font-size: clamp(0.7rem, 0.9vw, 0.8125rem);
+  font-weight: 600;
+  color: var(--gris-600);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: var(--font-base);
+}
+
+.compras-filtros select,
+.compras-filtros input {
+  padding: 8px 12px;
+  border: 1.5px solid var(--gris-300);
+  border-radius: 8px;
+  font-size: clamp(0.85rem, 1vw, 0.9375rem);
+  background: var(--blanco);
+  color: var(--negro);
+  font-family: var(--font-base);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-height: 40px;
+  width: 100%;
+}
+
+.compras-filtros select:focus,
+.compras-filtros input:focus {
+  outline: none;
+  border-color: var(--azul-claro);
+  box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
+}
+
+.compras-filtros .btn-compras {
+  align-self: flex-end;
+  min-height: 40px;
+}
+
+/* -------------------- Tablas -------------------- */
+.proveedores-table-wrapper,
+.facturas-compra-table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 65vh;
+  background: var(--blanco);
+  border-radius: 12px;
+  border: 1px solid var(--gris-200);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.proveedores-table,
+.facturas-compra-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+  min-width: 700px;
+  background: var(--blanco);
+  font-family: var(--font-base);
+}
+
+.proveedores-table thead,
+.facturas-compra-table thead {
+  background-color: var(--azul-claro);
+}
+
+.proveedores-table th,
+.facturas-compra-table th {
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 700;
+  font-size: clamp(0.7rem, 1vw, 0.8125rem);
+  white-space: nowrap;
+  background-color: var(--azul-claro);
+  color: var(--blanco);
+  border-bottom: 2px solid var(--azul-oscuro);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: var(--font-base);
+}
+
+.proveedores-table td,
+.facturas-compra-table td {
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--gris-200);
+  color: var(--gris-700);
+  vertical-align: middle;
+  background: var(--blanco);
+}
+
+.proveedores-table tbody tr:hover td,
+.facturas-compra-table tbody tr:hover td {
+  background-color: rgba(19, 145, 200, 0.04);
+}
+
+/* Alternar colores de filas */
+.proveedores-table tbody tr:nth-child(even) td,
+.facturas-compra-table tbody tr:nth-child(even) td {
+  background: var(--gris-50);
+}
+
+.proveedores-table tbody tr:nth-child(even):hover td,
+.facturas-compra-table tbody tr:nth-child(even):hover td {
+  background: rgba(19, 145, 200, 0.04);
+}
+
+/* -------------------- Badges - Proveedores -------------------- */
+.proveedores-table .proveedor-id {
+  font-weight: 600;
+  color: var(--gris-800);
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+}
+
+.proveedores-table .proveedor-nombre {
+  font-weight: 600;
+  color: var(--gris-800);
+  font-family: var(--font-base);
+}
+
+.proveedores-table .proveedor-nit {
+  font-size: 12px;
+  color: var(--gris-500);
+}
+
+.proveedores-table .tipo-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.tipo-badge.materiales { background: #e3f2fd; color: #0d47a1; border-color: #bbdefb; }
+.tipo-badge.equipos { background: #e8f5e9; color: #1b5e20; border-color: #c8e6c9; }
+.tipo-badge.subcontrato { background: #fff3e0; color: #e65100; border-color: #ffccbc; }
+.tipo-badge.servicios { background: #f3e5f5; color: #4a148c; border-color: #e1bee7; }
+.tipo-badge.administrativo { background: #fce4ec; color: #880e4f; border-color: #f8bbd0; }
+.tipo-badge.transporte { background: #e0f7fa; color: #006064; border-color: #b2ebf2; }
+.tipo-badge.varios { background: #f5f5f5; color: #424242; border-color: #e0e0e0; }
+
+.proveedores-table .estado-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.estado-badge.activo { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+.estado-badge.inactivo { background: #fce4ec; color: #880e4f; border: 1px solid #f8bbd0; }
+.estado-badge.bloqueado { background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
+
+/* -------------------- Badges - Facturas de Compra -------------------- */
+.facturas-compra-table .factura-id {
+  font-weight: 600;
+  color: var(--gris-800);
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+}
+
+.facturas-compra-table .proveedor-nombre {
+  font-weight: 500;
+}
+
+.facturas-compra-table .numero-factura {
+  font-size: 12px;
+  color: var(--gris-500);
+}
+
+.facturas-compra-table .total-pagado {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.facturas-compra-table .total-pendiente {
+  color: #e65100;
+  font-weight: 700;
+}
+
+/* Estados de factura de compra */
+.estado-factura-compra {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.estado-factura-compra.pendiente { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+.estado-factura-compra.aprobada { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
+.estado-factura-compra.pagada { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+.estado-factura-compra.anulada { background: #fce4ec; color: #880e4f; border: 1px solid #f8bbd0; }
+.estado-factura-compra.parcial { background: #fff8e1; color: #f57f17; border: 1px solid #ffe082; }
+
+/* -------------------- Botones -------------------- */
+.btn-compras {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: clamp(0.75rem, 1vw, 0.85rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-base);
+  min-height: 38px;
+}
+
+.btn-compras-primary {
+  background: var(--azul-claro);
+  color: var(--blanco);
+}
+
+.btn-compras-primary:hover {
+  background: var(--azul-oscuro);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(19, 145, 200, 0.3);
+}
+
+.btn-compras-success {
+  background: #2e7d32;
+  color: white;
+}
+
+.btn-compras-success:hover {
+  background: #1b5e20;
+}
+
+.btn-compras-danger {
+  background: #c62828;
+  color: white;
+}
+
+.btn-compras-danger:hover {
+  background: #b71c1c;
+}
+
+.btn-compras-outline {
+  background: transparent;
+  border: 1.5px solid var(--azul-claro);
+  color: var(--azul-claro);
+}
+
+.btn-compras-outline:hover {
+  background: var(--azul-claro);
+  color: var(--blanco);
+}
+
+.btn-compras-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  min-height: 30px;
+}
+
+/* -------------------- Botones de acciones (estilo servicios) -------------------- */
+.srv-actions-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.srv-btn-edit {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  font-family: var(--font-base);
+}
+
+.srv-btn-edit:hover {
+  background-color: #fef3c7;
+}
+
+.srv-btn-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  font-family: var(--font-base);
+}
+
+.srv-btn-delete:hover {
+  background-color: #fecaca;
+}
+
+/* -------------------- Alertas -------------------- */
+.dba-alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-base);
+}
+
+.dba-alert-success {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #a5d6a7;
+}
+
+.dba-alert-error {
+  background: #fce4ec;
+  color: #880e4f;
+  border: 1px solid #f8bbd0;
+}
+
+.dba-alert-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: inherit;
+  font-weight: 700;
+}
+
+/* -------------------- No Results -------------------- */
+.no-results {
+  padding: clamp(24px, 4vw, 40px);
+  text-align: center;
+  color: var(--gris-400);
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  font-family: var(--font-base);
+}
+
+/* -------------------- Modal -------------------- */
+.compras-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.compras-modal {
+  background: var(--blanco);
+  border-radius: 16px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: clamp(16px, 3vw, 28px);
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+.compras-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--azul-claro);
+}
+
+.compras-modal-header h2 {
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  font-weight: 700;
+  color: var(--azul-oscuro);
+  margin: 0;
+  font-family: var(--font-base);
+}
+
+.compras-modal-close {
+  background: var(--gris-100);
+  border: 1px solid var(--gris-300);
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--gris-500);
+  padding: 4px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-weight: 700;
+}
+
+.compras-modal-close:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.compras-modal-body {
+  padding: 4px 0;
+}
+
+.compras-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gris-200);
+}
+
+/* -------------------- Formularios -------------------- */
+.compras-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.compras-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.compras-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.compras-form-group label {
+  font-size: clamp(0.7rem, 0.9vw, 0.8125rem);
+  font-weight: 600;
+  color: var(--gris-600);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: var(--font-base);
+}
+
+.compras-form-group .required {
+  color: #c62828;
+}
+
+.compras-form-group input,
+.compras-form-group select,
+.compras-form-group textarea {
+  padding: 10px 12px;
+  border: 1.5px solid var(--gris-300);
+  border-radius: 8px;
+  font-size: clamp(0.85rem, 1vw, 0.9375rem);
+  font-family: var(--font-base);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: var(--blanco);
+  color: var(--negro);
+  min-height: 40px;
+  width: 100%;
+}
+
+.compras-form-group input:focus,
+.compras-form-group select:focus,
+.compras-form-group textarea:focus {
+  outline: none;
+  border-color: var(--azul-claro);
+  box-shadow: 0 0 0 3px rgba(19, 145, 200, 0.15);
+}
+
+.compras-form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* -------------------- Items de Factura -------------------- */
+.compras-items-table-wrapper {
+  overflow-x: auto;
+}
+
+.compras-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.8rem, 1vw, 0.9rem);
+  margin: 8px 0;
+  font-family: var(--font-base);
+}
+
+.compras-items-table th {
+  background: var(--gris-100);
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--gris-600);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.compras-items-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--gris-200);
+}
+
+.compras-items-table input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1.5px solid var(--gris-300);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: var(--font-base);
+  transition: border-color 0.2s;
+  background: var(--blanco);
+}
+
+.compras-items-table input:focus {
+  outline: none;
+  border-color: var(--azul-claro);
+}
+
+.compras-items-table .item-subtotal {
+  font-weight: 600;
+  color: var(--gris-800);
+  text-align: right;
+}
+
+.compras-items-table .btn-remove-item {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 2px 8px;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.compras-items-table .btn-remove-item:hover {
+  background: #fee2e2;
+}
+
+/* -------------------- Totales en Modal -------------------- */
+.compras-totales {
+  background: var(--gris-50);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  border: 1px solid var(--gris-200);
+}
+
+.compras-totales .total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: clamp(0.85rem, 1vw, 0.9375rem);
+  font-family: var(--font-base);
+}
+
+.compras-totales .total-row.total-final {
+  font-weight: 700;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  border-top: 2px solid var(--gris-300);
+  padding-top: 8px;
+  margin-top: 4px;
+  color: var(--azul-oscuro);
+}
+
+/* -------------------- Scrollbar -------------------- */
+.proveedores-table-wrapper::-webkit-scrollbar,
+.facturas-compra-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.proveedores-table-wrapper::-webkit-scrollbar-track,
+.facturas-compra-table-wrapper::-webkit-scrollbar-track {
+  background: var(--gris-100);
+  border-radius: 4px;
+}
+
+.proveedores-table-wrapper::-webkit-scrollbar-thumb,
+.facturas-compra-table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--gris-300);
+  border-radius: 4px;
+}
+
+.proveedores-table-wrapper::-webkit-scrollbar-thumb:hover,
+.facturas-compra-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--gris-400);
+}
+
+/* -------------------- Barra de navegación inferior -------------------- */
+.db-actions-group {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: clamp(16px, 2vw, 24px);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-base);
+  border: none;
+  background: var(--azul-claro);
+  color: var(--blanco);
+}
+
+.btn-primary:hover {
+  background: var(--gris-800);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* -------------------- Utilidades -------------------- */
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-success {
+  font-weight: 700;
+}
+
+.text-mono {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.9rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-size-12 {
+  font-size: 0.75rem;
+}
+
+.font-size-13 {
+  font-size: 0.8125rem;
+}
+
+.text-gray {
+  color: var(--gris-500);
+}
+
+.text-dark {
+  color: var(--negro);
+}
+
+/* ============================================================
+   RESPONSIVE HORIZONTAL
+   ============================================================ */
+
+@media (max-width: 1200px) {
+  .compras-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .compras-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .compras-container {
+    padding: 16px 0;
+  }
+
+  .compras-wrapper {
+    padding: 0 16px;
+  }
+
+  .compras-title {
+    font-size: 1.35rem;
+  }
+
+  .header-acciones {
+    justify-content: stretch;
+  }
+
+  .header-acciones .btn-crear {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .compras-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .compras-filtros {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .compras-filtros .filtro-group {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .compras-filtros .btn-compras {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .compras-form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .compras-modal {
+    max-width: 100%;
+    margin: 10px;
+    padding: 16px;
+    max-height: 95vh;
+  }
+
+  .proveedores-table-wrapper,
+  .facturas-compra-table-wrapper {
+    max-height: 50vh;
+  }
+
+  .proveedores-table,
+  .facturas-compra-table {
+    min-width: 650px;
+  }
+
+  .proveedores-table th,
+  .facturas-compra-table th,
+  .proveedores-table td,
+  .facturas-compra-table td {
+    padding: 10px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .compras-container {
+    padding: 12px 0;
+  }
+
+  .compras-wrapper {
+    padding: 0 12px;
+  }
+
+  .compras-title {
+    font-size: 1.2rem;
+  }
+
+  .compras-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .compras-stat-card {
+    padding: 12px 14px;
+  }
+
+  .compras-stat-card .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .compras-modal {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .compras-modal-header h2 {
+    font-size: 1rem;
+  }
+
+  /* TABLAS EN MÓVIL - CARD VIEW */
+  .proveedores-table-wrapper,
+  .facturas-compra-table-wrapper {
+    max-height: unset;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    overflow-x: hidden;
+  }
+
+  .proveedores-table,
+  .facturas-compra-table {
+    display: block;
+    min-width: unset;
+    background: transparent;
+  }
+
+  .proveedores-table thead,
+  .facturas-compra-table thead {
+    display: none;
+  }
+
+  .proveedores-table tbody,
+  .facturas-compra-table tbody,
+  .proveedores-table tr,
+  .facturas-compra-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .proveedores-table tr,
+  .facturas-compra-table tr {
+    margin-bottom: 12px;
+    border: 1px solid var(--gris-200);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--blanco);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  .proveedores-table td,
+  .facturas-compra-table td {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 10px 14px;
+    padding-left: 45%;
+    position: relative;
+    border-bottom: 1px solid var(--gris-100);
+    font-size: 0.85rem;
+    min-height: 44px;
+    text-align: right !important;
+  }
+
+  .proveedores-table td:last-child,
+  .facturas-compra-table td:last-child {
+    border-bottom: none;
+  }
+
+  .proveedores-table td::before,
+  .facturas-compra-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 14px;
+    width: 40%;
+    text-align: left;
+    font-weight: 700;
+    color: var(--azul-claro);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-family: var(--font-base);
+  }
+
+  .proveedores-table td .tipo-badge,
+  .facturas-compra-table td .estado-factura-compra,
+  .proveedores-table td .estado-badge {
+    display: inline-block;
+  }
+
+  .btn-compras {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    min-height: 34px;
+  }
+
+  .btn-compras-sm {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    min-height: 28px;
+  }
+
+  .compras-modal-footer {
+    flex-direction: column;
+  }
+
+  .compras-modal-footer button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .compras-modal-close {
+    padding: 2px 10px;
+    font-size: 16px;
+  }
+
+  .db-actions-group {
+    justify-content: center;
+  }
+
+  .btn-primary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .srv-actions-cell {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .compras-container {
+    padding: 8px 0;
+  }
+
+  .compras-wrapper {
+    padding: 0 12px;
+  }
+
+  .compras-title {
+    font-size: 1.1rem;
+  }
+
+  .compras-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .compras-stat-card {
+    padding: 10px 12px;
+  }
+
+  .compras-stat-card .stat-value {
+    font-size: 1rem;
+  }
+
+  .compras-stat-card .stat-label {
+    font-size: 0.6rem;
+  }
+
+  .proveedores-table td,
+  .facturas-compra-table td {
+    padding-left: 40%;
+    font-size: 0.8rem;
+    min-height: 40px;
+  }
+
+  .proveedores-table td::before,
+  .facturas-compra-table td::before {
+    width: 35%;
+    font-size: 0.6rem;
+  }
+
+  .compras-modal {
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .compras-modal-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .compras-modal-header h2 {
+    font-size: 0.95rem;
+  }
+
+  .btn-compras {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    min-height: 30px;
+  }
+
+  .btn-compras-sm {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+    min-height: 24px;
+  }
+
+  .compras-form-group input,
+  .compras-form-group select,
+  .compras-form-group textarea {
+    font-size: 16px;
+    padding: 8px 10px;
+    min-height: 38px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE VERTICAL (ALTURA)
+   ============================================================ */
+
+@media (max-height: 700px) {
+  .proveedores-table-wrapper,
+  .facturas-compra-table-wrapper {
+    max-height: 50vh;
+  }
+
+  .compras-stats-grid {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .compras-stat-card {
+    padding: 10px 14px;
+  }
+
+  .compras-stat-card .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .header-acciones {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-height: 600px) {
+  .compras-container {
+    padding: 12px 0;
+  }
+
+  .compras-wrapper {
+    padding: 0 12px;
+  }
+
+  .compras-title {
+    font-size: 1.1rem;
+  }
+
+  .compras-filtros {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  .compras-filtros select,
+  .compras-filtros input {
+    padding: 6px 10px;
+    min-height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .proveedores-table-wrapper,
+  .facturas-compra-table-wrapper {
+    max-height: 45vh;
+  }
+
+  .proveedores-table th,
+  .facturas-compra-table th {
+    padding: 8px 10px;
+    font-size: 0.65rem;
+  }
+
+  .proveedores-table td,
+  .facturas-compra-table td {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .compras-stat-card {
+    padding: 8px 12px;
+  }
+
+  .compras-stat-card .stat-value {
+    font-size: 1rem;
+  }
+
+  .btn-compras {
+    padding: 6px 12px;
+    min-height: 32px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-height: 500px) {
+  .proveedores-table-wrapper,
+  .facturas-compra-table-wrapper {
+    max-height: 40vh;
+  }
+
+  .compras-stat-card {
+    padding: 6px 10px;
+  }
+
+  .compras-stat-card .stat-value {
+    font-size: 0.9rem;
+  }
+
+  .compras-stat-card .stat-label {
+    font-size: 0.55rem;
+  }
+
+  .compras-filtros {
+    padding: 6px 10px;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .compras-filtros select,
+  .compras-filtros input {
+    padding: 4px 8px;
+    min-height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .compras-filtros .btn-compras {
+    min-height: 28px;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+
+  .proveedores-table td,
+  .facturas-compra-table td {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .btn-compras {
+    padding: 4px 10px;
+    min-height: 28px;
+    font-size: 0.7rem;
+  }
+
+  .btn-compras-sm {
+    background: #eff6ff;
+    color: var(--azul-claro);
+    border: 1px solid #bfdbfe;
+    padding: 2px 6px;
+    min-height: 22px;
+    font-size: 0.6rem;
+  }
+}
+
+.btn-compras-sm:hover { 
+  background: #bfdbfe; 
+  color: var(--azul-claro);
+}
+
+/* Landscape móvil */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 900px) {
+  .compras-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .compras-filtros {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .compras-filtros .filtro-group {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .proveedores-table-wrapper,
+  .facturas-compra-table-wrapper {
+    max-height: 55vh;
+  }
+}

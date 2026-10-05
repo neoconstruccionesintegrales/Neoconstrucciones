@@ -280,11 +280,13 @@ exports.actualizarProyecto = async (req, res) => {
 };
 
 // ============================================
-// 5. ELIMINAR PROYECTO
+// 5. ELIMINAR PROYECTO (SOFT DELETE) - ✅ CORREGIDO CON AUDITORÍA
 // ============================================
 exports.eliminarProyecto = async (req, res) => {
   try {
     const { id } = req.params;
+    const { motivo } = req.body || {}; // Motivo opcional desde el frontend
+
     const esObjectId = mongoose.Types.ObjectId.isValid(id);
     const filtro = esObjectId
       ? { $or: [{ _id: id }, { idProyecto: id }] }
@@ -295,13 +297,24 @@ exports.eliminarProyecto = async (req, res) => {
       return res.status(404).json({ success: false, message: "Proyecto no encontrado" });
     }
 
-    // Validar facturas pagadas del proyecto principal
+    // Si ya está eliminado, no hacer nada
+    if (proyecto.eliminado === true) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "El proyecto ya fue eliminado anteriormente" 
+      });
+    }
+
+    const idsCotAdicionales = proyecto.cotizacionesAdicionales?.map(c => c.idCotizacion) || [];
+
+    // ============================================================
+    // 1. VALIDAR FACTURAS PAGADAS (NO PERMITIR ELIMINAR)
+    // ============================================================
     const facturasPagadasProyecto = await Factura.find({
       idProyecto: proyecto.idProyecto,
       estado: 'Pagada'
     });
 
-    // Validar facturas pagadas de cotizaciones adicionales
     let facturasPagadasAdicionales = [];
     if (idsCotAdicionales.length > 0) {
       facturasPagadasAdicionales = await Factura.find({
@@ -313,34 +326,228 @@ exports.eliminarProyecto = async (req, res) => {
     const totalFacturasPagadas = facturasPagadasProyecto.length + facturasPagadasAdicionales.length;
     if (totalFacturasPagadas > 0) {
       const detalles = [];
-      facturasPagadasProyecto.forEach(f => detalles.push(`${f.idFactura} (proyecto)`));
+      facturasPagadasProyecto.forEach(f => detalles.push(`${f.idFactura}`));
       facturasPagadasAdicionales.forEach(f => detalles.push(`${f.idFactura} (cot. adicional)`));
+
       return res.status(403).json({
         success: false,
-        message: `No se puede eliminar: el proyecto tiene ${totalFacturasPagadas} factura(s) pagada(s).`,
-        facturasPagadas: detalles
+        message: `El proyecto tiene ${totalFacturasPagadas} cuenta(s) de cobro(s) pagada(s).`,
+        facturasPagadas: detalles,
+        cantidadFacturasPagadas: totalFacturasPagadas
       });
     }
 
-    // Eliminar facturas no pagadas asociadas
-    await Factura.deleteMany({ idProyecto: proyecto.idProyecto, estado: { $ne: 'Pagada' } });
+    // ============================================================
+    // 2. ANULAR FACTURAS NO PAGADAS (CON AUDITORÍA COMPLETA)
+    // ============================================================
+    const usuario = req.user?.email || req.user?.nombre || 'Sistema';
+    const fechaActual = new Date();
+    const motivoAnulacion = `Proyecto ${proyecto.idProyecto} eliminado por ${usuario}. Motivo: ${motivo || 'No especificado'}`;
 
-    // Eliminar cotizaciones adicionales asociadas
-    if (idsCotAdicionales.length > 0) {
-      await Cotizacion.deleteMany({ idCotizacion: { $in: idsCotAdicionales }, estado_general: { $ne: 'Aprobada' } });
+    // Buscar facturas a anular (del proyecto y cotizaciones adicionales)
+    const facturasAAnular = await Factura.find({
+      $or: [
+        { idProyecto: proyecto.idProyecto },
+        { idCotizacionAdicional: { $in: idsCotAdicionales } }
+      ],
+      estado: { $nin: ['Pagada', 'Anulada'] }
+    });
+
+    const facturasAnuladas = [];
+    for (const factura of facturasAAnular) {
+      try {
+        const estadoAnterior = factura.estado; // Guardar antes de cambiar
+
+        // Usar el método de instancia para anular con auditoría
+        factura.anular(usuario, motivoAnulacion);
+        factura.eliminacionProyectoOrigen = true;
+        factura.proyectoEliminado = true;
+        factura.proyectoEliminadoId = proyecto.idProyecto;
+        factura.proyectoEliminadoNombre = proyecto.nombreProyecto;
+        factura.fechaEliminacionProyecto = fechaActual;
+        await factura.save();
+
+        facturasAnuladas.push({
+          idFactura: factura.idFactura,
+          valor: factura.netoACobrar || factura.subtotal || 0,
+          estadoAnterior: estadoAnterior
+        });
+      } catch (err) {
+        console.error(`[ELIMINAR-PROYECTO] Error anulando ${factura.idFactura}:`, err.message);
+      }
     }
 
-    // Eliminar proyecto
-    await Proyecto.findOneAndDelete(filtro);
+    // Actualizar también el array embebido en el proyecto (para consistencia)
+    if (proyecto.facturas && proyecto.facturas.length > 0) {
+      proyecto.facturas.forEach(f => {
+        if (f.estado !== 'Pagada' && f.estado !== 'Anulada') {
+          f.estado = 'Anulada';
+          f.anulada = true;
+        }
+      });
+    }
 
+    // ============================================================
+    // 3. SOFT DELETE - MARCAR PROYECTO COMO ELIMINADO + HISTORIAL
+    // ============================================================
+
+    // Guardar registro histórico de eliminación
+    if (!proyecto.historialEliminacion) proyecto.historialEliminacion = [];
+    proyecto.historialEliminacion.push({
+      fecha: fechaActual,
+      eliminadoPor: usuario,
+      motivo: motivo || 'No especificado',
+      facturasAnuladas: facturasAnuladas,
+      cotizacionesAnuladas: idsCotAdicionales
+    });
+
+    proyecto.eliminado = true;
+    proyecto.fechaEliminacion = fechaActual;
+    proyecto.eliminadoPor = usuario;
+    proyecto.motivoEliminacion = motivo || 'Eliminado por usuario';
+    proyecto.estado = 'Eliminado';
+    proyecto.seguimiento = `Proyecto eliminado el ${fechaActual.toLocaleDateString('es-CO')} por ${usuario}. Motivo: ${motivo || 'No especificado'}`;
+
+    await proyecto.save();
+
+    // ============================================================
+    // 4. MARCAR COTIZACIONES ADICIONALES COMO ELIMINADAS
+    // ============================================================
+    if (idsCotAdicionales.length > 0) {
+      await Cotizacion.updateMany(
+        { 
+          idCotizacion: { $in: idsCotAdicionales },
+          estado_general: { $ne: 'Aprobada' }
+        },
+        { 
+          $set: { 
+            eliminado: true,
+            proyectoEliminadoId: proyecto.idProyecto,
+            fechaEliminacion: fechaActual,
+            eliminadoPor: usuario
+          }
+        }
+      );
+    }
+
+    // ============================================================
+    // 5. RESPUESTA CON AUDITORÍA
+    // ============================================================
     res.json({
       success: true,
-      message: "Proyecto y datos asociados eliminados correctamente"
+      message: `Proyecto ${proyecto.idProyecto} marcado como eliminado. ${facturasAnuladas.length} Cuenta(s) de cobro(s) anulada(s).`,
+      data: {
+        idProyecto: proyecto.idProyecto,
+        nombreProyecto: proyecto.nombreProyecto,
+        eliminado: true,
+        fechaEliminacion: fechaActual,
+        eliminadoPor: usuario,
+        facturasAnuladas: facturasAnuladas.length,
+        detalleFacturasAnuladas: facturasAnuladas,
+        facturasPagadas: totalFacturasPagadas
+      }
     });
 
   } catch (error) {
     console.error("--- ERROR AL ELIMINAR PROYECTO ---", error);
-    res.status(500).json({ success: false, message: "Error al eliminar", error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: "Error al eliminar proyecto", 
+      error: error.message 
+    });
+  }
+};
+
+// ============================================
+// 12.1 ANULAR FACTURA - ✅ CORREGIDO CON AUDITORÍA
+// ============================================
+exports.anularFactura = async (req, res) => {
+  try {
+    const { idFactura } = req.params;
+    const { motivo } = req.body || {}; // ✅ NUEVO: aceptar motivo desde frontend
+    const usuario = req.user?.email || req.user?.nombre || 'Sistema';
+
+    const factura = await Factura.findOne({ idFactura });
+    if (!factura) {
+      return res.status(404).json({ success: false, message: "Cuenta de cobro no encontrada" });
+    }
+
+    if (factura.estado === 'Pagada') {
+      return res.status(403).json({ 
+        success: false, 
+        message: "No se puede anular una cuenta de cobro pagada. Use nota crédito." 
+      });
+    }
+
+    console.log(`[ANULAR] Procesando ${idFactura}, proyecto: ${factura.idProyecto}`);
+
+    if (factura.idProyecto) {
+      // PASO 1: Liberar hitos que esta factura de SALDO cubría
+      const resultadoSaldo = await Proyecto.updateOne(
+        { idProyecto: factura.idProyecto },
+        {
+          $set: {
+            "hitos.$[elem].cubiertoPorSaldo": false,
+            "hitos.$[elem].idFacturaSaldo": null,
+            "hitos.$[elem].facturaGenerada": false,
+            "hitos.$[elem].completado": false,
+            "hitos.$[elem].fechaCompletado": null,
+            "hitos.$[elem].idFactura": null
+          }
+        },
+        {
+          arrayFilters: [{ "elem.idFacturaSaldo": idFactura }]
+        }
+      );
+      console.log(`[ANULAR] Hitos liberados por idFacturaSaldo (${idFactura}):`, resultadoSaldo.modifiedCount);
+
+      // PASO 2: Liberar hitos con factura NORMAL asignada
+      const resultadoNormal = await Proyecto.updateOne(
+        { idProyecto: factura.idProyecto },
+        {
+          $set: {
+            "hitos.$[elem].facturaGenerada": false,
+            "hitos.$[elem].completado": false,
+            "hitos.$[elem].fechaCompletado": null,
+            "hitos.$[elem].idFactura": null,
+            "hitos.$[elem].cubiertoPorSaldo": false,
+            "hitos.$[elem].idFacturaSaldo": null
+          }
+        },
+        {
+          arrayFilters: [{ "elem.idFactura": idFactura }]
+        }
+      );
+      console.log(`[ANULAR] Hitos liberados por idFactura (${idFactura}):`, resultadoNormal.modifiedCount);
+
+      // PASO 3: Actualizar estado de la factura en array del proyecto
+      const resultadoFactura = await Proyecto.updateOne(
+        { idProyecto: factura.idProyecto, "facturas.idFactura": idFactura },
+        { $set: { "facturas.$.estado": "Anulada", "facturas.$.anulada": true } }
+      );
+      console.log(`[ANULAR] Estado actualizado en proyecto.facturas:`, resultadoFactura.modifiedCount);
+    }
+
+    // PASO 4: Anular la factura en su colección CON AUDITORÍA
+    const motivoAnulacion = motivo || `Anulada manualmente por ${usuario}`;
+    factura.anular(usuario, motivoAnulacion); // ✅ Usar método con auditoría
+    await factura.save();
+    console.log(`[ANULAR] Factura ${idFactura} anulada correctamente`);
+
+    res.json({ 
+      success: true, 
+      message: `Factura ${idFactura} anulada. Hitos liberados y habilitados para nueva cuenta de cobro.`,
+      data: {
+        idFactura: factura.idFactura,
+        anuladaPor: factura.anuladaPor,
+        fechaAnulacion: factura.fechaAnulacion,
+        motivoAnulacion: factura.motivoAnulacion
+      }
+    });
+
+  } catch (error) {
+    console.error("[ANULAR] ERROR:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -417,8 +624,8 @@ exports.crearFactura = async (req, res) => {
     const cliente = await Cliente.findOne({ idCliente: proyecto.idCliente });
 
     // Generar ID de factura con contador
-    const siguienteNumero = await Contador.obtenerSiguiente('facturas');
-    const idFactura = `FAC-${String(siguienteNumero).padStart(3, '0')}`;
+    const siguienteNumero = await Contador.obtenerSiguiente('cuenta_cobro');
+    const idFactura = `CDC-${String(siguienteNumero).padStart(3, '0')}`;
 
     // Datos de sede
     let nombreSede = proyecto.nombreSede || 'Principal';
@@ -470,7 +677,7 @@ exports.crearFactura = async (req, res) => {
                              cotizacionAdic.tipoPago === 'anticipo_final' ? 2 : 3;
         const faltantes = totalEsperado - facturasExistentes - 1; // -1 porque estamos creando una ahora
         if (faltantes > 0) {
-          notaPagosPendientes = `Faltan ${faltantes} pago(s) para completar factura`;
+          notaPagosPendientes = `Faltan ${faltantes} pago(s) para completar cuenta de cobro`;
         }
       }
     }
@@ -524,7 +731,7 @@ exports.crearFactura = async (req, res) => {
   valor: nuevaFactura.netoACobrar,
   fecha: nuevaFactura.fechaEmision,
   estado: nuevaFactura.estado,
-  concepto: esFacturaAdicional ? `Factura Adicional - ${idCotizacion}` : `Factura ${idFactura}`,
+  concepto: esFacturaAdicional ? `Cuenta de cobro Adicional - ${idCotizacion}` : `Cuenta de cobro ${idFactura}`,
   metodoPago: nuevaFactura.metodoPago,
   iva: nuevaFactura.iva,
   retencion: nuevaFactura.retencion,
@@ -547,13 +754,13 @@ exports.crearFactura = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Factura ${idFactura} creada exitosamente`,
+      message: `Cuenta de cobro ${idFactura} creada exitosamente`,
       data: nuevaFactura
     });
 
   } catch (error) {
-    console.error("Error al crear factura:", error);
-    res.status(500).json({ success: false, message: "Error al crear factura", error: error.message });
+    console.error("Error al crear cuenta de cobro:", error);
+    res.status(500).json({ success: false, message: "Error al crear cuenta de cobro", error: error.message });
   }
 };
 
@@ -593,7 +800,7 @@ exports.obtenerFacturaPorId = async (req, res) => {
       $or: [{ _id: id }, { idFactura: id }]
     });
     if (!factura) {
-      return res.status(404).json({ success: false, message: "Factura no encontrada" });
+      return res.status(404).json({ success: false, message: "Cuenta de cobro no encontrada" });
     }
     res.json({ success: true, data: factura });
   } catch (error) {
@@ -611,7 +818,7 @@ exports.actualizarEstadoFactura = async (req, res) => {
 
     const factura = await Factura.findOne({ idFactura: id });
     if (!factura) {
-      return res.status(404).json({ success: false, message: "Factura no encontrada" });
+      return res.status(404).json({ success: false, message: "Cuenta de cobro no encontrada" });
     }
 
     // Estado hitos
@@ -689,7 +896,7 @@ exports.actualizarEstadoFactura = async (req, res) => {
 
       return res.json({ 
         success: true, 
-        message: `Factura ${id} anulada. Hitos liberados y habilitados para nueva facturación.`,
+        message: `Cuenta de cobro ${id} anulada. Hitos liberados y habilitados para nueva cuenta de cobro.`,
         data: factura
       });
     }
@@ -728,7 +935,7 @@ exports.actualizarEstadoFactura = async (req, res) => {
             }
           });
           if (hitosModificados) {
-            console.log(`Hitos ${factura.hitosCubiertos.join(', ')} completados por pago de factura de saldo ${factura.idFactura}`);
+            console.log(`Hitos ${factura.hitosCubiertos.join(', ')} completados por pago de cuenta de cobro saldo ${factura.idFactura}`);
           }
         }
         // CASO 2: Factura normal de hito
@@ -740,7 +947,7 @@ exports.actualizarEstadoFactura = async (req, res) => {
               hitoCompletado = resultado.hito;
               siguienteHito = proyecto.obtenerSiguienteHitoPendiente();
               hitosModificados = true;
-              console.log(`Hito ${hito.idHito} completado automaticamente por pago de factura ${factura.idFactura}`);
+              console.log(`Hito ${hito.idHito} completado automaticamente por pago de cuenta de cobro ${factura.idFactura}`);
             }
           }
         }
@@ -803,12 +1010,12 @@ exports.actualizarEstadoFactura = async (req, res) => {
         // CONDICION 2: Avance al 100%
         const avanceCompleto = proyecto.porcentajeAvance === 100;
         
-        console.log(`[FINALIZAR] Proyecto ${proyecto.idProyecto} - Facturas reales pendientes: ${facturasPendientes.length}, Avance: ${proyecto.porcentajeAvance}%`);
+        console.log(`[FINALIZAR] Proyecto ${proyecto.idProyecto} - cuenta de cobro reales pendientes: ${facturasPendientes.length}, Avance: ${proyecto.porcentajeAvance}%`);
         
         if (todasFacturasPagadas && avanceCompleto) {
           proyecto.estado = 'Finalizado';
           proyecto.fechaFin = new Date();
-          proyecto.seguimiento = 'Proyecto finalizado. Todos los hitos completados y facturas pagadas.';
+          proyecto.seguimiento = 'Proyecto finalizado. Todos los hitos completados y cuenta de cobro pagadas.';
           await proyecto.save();
           console.log(`[FINALIZAR] Proyecto ${proyecto.idProyecto} FINALIZADO automaticamente`);
         }
@@ -864,11 +1071,11 @@ exports.eliminarFactura = async (req, res) => {
     const factura = await Factura.findOne({ idFactura: id });
 
     if (!factura) {
-      return res.status(404).json({ success: false, message: "Factura no encontrada" });
+      return res.status(404).json({ success: false, message: "Cuenta de cobro no encontrada" });
     }
 
     if (factura.estado === 'Pagada') {
-      return res.status(403).json({ success: false, message: "No se puede eliminar una factura pagada" });
+      return res.status(403).json({ success: false, message: "No se puede eliminar una cuenta de cobro pagada" });
     }
 
     // Eliminar referencia del proyecto
@@ -880,7 +1087,7 @@ exports.eliminarFactura = async (req, res) => {
     // Eliminar la factura
     await Factura.findOneAndDelete({ idFactura: id });
 
-    res.json({ success: true, message: "Factura eliminada" });
+    res.json({ success: true, message: "Cuenta de cobro eliminada" });
 
   } catch (error) {
     res.status(500).json({ success: false, message: "Error", error: error.message });
@@ -897,13 +1104,13 @@ exports.anularFactura = async (req, res) => {
     
     const factura = await Factura.findOne({ idFactura });
     if (!factura) {
-      return res.status(404).json({ success: false, message: "Factura no encontrada" });
+      return res.status(404).json({ success: false, message: "Cuenta de cobro no encontrada" });
     }
 
     if (factura.estado === 'Pagada') {
       return res.status(403).json({ 
         success: false, 
-        message: "No se puede anular una factura pagada. Use nota crédito." 
+        message: "No se puede anular una cuenta de cobro pagada. Use nota crédito." 
       });
     }
 
@@ -971,7 +1178,7 @@ exports.anularFactura = async (req, res) => {
 
     res.json({ 
       success: true, 
-      message: `Factura ${idFactura} anulada. Hitos liberados y habilitados para nueva facturación.` 
+      message: `Cuenta de cobro ${idFactura} anulada. Hitos liberados y habilitados para nueva cuenta de cobro.` 
     });
 
   } catch (error) {
@@ -1154,7 +1361,7 @@ exports.aprobarCotizacionAdicional = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Cotizacion adicional aprobada. Facturas generadas. NO se creo nuevo proyecto.",
+      message: "Cotizacion adicional aprobada. Cuentas de cobros generadas. NO se creo nuevo proyecto.",
       data: { cotizacion, facturas: facturasGeneradas }
     });
 
@@ -1206,12 +1413,12 @@ exports.agregarSeguimiento = async (req, res) => {
       );
       const todasFacturasPagadas = facturasPendientes.length === 0;
       
-      console.log(`[FINALIZAR-SEGUIMIENTO] Proyecto ${proyecto.idProyecto} - Facturas reales pendientes: ${facturasPendientes.length}, Avance: ${proyecto.porcentajeAvance}%`);
+      console.log(`[FINALIZAR-SEGUIMIENTO] Proyecto ${proyecto.idProyecto} - Cuenta de cobro reales pendientes: ${facturasPendientes.length}, Avance: ${proyecto.porcentajeAvance}%`);
       
       if (todasFacturasPagadas) {
         proyecto.estado = 'Finalizado';
         proyecto.fechaFin = new Date();
-        proyecto.seguimiento = 'Proyecto finalizado. Todos los hitos completados y facturas pagadas.';
+        proyecto.seguimiento = 'Proyecto finalizado. Todos los hitos completados y cuentas de cobro pagadas.';
         await proyecto.save();
         console.log(`[FINALIZAR-SEGUIMIENTO] Proyecto ${proyecto.idProyecto} FINALIZADO automaticamente por seguimiento al 100%`);
       }
@@ -1299,8 +1506,8 @@ exports.crearFacturaIndependiente = async (req, res) => {
     }
 
     // Generar ID de factura con contador
-    const siguienteNumero = await Contador.obtenerSiguiente('facturas');
-    const idFactura = `FAC-${String(siguienteNumero).padStart(3, '0')}`;
+    const siguienteNumero = await Contador.obtenerSiguiente('cuenta_cobro');
+    const idFactura = `CDC-${String(siguienteNumero).padStart(3, '0')}`;
 
     // Preparar items
     const itemsFactura = (items || []).map(item => ({
@@ -1327,7 +1534,7 @@ exports.crearFacturaIndependiente = async (req, res) => {
       nitCliente: nitCliente || '',
       contactoCliente: contactoCliente || '',
       correoCliente: correoCliente || '',
-      nombreProyecto: 'Factura Independiente',
+      nombreProyecto: 'Cuenta de cobro independiente',
       datosEmisor: {
         razonSocial: 'Neoconstrucciones Integrales SAS',
         nit: '901.421.096-1',
@@ -1359,13 +1566,13 @@ exports.crearFacturaIndependiente = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Factura independiente ${idFactura} creada exitosamente`,
+      message: `Cuenta de cobro independiente ${idFactura} creada exitosamente`,
       data: nuevaFactura
     });
 
   } catch (error) {
     console.error("Error al crear factura independiente:", error);
-    res.status(500).json({ success: false, message: "Error al crear factura independiente", error: error.message });
+    res.status(500).json({ success: false, message: "Error al crear cuenta de cobro independiente", error: error.message });
   }
 };
 
@@ -1374,8 +1581,8 @@ exports.crearFacturaIndependiente = async (req, res) => {
 // ============================================
 
 async function generarFacturaAdicional(cotizacion, proyecto, porcentaje, metodoPago, esPendiente = false, options = {}) {
-  const siguienteNumero = await Contador.obtenerSiguiente('facturas');
-  const idFactura = `FAC-${String(siguienteNumero).padStart(3, '0')}`;
+  const siguienteNumero = await Contador.obtenerSiguiente('cuenta_cobro');
+  const idFactura = `CDC-${String(siguienteNumero).padStart(3, '0')}`;
 
   // Usar items de options o calcular proporcional
   const itemsFactura = options.items 
@@ -1436,7 +1643,7 @@ async function generarFacturaAdicional(cotizacion, proyecto, porcentaje, metodoP
   
   let notaPagos = '';
   if (faltantes > 0) {
-    notaPagos = `Faltan ${faltantes} pago(s) para completar factura`;
+    notaPagos = `Faltan ${faltantes} pago(s) para completar cuenta de cobro`;
   }
 
   const factura = new Factura({
@@ -1713,7 +1920,7 @@ exports.generarFacturaDesdeHito = async (req, res) => {
     if (hito.facturaGenerada && hito.idFactura) {
       return res.status(400).json({ 
         success: false, 
-        message: "Este hito ya tiene una factura generada",
+        message: "Este hito ya tiene una cuenta de cobro generada",
         idFacturaExistente: hito.idFactura
       });
     }
@@ -1721,8 +1928,8 @@ exports.generarFacturaDesdeHito = async (req, res) => {
     const cliente = await Cliente.findOne({ idCliente: proyecto.idCliente });
 
     // Generar ID de factura
-    const siguienteNumero = await Contador.obtenerSiguiente('facturas');
-    const idFactura = `FAC-${String(siguienteNumero).padStart(3, '0')}`;
+    const siguienteNumero = await Contador.obtenerSiguiente('cuenta_cobro');
+    const idFactura = `CDC-${String(siguienteNumero).padStart(3, '0')}`;
 
     // Datos de sede
     let nombreSede = proyecto.nombreSede || 'Principal';
@@ -1889,7 +2096,7 @@ const facturaData = {
     });
 
   } catch (error) {
-    console.error("Error generando factura desde hito:", error);
+    console.error("Error generando cuenta de cobro desde hito:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -1938,7 +2145,7 @@ exports.generarFacturaSaldoProyecto = async (req, res) => {
     if (!porcentajeSaldo || porcentajeSaldo <= 0) {
       return res.status(400).json({ 
         success: false, 
-        message: "Debe especificar un porcentaje válido para la factura de saldo" 
+        message: "Debe especificar un porcentaje válido para la cuenta de cobro de saldo" 
       });
     }
     
@@ -1956,7 +2163,7 @@ exports.generarFacturaSaldoProyecto = async (req, res) => {
         ultimaFacturaBase.estado !== 'Anticipo ya Pagado') {
       return res.status(400).json({
         success: false,
-        message: `Debe pagar la factura ${ultimaFacturaBase.idFactura} antes de generar el saldo`
+        message: `Debe pagar la cuenta de cobro ${ultimaFacturaBase.idFactura} antes de generar el saldo`
       });
     }
 
@@ -1970,7 +2177,7 @@ exports.generarFacturaSaldoProyecto = async (req, res) => {
       if (hitosInvalidos.length > 0) {
         return res.status(400).json({ 
           success: false, 
-          message: 'Algunos hitos ya están facturados, completados o cubiertos por saldo',
+          message: 'Algunos hitos ya están cobrados, completados o cubiertos por saldo',
           hitosInvalidos 
         });
       }
@@ -1980,8 +2187,8 @@ exports.generarFacturaSaldoProyecto = async (req, res) => {
     const subtotalSaldo = Math.round((presupuestoBase * porcentajeSaldo) / 100 / 1.19);
 
     // 6. Generar ID de factura
-    const siguienteNumero = await Contador.obtenerSiguiente('facturas');
-    const idFactura = `FAC-${String(siguienteNumero).padStart(3, '0')}`;
+    const siguienteNumero = await Contador.obtenerSiguiente('cuenta_cobro');
+    const idFactura = `CDC-${String(siguienteNumero).padStart(3, '0')}`;
 
     // 7. Cliente y sede
     const cliente = await Cliente.findOne({ idCliente: proyecto.idCliente });
@@ -2062,7 +2269,7 @@ exports.generarFacturaSaldoProyecto = async (req, res) => {
       ivaPorcentaje: 19,
       retencionPorcentaje: 2,
       resupuestoTotalProyecto: proyecto.presupuestoTotal || 0,
-      notas: notas || `Factura de saldo (${porcentajeSaldo}%) - Proyecto: ${proyecto.nombreProyecto}`,
+      notas: notas || `Cuenta de cobro de saldo (${porcentajeSaldo}%) - Proyecto: ${proyecto.nombreProyecto}`,
       notasLegales: notasLegales || 'Terminos: Pago a 30 dias. IVA incluido.',
       notasAdicionales: notasAdicionales || '',
       estado: 'Pendiente de Saldo',
@@ -2127,7 +2334,7 @@ exports.generarFacturaSaldoProyecto = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Factura de saldo ${idFactura} generada (${porcentajeSaldo}%)`,
+      message: `Cuenta de cobro de saldo ${idFactura} generada (${porcentajeSaldo}%)`,
       data: {
         idFactura,
         porcentajeSaldo,
@@ -2137,7 +2344,7 @@ exports.generarFacturaSaldoProyecto = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error generando factura de saldo:", error);
+    console.error("Error generando cuenta de cobro de saldo:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

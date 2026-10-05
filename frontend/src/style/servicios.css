@@ -1,8 +1,6 @@
 /* ============================================
    SERVICIOS.CSS — Administración de Servicios
-   Alineado con usuario.css / admin.css
-   Paleta: Azul claro #1391c8 | Azul oscuro #0077b1
-           Blanco #ffffff | Negro #0e0e0e
+   Paleta: Azul claro #1391c8 | Azul oscuro #0077b1 Blanco #ffffff | Negro #0e0e0e
    ============================================ */
 
 :root {
@@ -299,9 +297,9 @@
 }
 
 .srv-btn-del-insumo {
-  background: #dc2626;
-  color: var(--blanco);
-  border: none;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
   border-radius: 8px;
   width: 38px;
   height: 38px;
@@ -317,7 +315,7 @@
 }
 
 .srv-btn-del-insumo:hover {
-  background: #b91c1c;
+  background: #fee2e2;
   transform: scale(1.05);
 }
 
@@ -376,9 +374,10 @@
 .srv-btn-secondary {
   flex: 1;
   min-width: 200px;
-  background: var(--gris-500);
+  background: var(--gris-200);
+  color: var(--gris-700);
+  font-weight: 600;
   justify-content: center;
-  color: var(--blanco);
   border: none;
   padding: 14px 24px;
   border-radius: 10px;
@@ -390,7 +389,7 @@
 }
 
 .srv-btn-secondary:hover {
-  background: var(--gris-600);
+    background: var(--gris-300);
 }
 
 /* ============================================
@@ -488,14 +487,8 @@
    ============================================ */
 .srv-id-badge {
   display: inline-block;
-  background: #eff6ff;
-  color: var(--azul-claro);
-  font-weight: 700;
   font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-  font-size: 0.85rem;
   padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #bfdbfe;
 }
 
 .srv-actions-cell {
@@ -560,7 +553,6 @@
 }
 
 .text-success {
-  color: #16a34a !important;
   font-weight: 700;
 }
 
@@ -1011,4 +1003,43 @@
 
 .table-container::-webkit-scrollbar-thumb:hover {
   background: var(--gris-400);
+}
+
+/* Badges de estado */
+.srv-estado-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.srv-estado-activo {
+  background: #e8f5e9;
+  color: #1DBD8E;
+  border: 1px solid #73CC80;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.srv-estado-inactivo {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.srv-btn-reactivate{
+  background: #73CC80;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer ;
+  font-size: 12px;
+  }
+
+.srv-btn-reactivate:hover {
+  background-color: #1DBD8E;
 }

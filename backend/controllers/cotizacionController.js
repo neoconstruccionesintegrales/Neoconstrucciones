@@ -292,8 +292,8 @@ exports.updateEstadoCotizacion = async (req, res) => {
       const consecutivoProyecto = (countProyectos + 1).toString().padStart(3, '0');
       const idProyecto = `PRY-${consecutivoProyecto}`;
 
-      const siguienteNumero = await Contador.obtenerSiguiente('facturas');
-      const idFactura = `FAC-${String(siguienteNumero).padStart(3, '0')}`;
+      const siguienteNumero = await Contador.obtenerSiguiente('cuenta_cobro');
+      const idFactura = `CDC-${String(siguienteNumero).padStart(3, '0')}`;
 
       const totalProyecto = cotizacion.total || 0;         
       const montoAnticipo = tipoPago === 'unico' 
@@ -385,8 +385,8 @@ exports.updateEstadoCotizacion = async (req, res) => {
         retencionPorcentaje: 2,
         presupuestoTotalProyecto: totalProyecto, 
         notas: tipoPago === 'unico'
-          ? 'Factura de pago único. El proyecto iniciara una vez se confirme el pago.'
-          : 'Factura de anticipo para inicio de proyecto. El proyecto iniciara una vez se confirme el pago.',
+          ? 'Cuenta de cobro de pago único. El proyecto iniciara una vez se confirme el pago.'
+          : 'Cuenta de cobro de anticipo para inicio de proyecto. El proyecto iniciara una vez se confirme el pago.',
         estado: 'Pendiente de Anticipo',
         activaProyecto: true,
         creadoPor: req.user ? req.user.email : 'Sistema'
@@ -461,7 +461,7 @@ exports.updateEstadoCotizacion = async (req, res) => {
     const respuestaSegura = {
       success: true,
       message: facturaAnticipo
-        ? "Cotizacion aprobada, proyecto y factura de anticipo creados exitosamente"
+        ? "Cotizacion aprobada, proyecto y cuenta de cobro de anticipo creados exitosamente"
         : (esCotizacionAdicional && estado_general === 'Aprobada'
           ? "Cotizacion adicional aprobada exitosamente (sin crear proyecto)"
           : `Cotizacion actualizada a estado: ${estado_general}`),

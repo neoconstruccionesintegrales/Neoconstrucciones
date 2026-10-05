@@ -176,8 +176,8 @@ button { cursor: pointer; border: none; border-radius: 8px; transition: 0.2s; fo
 .btn-rechazar { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; font-size: 0.8125rem; }
 .btn-rechazar:hover { background: #fecaca; }
 
-.btn-factura { background: #6cbeb9; color: #fff; border: 1px solid #0FA69D; padding: 5px 10px; font-size: 0.8125rem; width: 100%; }
-.btn-factura:hover { background: #007268; }
+.btn-factura { background: #eff6ff; color: var(--azul-claro); border: 1px solid #bfdbfe; padding: 5px 10px; font-size: 0.8125rem; width: 100%; }
+.btn-factura:hover { background: #bfdbfe; }
 
 .btn-proyecto { background: #73CC80; color: var(--blanco); padding: 5px 10px; font-size: 0.8125rem; width: 100%; }
 .btn-proyecto:hover { background: #1DBD8E; }
@@ -191,9 +191,10 @@ button { cursor: pointer; border: none; border-radius: 8px; transition: 0.2s; fo
   max-height: 70vh;
   border-radius: 12px;
   border: 1px solid var(--gris-200);
+  position: relative;
   background: var(--blanco);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   margin-bottom: clamp(16px, 2vw, 24px);
-  padding: clamp(12px, 2vw, 20px);
 }
 
 .tabla-cotizaciones {
@@ -204,27 +205,35 @@ button { cursor: pointer; border: none; border-radius: 8px; transition: 0.2s; fo
   min-width: 950px;
 }
 
-/* Sticky Header */
-.tabla-cotizaciones thead {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+/* Sticky Header — alineado con servicios.css */
+.tabla-cotizaciones thead,
+.tabla-cotizaciones thead tr {
+  background-color: var(--azul-claro);
+  position: static;
 }
+
 .tabla-cotizaciones th {
   padding: 14px 12px;
   text-align: left;
   font-weight: 700;
-  background: var(--azul-claro);
+  font-size: clamp(0.7rem, 1vw, 0.8125rem);
+  white-space: nowrap;
+  background-color: var(--azul-claro);
   color: var(--blanco);
   border-bottom: 2px solid var(--azul-oscuro);
+  position: sticky;
+  top: 0;
+  z-index: 10;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
+
 .tabla-cotizaciones td {
-  padding: 12px;
+  padding: 12px 12px;
   border-bottom: 1px solid var(--gris-200);
   color: var(--gris-700);
-  vertical-align: top;
+  vertical-align: middle;
+  background-color: var(--blanco);
 }
 
 .table-row-even td { background: var(--blanco); }
@@ -331,52 +340,139 @@ button { cursor: pointer; border: none; border-radius: 8px; transition: 0.2s; fo
   .filtro-input { width: 100%; max-width: none; }
   .filtro-container select { width: 100%; }
 
-  .table-container { max-height: 60vh; padding: 0; border: none; background: transparent; }
-  
-  .tabla-cotizaciones { min-width: unset; }
+  .table-container {
+    max-height: none;
+    padding: 0;
+    border: none;
+    background: transparent;
+    overflow-x: hidden;
+    box-shadow: none;
+  }
+
+  .tabla-cotizaciones {
+    min-width: unset;
+    display: block;
+  }
+
   .tabla-cotizaciones thead { display: none; }
-  
+  .tabla-cotizaciones tbody { display: block; }
+
   .tabla-cotizaciones tr {
     display: block;
     margin-bottom: 16px;
     border: 1px solid var(--gris-200);
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--blanco);
-    padding: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
-  
+
   .tabla-cotizaciones td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    border-bottom: none;
+    display: grid;
+    grid-template-columns: minmax(110px, 40%) 1fr;
+    align-items: start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gris-100);
+    font-size: 0.9375rem;
+    line-height: 1.4;
     text-align: right;
   }
+
+  .tabla-cotizaciones td:last-child {
+    border-bottom: none;
+  }
+
   .tabla-cotizaciones td::before {
     content: attr(data-label);
     font-weight: 700;
     color: var(--azul-claro);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: left;
+    word-break: break-word;
+    line-height: 1.3;
   }
 
-  .info-cliente div { white-space: normal; }
-  .acciones-flex { justify-content: flex-end; }
-  .acciones-columna { align-items: flex-end; }
+  /* Anular truncamientos forzados para que el texto fluya en móvil */
+  .empresa-sede-truncate,
+  .info-cliente,
+  .info-cliente div {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word;
+  }
+
+  .info-cliente {
+    font-size: 0.8125rem;
+    color: var(--gris-500);
+    margin-top: 4px;
+    line-height: 1.5;
+    text-align: right;
+    width: 100%;
+  }
+
+  .info-cliente div {
+    margin: 2px 0;
+  }
+
+  .acciones-flex {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .acciones-columna {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 100%;
+    margin-top: 4px;
+    gap: 6px;
+  }
 }
 
 @media (max-width: 480px) {
   .dba-container { padding: 12px 0; }
   .dba-wrapper { padding: 0 12px; }
+
+  .tabla-cotizaciones tr {
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .tabla-cotizaciones td {
+    font-size: 0.875rem;
+    gap: 10px;
+    padding: 10px 0;
+  }
+
+  .tabla-cotizaciones td::before {
+    font-size: 0.75rem;
+  }
 }
 
 /* ============================================
    RESPONSIVE VERTICAL (ALTURA)
    ============================================ */
-@media (max-height: 700px) { .table-container { max-height: 55vh; } }
-@media (max-height: 600px) { .table-container { max-height: 50vh; } }
-@media (max-height: 500px) { .table-container { max-height: 45vh; } }
+@media (max-height: 800px) {
+  .table-container { max-height: 60vh; }
+}
+@media (max-height: 700px) {
+  .table-container { max-height: 55vh; }
+}
+@media (max-height: 600px) {
+  .table-container { max-height: 50vh; }
+  .dba-container { padding: 12px 0; }
+  .dba-wrapper { padding: 0 12px; }
+}
+@media (max-height: 500px) {
+  .table-container { max-height: 45vh; }
+}
 
 /* Landscape móvil */
 @media (max-height: 500px) and (orientation: landscape) and (max-width: 900px) {

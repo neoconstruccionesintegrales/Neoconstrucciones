@@ -33,6 +33,8 @@ const nominaRoutes = require('./routes/nominaRoutes');
 const registroTiempoRoutes = require('./routes/registroTiempoRoutes');
 const novedadRoutes = require('./routes/novedadRoutes');
 const descuentoRoutes = require('./routes/descuentosRoutes');
+const proveedoresRoutes = require('./routes/proveedoresRoutes');
+const facturasCompraRoutes = require('./routes/facturasCompraRoutes');
 
 const app = express();
 
@@ -59,11 +61,13 @@ app.use('/api/usuario', usuarioRoutes);
 app.use('/api/clientes', clienteRoutes);
 app.use('/api/proyectos', authMiddleware, proyectoRoutes);
 app.use('/api/cotizaciones', authMiddleware, cotizacionRoutes);
-app.use('/api/facturas', authMiddleware, facturaRoutes); // <-- SOLO UNA VEZ, CON AUTH
+app.use('/api/facturas', authMiddleware, facturaRoutes); 
 app.use('/api/nomina', authMiddleware, nominaRoutes);
 app.use('/api/asistencia', authMiddleware, registroTiempoRoutes);
 app.use('/api/novedades', authMiddleware, novedadRoutes);
-app.use('/api/descuentos', descuentoRoutes); // <-- Esta ruta no tiene auth, ¿está bien?
+app.use('/api/descuentos', descuentoRoutes); 
+app.use('/api/proveedores', proveedoresRoutes);
+app.use('/api/facturas-compra', facturasCompraRoutes);
 
 // ==========================================================================
 // CONEXION A MONGODB ATLAS
